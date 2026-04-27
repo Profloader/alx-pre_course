@@ -1,0 +1,250 @@
+<style>
+  #auth-box {
+    max-width: 420px;
+    margin: 40px auto;
+    font-family: Arial, sans-serif;
+  }
+  .auth-tabs {
+    display: flex;
+    margin-bottom: 24px;
+    border-bottom: 2px solid #eee;
+  }
+  .auth-tab {
+    flex: 1;
+    padding: 12px;
+    background: none;
+    border: none;
+    font-size: 15px;
+    cursor: pointer;
+    color: #999;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    font-weight: 500;
+  }
+  .auth-tab.active {
+    color: #222;
+    border-bottom-color: #fb8a55;
+    font-weight: 700;
+  }
+  .auth-input {
+    width: 100%;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+    outline: none;
+  }
+  .auth-input:focus { border-color: #e85d04; }
+  .auth-btn {
+    width: 100%;
+    padding: 13px;
+    background: #fb8a55;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 12px;
+  }
+  .auth-btn:hover { opacity: 0.9; }
+  .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .google-btn {
+    width: 100%;
+    padding: 12px;
+    background: #fff;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+  .google-btn:hover { background: #f7f7f7; }
+  .auth-divider {
+    text-align: center;
+    color: #bbb;
+    font-size: 13px;
+    margin: 16px 0;
+    position: relative;
+  }
+  .auth-divider::before,
+  .auth-divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 44%;
+    height: 1px;
+    background: #eee;
+  }
+  .auth-divider::before { left: 0; }
+  .auth-divider::after  { right: 0; }
+  .auth-error   { color: #e53e3e; font-size: 13px; margin-bottom: 10px; min-height: 18px; }
+  .auth-success { color: #38a169; font-size: 13px; margin-bottom: 10px; }
+  .auth-link {
+    background: none;
+    border: none;
+    color: #e85d04;
+    cursor: pointer;
+    font-size: 13px;
+    text-decoration: underline;
+    padding: 0;
+  }
+  .auth-footer {
+    text-align: center;
+    margin-top: 14px;
+    font-size: 13px;
+    color: #666;
+  }
+</style>
+<div id="auth-box">
+  <div class="auth-tabs">
+    <button class="auth-tab active" id="tab-signin" onclick="authTab('signin')">Sign In</button>
+    <button class="auth-tab" id="tab-signup" onclick="authTab('signup')">Create Account</button>
+  </div>
+  <!-- Google -->
+  <button class="google-btn" onclick="authGoogle()">
+    <svg width="18" height="18" viewBox="0 0 48 48">
+      <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.2l6.8-6.8C35.8 2.4 30.2 0 24 0 14.8 0 6.9 5.4 2.9 13.3l7.9 6.1C12.6 13.1 17.9 9.5 24 9.5z"/>
+      <path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.4c-.5 2.9-2.2 5.4-4.7 7l7.3 5.7c4.3-3.9 6.8-9.7 6.8-16.7z"/>
+      <path fill="#FBBC05" d="M10.8 28.6c-.5-1.5-.8-3-.8-4.6s.3-3.1.8-4.6l-7.9-6.1C1 16.3 0 20 0 24s1 7.7 2.9 10.7l7.9-6.1z"/>
+      <path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.3-5.7c-2 1.4-4.6 2.2-7.9 2.2-6.1 0-11.4-3.6-13.2-9.3l-7.9 6.1C6.9 42.6 14.8 48 24 48z"/>
+    </svg>
+    Continue with Google
+  </button>
+  <div class="auth-divider">or</div>
+  <!-- Sign In -->
+  <div id="signin-section">
+    <input class="auth-input" type="email" id="si-email" placeholder="Email address">
+    <input class="auth-input" type="password" id="si-password" placeholder="Password">
+    <p class="auth-error" id="si-error"></p>
+    <button class="auth-btn" id="si-btn" onclick="authSignIn()">Sign In</button>
+    <div class="auth-footer">
+      <button class="auth-link" onclick="authShowForgot()">Forgot password?</button>
+    </div>
+  </div>
+  <!-- Sign Up -->
+  <div id="signup-section" style="display:none">
+    <input class="auth-input" type="text" id="su-name" placeholder="Full Name">
+    <input class="auth-input" type="email" id="su-email" placeholder="Email address">
+    <input class="auth-input" type="password" id="su-password" placeholder="Password (min. 6 characters)">
+    <p class="auth-error" id="su-error"></p>
+    <button class="auth-btn" id="su-btn" onclick="authSignUp()">Create Account</button>
+  </div>
+  <!-- Forgot Password -->
+  <div id="forgot-section" style="display:none">
+    <p style="font-size:14px;color:#666;margin-bottom:12px">Enter your email and we'll send a reset link.</p>
+    <input class="auth-input" type="email" id="fp-email" placeholder="Email address">
+    <p class="auth-error" id="fp-error"></p>
+    <p class="auth-success" id="fp-success"></p>
+    <button class="auth-btn" onclick="authSendReset()">Send Reset Email</button>
+    <div class="auth-footer">
+      <button class="auth-link" onclick="authTab('signin')">Back to Sign In</button>
+    </div>
+  </div>
+</div>
+<script>
+function saveContact(user, isNewUser) {
+  if (!isNewUser) return;
+  fetch('https://script.google.com/macros/s/AKfycbzouqpUP_VMhSvhT6AOvx6rH7mZnO2qP5m0g6pxKzYS03ixGJPVfk2Z2JJrGtebOPT4/exec', {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name:  user.displayName || '',
+      email: user.email,
+      type:  'book_club'
+    })
+  });
+}
+function authTab(tab) {
+  document.getElementById('signin-section').style.display = tab === 'signin' ? '' : 'none';
+  document.getElementById('signup-section').style.display = tab === 'signup' ? '' : 'none';
+  document.getElementById('forgot-section').style.display = 'none';
+  document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
+  document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+}
+function authShowForgot() {
+  document.getElementById('signin-section').style.display = 'none';
+  document.getElementById('forgot-section').style.display = '';
+}
+function authGoogle() {
+  var provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider)
+    .then(function (result) {
+      saveContact(result.user, result.additionalUserInfo.isNewUser);
+    })
+    .catch(function (err) {
+      document.getElementById('si-error').textContent = err.message;
+    });
+}
+function authSignIn() {
+  var email    = document.getElementById('si-email').value.trim();
+  var password = document.getElementById('si-password').value;
+  var btn      = document.getElementById('si-btn');
+  var errEl    = document.getElementById('si-error');
+  errEl.textContent = '';
+  if (!email || !password) { errEl.textContent = 'Please fill in all fields.'; return; }
+  btn.disabled = true;
+  btn.textContent = 'Signing in...';
+  firebase.auth().signInWithEmailAndPassword(email, password)
+    .catch(function (err) {
+      errEl.textContent = (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found')
+        ? 'Invalid email or password.'
+        : err.message;
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+    });
+}
+function authSignUp() {
+  var name     = document.getElementById('su-name').value.trim();
+  var email    = document.getElementById('su-email').value.trim();
+  var password = document.getElementById('su-password').value;
+  var btn      = document.getElementById('su-btn');
+  var errEl    = document.getElementById('su-error');
+  errEl.textContent = '';
+  if (!name)     { errEl.textContent = 'Please enter your name.'; return; }
+  if (!email)    { errEl.textContent = 'Please enter your email.'; return; }
+  if (!password) { errEl.textContent = 'Please enter a password.'; return; }
+  btn.disabled = true;
+  btn.textContent = 'Creating account...';
+  firebase.auth().createUserWithEmailAndPassword(email, password)
+    .then(function (cred) {
+      return cred.user.updateProfile({ displayName: name })
+        .then(function () {
+          saveContact(cred.user, true);
+        });
+    })
+    .catch(function (err) {
+      errEl.textContent = err.code === 'auth/email-already-in-use'
+        ? 'An account with this email already exists.'
+        : err.message;
+      btn.disabled = false;
+      btn.textContent = 'Create Account';
+    });
+}
+function authSendReset() {
+  var email  = document.getElementById('fp-email').value.trim();
+  var errEl  = document.getElementById('fp-error');
+  var succEl = document.getElementById('fp-success');
+  errEl.textContent  = '';
+  succEl.textContent = '';
+  if (!email) { errEl.textContent = 'Please enter your email.'; return; }
+  firebase.auth().sendPasswordResetEmail(email)
+    .then(function () {
+      succEl.textContent = 'Reset email sent! Check your inbox.';
+    })
+    .catch(function (err) {
+      errEl.textContent = err.code === 'auth/user-not-found'
+        ? 'No account found with this email.'
+        : err.message;
+    });
+}
+</script>
