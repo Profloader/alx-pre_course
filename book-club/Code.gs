@@ -4,20 +4,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 var CONFIG = {
-  SHEET_ID:      'YOUR_GOOGLE_SHEET_ID_HERE',   // From your Sheet URL
+  SHEET_ID:      'YOUR_GOOGLE_SHEET_ID_HERE',
   BOOKS_SHEET:   'Books',
   MEMBERS_SHEET: 'Members',
-  MAX_BOOKS:     12,                            // Total cards shown on page
-  BOOK_CLUB_URL: 'https://www.axitos.ai/book-club',
-
-  // Amazon Kindle Top 100 Free RSS feeds — all $0.00 Kindle ebooks.
-  // Add or remove category IDs to match Axitos's audience.
-  // Current selection: overall free list + fiction + business
-  AMAZON_RSS_FEEDS: [
-    'https://www.amazon.com/gp/rss/bestsellers/digital-text/2245476011/', // All Free Kindle
-    'https://www.amazon.com/gp/rss/bestsellers/digital-text/158591011/',  // Fiction
-    'https://www.amazon.com/gp/rss/bestsellers/digital-text/2577013011/'  // Business
-  ]
+  BOOK_CLUB_URL: 'https://www.axitos.ai/book-club'
 };
 
 // ─── WEB APP ENDPOINT ─────────────────────────────────────────────────────────
@@ -30,11 +20,10 @@ function doGet(e) {
 }
 
 // ─── BOOK LIST BUILDER ────────────────────────────────────────────────────────
+// Only serves Axitos's own $0 books. Amazon free books are fetched
+// directly in the browser widget (Apps Script IPs are blocked by Amazon).
 function buildBookList() {
-  var axitosBooks  = getAxitosBooks();
-  var needed       = Math.max(0, CONFIG.MAX_BOOKS - axitosBooks.length);
-  var amazonBooks  = needed > 0 ? fetchAmazonFreeBooks(needed) : [];
-  return axitosBooks.concat(amazonBooks);
+  return getAxitosBooks();
 }
 
 // ─── AXITOS BOOKS (from Google Sheet) ────────────────────────────────────────
@@ -77,94 +66,6 @@ function getAxitosBooks() {
   }
 }
 
-// ─── AMAZON TOP 100 FREE KINDLE RSS ──────────────────────────────────────────
-// Amazon publishes public RSS feeds for their bestseller lists.
-// Each book URL contains the ASIN, which lets us build the cover image URL
-// directly from Amazon's CDN — no API key required.
-function fetchAmazonFreeBooks(limit) {
-  var seen     = {};   // deduplicate by ASIN across multiple feeds
-  var allBooks = [];
-
-  for (var f = 0; f < CONFIG.AMAZON_RSS_FEEDS.length; f++) {
-    if (allBooks.length >= limit) break;
-
-    try {
-      var res = UrlFetchApp.fetch(CONFIG.AMAZON_RSS_FEEDS[f], {
-        muteHttpExceptions: true,
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1)'
-        }
-      });
-      if (res.getResponseCode() !== 200) continue;
-
-      var xml   = res.getContentText();
-      var items = xml.match(/<item>[\s\S]*?<\/item>/g) || [];
-
-      for (var i = 0; i < items.length; i++) {
-        if (allBooks.length >= limit) break;
-
-        var item  = items[i];
-        var link  = rssField(item, 'link') || rssField(item, 'guid');
-        var asin  = extractAsin(link);
-        if (!asin || seen[asin]) continue;
-        seen[asin] = true;
-
-        var rawTitle = rssField(item, 'title');
-        var title    = cleanTitle(rawTitle);
-        if (!title) continue;
-
-        var desc    = rssField(item, 'description');
-        var author  = extractAuthor(desc);
-
-        // Amazon CDN serves cover images at a predictable URL from the ASIN
-        var coverUrl = 'https://images-na.ssl-images-amazon.com/images/P/' + asin + '.01.L.jpg';
-
-        allBooks.push({
-          id:            'amz-' + asin,
-          title:         title,
-          author:        author,
-          cover_url:     coverUrl,
-          download_link: 'https://www.amazon.com/dp/' + asin,
-          price:         '$0.00',
-          source:        'amazon'
-        });
-      }
-    } catch (e) {
-      console.error('fetchAmazonFreeBooks feed=' + CONFIG.AMAZON_RSS_FEEDS[f] + ':', e);
-    }
-  }
-
-  return allBooks;
-}
-
-// Pull a field value from an RSS <item> string, handling CDATA wrappers
-function rssField(item, tag) {
-  var cdataMatch = item.match(new RegExp('<' + tag + '[^>]*><!\\[CDATA\\[([\\s\\S]*?)\\]\\]><\\/' + tag + '>'));
-  if (cdataMatch) return cdataMatch[1].trim();
-  var plainMatch = item.match(new RegExp('<' + tag + '[^>]*>([\\s\\S]*?)<\\/' + tag + '>'));
-  return plainMatch ? plainMatch[1].trim() : '';
-}
-
-// Extract the 10-character ASIN from an Amazon product URL
-function extractAsin(url) {
-  var m = (url || '').match(/\/(?:dp|gp\/product|ASIN)\/([A-Z0-9]{10})/i);
-  return m ? m[1].toUpperCase() : null;
-}
-
-// Remove Amazon-appended suffixes like "(Kindle Edition)" from titles
-function cleanTitle(raw) {
-  return (raw || '')
-    .replace(/\s*\(Kindle Edition\)/gi, '')
-    .replace(/\s*\[Kindle Edition\]/gi, '')
-    .replace(/&amp;/g, '&')
-    .trim();
-}
-
-// Amazon RSS descriptions contain "by AuthorName" — extract it
-function extractAuthor(desc) {
-  var m = (desc || '').match(/by\s+([A-Z][^<\n,]{2,40})/i);
-  return m ? m[1].trim() : '';
-}
 
 // ─── EMAIL NOTIFICATION ───────────────────────────────────────────────────────
 // Set up a time-based trigger for this function:

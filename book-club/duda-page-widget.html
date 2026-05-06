@@ -169,8 +169,19 @@
 <!-- ─── SCRIPT ─────────────────────────────────────────────────────────────── -->
 <script>
 (function () {
-  // Replace this with your deployed Apps Script Web App URL
-  var ENDPOINT = 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+  // Your deployed Apps Script Web App URL (serves Axitos's own $0 books)
+  var AXITOS_ENDPOINT = 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+
+  // Amazon Top 100 Free Kindle RSS feeds, fetched browser-side via a CORS
+  // proxy (allorigins.win) — free, no account needed.
+  // Amazon blocks server-side requests but allows browser + proxy fetches.
+  var AMAZON_FEEDS = [
+    'https://www.amazon.com/gp/rss/bestsellers/digital-text/2245476011/', // All Free Kindle
+    'https://www.amazon.com/gp/rss/bestsellers/digital-text/158591011/',  // Fiction
+    'https://www.amazon.com/gp/rss/bestsellers/digital-text/2577013011/'  // Business
+  ];
+  var MAX_BOOKS   = 12;
+  var seenAsins   = {};
 
   // ── Firebase personalized welcome ────────────────────────────────────────
   function initWelcome() {
@@ -178,12 +189,9 @@
       for (var i = 0; i < localStorage.length; i++) {
         var key = localStorage.key(i);
         if (!key || key.indexOf('firebase:authUser') !== 0) continue;
-
-        var user     = JSON.parse(localStorage.getItem(key));
-        var fullName = user.displayName || user.email || '';
-        var first    = fullName.split(/[\s@]/)[0]; // first name or email username
+        var user  = JSON.parse(localStorage.getItem(key));
+        var first = (user.displayName || user.email || '').split(/[\s@]/)[0];
         if (!first) break;
-
         var banner = document.getElementById('axbc-welcome');
         var msg    = document.getElementById('axbc-welcome-msg');
         if (banner && msg) {
@@ -192,67 +200,138 @@
         }
         break;
       }
-    } catch (e) { /* silent — auth not critical for page function */ }
+    } catch (e) {}
   }
 
-  // ── HTML escaping (XSS prevention) ──────────────────────────────────────
+  // ── HTML escaping ────────────────────────────────────────────────────────
   function esc(str) {
     return String(str || '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
-  // ── Render book grid ─────────────────────────────────────────────────────
-  function renderBooks(books) {
-    var loading = document.getElementById('axbc-loading');
-    var grid    = document.getElementById('axbc-grid');
-    var empty   = document.getElementById('axbc-empty');
+  // ── Render one book card into the grid ───────────────────────────────────
+  function addCard(book) {
+    var grid = document.getElementById('axbc-grid');
+    var a    = document.createElement('a');
+    a.href   = esc(book.download_link);
+    a.target = '_blank';
+    a.rel    = 'noopener noreferrer';
+    a.className = 'axbc-card';
+    a.setAttribute('aria-label', esc(book.title) + ' — free ebook');
+    a.innerHTML = (
+      '<div class="axbc-cover-wrap">' +
+        '<img class="axbc-cover" src="' + esc(book.cover_url) + '" ' +
+             'alt="' + esc(book.title) + '" loading="lazy" ' +
+             'onerror="this.parentNode.parentNode.style.display=\'none\'">' +
+        '<span class="axbc-free-badge">Free</span>' +
+      '</div>' +
+      '<div class="axbc-info">' +
+        '<div class="axbc-title">' + esc(book.title) + '</div>' +
+        '<div class="axbc-author">' + esc(book.author) + '</div>' +
+        '<span class="axbc-btn">Get Free eBook →</span>' +
+      '</div>'
+    );
+    grid.appendChild(a);
+  }
 
-    loading.style.display = 'none';
+  function showGrid() {
+    document.getElementById('axbc-loading').style.display = 'none';
+    document.getElementById('axbc-grid').style.display    = 'grid';
+  }
 
-    if (!books || books.length === 0) {
-      empty.style.display = 'block';
-      return;
-    }
+  function showEmpty() {
+    document.getElementById('axbc-loading').style.display = 'none';
+    document.getElementById('axbc-empty').style.display   = 'block';
+  }
 
-    books.forEach(function (book) {
-      var a         = document.createElement('a');
-      a.href        = esc(book.download_link);
-      a.target      = '_blank';
-      a.rel         = 'noopener noreferrer';
-      a.className   = 'axbc-card';
-      a.setAttribute('aria-label', esc(book.title) + ' by ' + esc(book.author) + ' — free ebook');
-      a.innerHTML = (
-        '<div class="axbc-cover-wrap">' +
-          '<img class="axbc-cover" src="' + esc(book.cover_url) + '" alt="Cover of ' + esc(book.title) + '" loading="lazy">' +
-          '<span class="axbc-free-badge">Free</span>' +
-        '</div>' +
-        '<div class="axbc-info">' +
-          '<div class="axbc-title">' + esc(book.title) + '</div>' +
-          '<div class="axbc-author">' + esc(book.author) + '</div>' +
-          '<span class="axbc-btn">Get Free eBook →</span>' +
-        '</div>'
-      );
-      grid.appendChild(a);
+  // ── Parse Amazon RSS XML, return array of book objects ───────────────────
+  function parseAmazonRSS(xmlStr) {
+    var books  = [];
+    var parser = new DOMParser();
+    var doc    = parser.parseFromString(xmlStr, 'text/xml');
+    var items  = doc.querySelectorAll('item');
+
+    items.forEach(function (item) {
+      var titleEl = item.querySelector('title');
+      var linkEl  = item.querySelector('link') || item.querySelector('guid');
+      if (!titleEl || !linkEl) return;
+
+      var rawLink = linkEl.textContent || linkEl.getAttribute('href') || '';
+      var asinM   = rawLink.match(/\/dp\/([A-Z0-9]{10})/i);
+      if (!asinM) return;
+      var asin = asinM[1].toUpperCase();
+      if (seenAsins[asin]) return;
+      seenAsins[asin] = true;
+
+      var title = (titleEl.textContent || '')
+        .replace(/\s*\(Kindle Edition\)/gi, '')
+        .replace(/\s*\[Kindle Edition\]/gi, '')
+        .replace(/&amp;/g, '&').trim();
+      if (!title) return;
+
+      var desc    = item.querySelector('description');
+      var descTxt = desc ? desc.textContent : '';
+      var authM   = descTxt.match(/by\s+([A-Z][^<\n,]{2,40})/i);
+      var author  = authM ? authM[1].trim() : '';
+
+      books.push({
+        title:         title,
+        author:        author,
+        cover_url:     'https://images-na.ssl-images-amazon.com/images/P/' + asin + '.01.L.jpg',
+        download_link: 'https://www.amazon.com/dp/' + asin,
+        price:         '$0.00',
+        source:        'amazon'
+      });
     });
 
-    grid.style.display = 'grid';
+    return books;
   }
 
-  // ── Fetch books from Apps Script endpoint ────────────────────────────────
+  // ── Fetch one Amazon RSS feed via allorigins CORS proxy ──────────────────
+  function fetchAmazonFeed(feedUrl) {
+    var proxy = 'https://api.allorigins.win/get?url=' + encodeURIComponent(feedUrl);
+    return fetch(proxy)
+      .then(function (r) { return r.ok ? r.json() : { contents: '' }; })
+      .then(function (data) { return parseAmazonRSS(data.contents || ''); })
+      .catch(function () { return []; });
+  }
+
+  // ── Load all books: Axitos first, Amazon fills the rest ──────────────────
   function loadBooks() {
-    fetch(ENDPOINT)
-      .then(function (r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
+    var axitosBooks = [];
+
+    // Step 1: fetch Axitos's own $0 books from Apps Script
+    fetch(AXITOS_ENDPOINT)
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .catch(function () { return []; })
+      .then(function (books) {
+        axitosBooks = Array.isArray(books) ? books : [];
+        axitosBooks.forEach(function (b) {
+          if (b.id) seenAsins[b.id] = true; // prevent Amazon duplicates
+          addCard(b);
+        });
+
+        var needed = MAX_BOOKS - axitosBooks.length;
+        if (needed <= 0) { showGrid(); return; }
+
+        // Step 2: fetch Amazon free books to fill remaining slots
+        // Chain feeds sequentially to respect the `needed` limit
+        return AMAZON_FEEDS.reduce(function (chain, feedUrl) {
+          return chain.then(function (remaining) {
+            if (remaining <= 0) return 0;
+            return fetchAmazonFeed(feedUrl).then(function (feedBooks) {
+              feedBooks.slice(0, remaining).forEach(addCard);
+              return remaining - feedBooks.length;
+            });
+          });
+        }, Promise.resolve(needed));
       })
-      .then(renderBooks)
-      .catch(function () {
-        document.getElementById('axbc-loading').style.display = 'none';
-        document.getElementById('axbc-empty').style.display   = 'block';
-      });
+      .then(function () {
+        var grid = document.getElementById('axbc-grid');
+        if (grid.children.length === 0) { showEmpty(); } else { showGrid(); }
+      })
+      .catch(showEmpty);
   }
 
   // ── Init ─────────────────────────────────────────────────────────────────
