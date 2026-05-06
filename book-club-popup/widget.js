@@ -12,7 +12,7 @@
 
 (function () {
   // ─── CONFIG ──────────────────────────────────────────────────────────────
-  var SHEET_CSV_URL = "YOUR_PUBLISHED_GOOGLE_SHEET_CSV_URL_HERE";
+  var SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSlMvi9MKODUmniC_9UjQliUOmjcqGIwUXjNcX0xUL1sA-gOHZW3TNvYxQTzQ_H4WLJHeWSZvU8Nm4P/pub?gid=0&single=true&output=csv";
   var SIGNUP_PAGE_URL = "https://www.axitos.ai/signin";
 
   // Column indices in your sheet (0-based). Adjust to match your columns.
@@ -136,7 +136,9 @@
   }
 
   function showPopup(popup) {
-    document.body.appendChild(popup);
+    // Append to <html> not <body> — Duda applies CSS transforms to its page
+    // wrapper which breaks position:fixed when the element is inside body.
+    document.documentElement.appendChild(popup);
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
         popup.style.opacity = "1";
