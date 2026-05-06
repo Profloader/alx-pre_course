@@ -4,14 +4,20 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 var CONFIG = {
-  SHEET_ID:       'YOUR_GOOGLE_SHEET_ID_HERE',   // From your Sheet URL
-  BOOKS_SHEET:    'Books',
-  MEMBERS_SHEET:  'Members',
-  MAX_BOOKS:      12,                            // Total cards shown on page
-  BOOK_CLUB_URL:  'https://www.axitos.ai/book-club',
-  // Gutendex topics to pull from when Axitos has no free books
-  // Options: fiction, literature, mystery, romance, science, history, philosophy
-  GUTENDEX_TOPICS: ['fiction', 'literature']
+  SHEET_ID:      'YOUR_GOOGLE_SHEET_ID_HERE',   // From your Sheet URL
+  BOOKS_SHEET:   'Books',
+  MEMBERS_SHEET: 'Members',
+  MAX_BOOKS:     12,                            // Total cards shown on page
+  BOOK_CLUB_URL: 'https://www.axitos.ai/book-club',
+
+  // Amazon Kindle Top 100 Free RSS feeds — all $0.00 Kindle ebooks.
+  // Add or remove category IDs to match Axitos's audience.
+  // Current selection: overall free list + fiction + business
+  AMAZON_RSS_FEEDS: [
+    'https://www.amazon.com/gp/rss/bestsellers/digital-text/2245476011/', // All Free Kindle
+    'https://www.amazon.com/gp/rss/bestsellers/digital-text/158591011/',  // Fiction
+    'https://www.amazon.com/gp/rss/bestsellers/digital-text/2577013011/'  // Business
+  ]
 };
 
 // ─── WEB APP ENDPOINT ─────────────────────────────────────────────────────────
@@ -25,10 +31,10 @@ function doGet(e) {
 
 // ─── BOOK LIST BUILDER ────────────────────────────────────────────────────────
 function buildBookList() {
-  var axitosBooks = getAxitosBooks();
-  var needed = Math.max(0, CONFIG.MAX_BOOKS - axitosBooks.length);
-  var gutenbergBooks = needed > 0 ? fetchGutenbergBooks(needed) : [];
-  return axitosBooks.concat(gutenbergBooks);
+  var axitosBooks  = getAxitosBooks();
+  var needed       = Math.max(0, CONFIG.MAX_BOOKS - axitosBooks.length);
+  var amazonBooks  = needed > 0 ? fetchAmazonFreeBooks(needed) : [];
+  return axitosBooks.concat(amazonBooks);
 }
 
 // ─── AXITOS BOOKS (from Google Sheet) ────────────────────────────────────────
@@ -71,68 +77,93 @@ function getAxitosBooks() {
   }
 }
 
-// ─── GUTENBERG FALLBACK BOOKS ─────────────────────────────────────────────────
-function fetchGutenbergBooks(limit) {
+// ─── AMAZON TOP 100 FREE KINDLE RSS ──────────────────────────────────────────
+// Amazon publishes public RSS feeds for their bestseller lists.
+// Each book URL contains the ASIN, which lets us build the cover image URL
+// directly from Amazon's CDN — no API key required.
+function fetchAmazonFreeBooks(limit) {
+  var seen     = {};   // deduplicate by ASIN across multiple feeds
   var allBooks = [];
 
-  for (var t = 0; t < CONFIG.GUTENDEX_TOPICS.length; t++) {
+  for (var f = 0; f < CONFIG.AMAZON_RSS_FEEDS.length; f++) {
     if (allBooks.length >= limit) break;
-    var topic = CONFIG.GUTENDEX_TOPICS[t];
 
     try {
-      var url = 'https://gutendex.com/books/?languages=en&topic=' + topic + '&page=1';
-      var res = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+      var res = UrlFetchApp.fetch(CONFIG.AMAZON_RSS_FEEDS[f], {
+        muteHttpExceptions: true,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1)'
+        }
+      });
       if (res.getResponseCode() !== 200) continue;
 
-      var data    = JSON.parse(res.getContentText());
-      var results = data.results || [];
+      var xml   = res.getContentText();
+      var items = xml.match(/<item>[\s\S]*?<\/item>/g) || [];
 
-      for (var i = 0; i < results.length; i++) {
+      for (var i = 0; i < items.length; i++) {
         if (allBooks.length >= limit) break;
-        var book = results[i];
 
-        var cover = book.formats['image/jpeg'] || '';
-        var link  = book.formats['application/epub+zip']
-                 || book.formats['application/x-mobipocket-ebook']
-                 || book.formats['text/html']
-                 || '';
+        var item  = items[i];
+        var link  = rssField(item, 'link') || rssField(item, 'guid');
+        var asin  = extractAsin(link);
+        if (!asin || seen[asin]) continue;
+        seen[asin] = true;
 
-        // Skip books without cover or download link
-        if (!cover || !link) continue;
+        var rawTitle = rssField(item, 'title');
+        var title    = cleanTitle(rawTitle);
+        if (!title) continue;
 
-        var authorName = book.authors.length > 0
-          ? formatAuthorName(book.authors[0].name)
-          : 'Unknown Author';
+        var desc    = rssField(item, 'description');
+        var author  = extractAuthor(desc);
 
-        // Avoid duplicates across topics
-        var isDupe = allBooks.some(function(b){ return b.id === 'gb-' + book.id; });
-        if (isDupe) continue;
+        // Amazon CDN serves cover images at a predictable URL from the ASIN
+        var coverUrl = 'https://images-na.ssl-images-amazon.com/images/P/' + asin + '.01.L.jpg';
 
         allBooks.push({
-          id:            'gb-' + book.id,
-          title:         book.title,
-          author:        authorName,
-          cover_url:     cover,
-          download_link: link,
+          id:            'amz-' + asin,
+          title:         title,
+          author:        author,
+          cover_url:     coverUrl,
+          download_link: 'https://www.amazon.com/dp/' + asin,
           price:         '$0.00',
-          source:        'gutenberg'
+          source:        'amazon'
         });
       }
     } catch (e) {
-      console.error('fetchGutenbergBooks topic=' + topic + ':', e);
+      console.error('fetchAmazonFreeBooks feed=' + CONFIG.AMAZON_RSS_FEEDS[f] + ':', e);
     }
   }
 
   return allBooks;
 }
 
-// Gutenberg stores names as "Last, First" — reverse to "First Last"
-function formatAuthorName(name) {
-  var parts = name.split(',');
-  if (parts.length === 2) {
-    return parts[1].trim() + ' ' + parts[0].trim();
-  }
-  return name;
+// Pull a field value from an RSS <item> string, handling CDATA wrappers
+function rssField(item, tag) {
+  var cdataMatch = item.match(new RegExp('<' + tag + '[^>]*><!\\[CDATA\\[([\\s\\S]*?)\\]\\]><\\/' + tag + '>'));
+  if (cdataMatch) return cdataMatch[1].trim();
+  var plainMatch = item.match(new RegExp('<' + tag + '[^>]*>([\\s\\S]*?)<\\/' + tag + '>'));
+  return plainMatch ? plainMatch[1].trim() : '';
+}
+
+// Extract the 10-character ASIN from an Amazon product URL
+function extractAsin(url) {
+  var m = (url || '').match(/\/(?:dp|gp\/product|ASIN)\/([A-Z0-9]{10})/i);
+  return m ? m[1].toUpperCase() : null;
+}
+
+// Remove Amazon-appended suffixes like "(Kindle Edition)" from titles
+function cleanTitle(raw) {
+  return (raw || '')
+    .replace(/\s*\(Kindle Edition\)/gi, '')
+    .replace(/\s*\[Kindle Edition\]/gi, '')
+    .replace(/&amp;/g, '&')
+    .trim();
+}
+
+// Amazon RSS descriptions contain "by AuthorName" — extract it
+function extractAuthor(desc) {
+  var m = (desc || '').match(/by\s+([A-Z][^<\n,]{2,40})/i);
+  return m ? m[1].trim() : '';
 }
 
 // ─── EMAIL NOTIFICATION ───────────────────────────────────────────────────────
