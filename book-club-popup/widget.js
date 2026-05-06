@@ -1,15 +1,4 @@
-/**
- * Book Club Social Proof Popup Widget
- *
- * Reads the latest signup from a published Google Sheet CSV and shows
- * a "Jane just joined!" notification to non-authenticated visitors.
- *
- * Setup:
- *   1. Publish your Google Sheet: File → Share → Publish to web → CSV
- *   2. Replace SHEET_CSV_URL with the published CSV link
- *   3. Paste this script into your Duda site's custom body code
- */
-
+<script>
 (function () {
   // ─── CONFIG ──────────────────────────────────────────────────────────────
   var SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSlMvi9MKODUmniC_9UjQliUOmjcqGIwUXjNcX0xUL1sA-gOHZW3TNvYxQTzQ_H4WLJHeWSZvU8Nm4P/pub?gid=0&single=true&output=csv";
@@ -192,3 +181,4 @@
     init();
   }
 })();
+</script>
