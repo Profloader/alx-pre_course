@@ -23,23 +23,32 @@ Axitos is a publishing platform (axitos.ai) built on Duda (site `86c4b43a`). It 
 | Name | plain_text | |
 | Title | plain_text | Book title |
 | author_email | email | |
-| ChatGPT | plain_text | Score 0–100 |
-| Claude | plain_text | Score 0–100 |
-| Gemini | plain_text | Score 0–100 |
-| Perplexity | plain_text | Score 0–100 |
-| AI Visibility | number | Average of 4 scores |
+| ChatGPT | plain_text | Score "X%" format |
+| Claude | plain_text | Score "X%" format |
+| Gemini | plain_text | Score "X%" format |
+| Perplexity | plain_text | Score "X%" format |
+| AI Visibility | plain_text | Average of 4 scores as "X%" (changed from number type) |
 | ChatGPT Status | multi_select | Citing / Learning / Pending |
 | Claude Status | multi_select | Citing / Learning / Pending |
 | Gemini Status | multi_select | Citing / Learning / Pending |
 | Perplexity Status | multi_select | Citing / Learning / Pending |
+| ChatGPT Details | text | Auto-calculated. Week-over-week % change vs previous score |
+| Claude Details | text | Auto-calculated. Week-over-week % change vs previous score |
+| Gemini Details | text | Auto-calculated. Week-over-week % change vs previous score |
+| Perplexity Details | text | Auto-calculated. Week-over-week % change vs previous score |
 | AI Chart  | text | Trailing space in name. HTML format. Rolling 10-week comma-separated scores |
 | Citation Queries 1–5 | text | HTML format. Top 5 queries that surface the book in AI |
+| Blog_Topic_1–5 | plain_text | AI-generated weekly blog topics (SEO/AEO/GEO optimised, niche-specific) |
+| Strategic_Why_1–5 | plain_text | Search intent + strategic reason for each corresponding Blog_Topic |
+| Keyword_1–5 | plain_text | Top 5 high-intent, high-volume keywords weekly |
+| Suggested_Title_1–3 | plain_text | 3 researched next-book title ideas weekly (within author niche) |
+| Trend_Source | plain_text | Key trend or insight driving that week's topics and keywords |
 | Updates 1–4 | text | MANUAL ONLY — never overwritten by automation |
 
 ### Status thresholds
-- **Citing** = score > 10
-- **Learning** = score 1–10
-- **Pending** = score = 0
+- **Citing** = score > 10%
+- **Learning** = score 1–10%
+- **Pending** = score = 0%
 
 ### Authors
 | Name | Duda Row ID | Slug | Email | Book Title |
@@ -108,6 +117,10 @@ Axitos is a publishing platform (axitos.ai) built on Duda (site `86c4b43a`). It 
 
 ---
 
+## Apps Script file
+- Local reference copy: `dashboard-script.js`
+- **Paste full contents into Apps Script editor and redeploy as new version**
+
 ## Phases Completed
 - [x] Firebase Authentication replacing Duda membership app
 - [x] Sign-in page with Google OAuth + email/password
@@ -117,8 +130,13 @@ Axitos is a publishing platform (axitos.ai) built on Duda (site `86c4b43a`). It 
 - [x] Apps Script web app deployed with score/read/upsert/setup actions
 - [x] Friday 6am weekly trigger configured
 - [x] Initial scores synced to sheet and Duda collection
+- [x] Score Details (week-over-week % change) added
+- [x] Blog Topics, Strategic Why, Keywords, Suggested Titles added
+- [x] All scores now stored as "X%" format
+- [x] AI Visibility changed from number to plain_text in Duda
 
 ## Next Phase
+- [ ] Author submit post page (form → Apps Script queue → publish via MCP)
 - [ ] KDP integration (to be added to the same Apps Script project — no separate routine)
 - [ ] Duda REST API credentials (enables auto-publish after collection updates)
 - [ ] Full end-to-end automation (score → sheet → Duda → publish) without manual steps
