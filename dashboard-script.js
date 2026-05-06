@@ -1,6 +1,6 @@
 // ============================================================
 // AXITOS DASHBOARD — AI Scoring, Insights & Sheet Sync
-// v2 — scores as %, Details, Blog Topics, Keywords, Titles
+// v3 — scores stored as numbers in sheet, % only written to Duda
 // ============================================================
 
 var SHEET_ID   = '1VGMveP1ydBZfSg1XrHnpN7Y9tQ9hT9X92AoOJlpUges';
@@ -27,17 +27,20 @@ var HEADERS = [
   'Genre/Topic', 'ASIN', 'Last Scored', 'Last Synced'
 ];
 
-// Status thresholds: Citing >10%, Learning 1-10%, Pending 0%
+// Scores are stored as plain numbers in the sheet (e.g. 12, not "12%")
+// "%" is only appended when writing to Duda via MCP sync
+
+// Status thresholds: Citing >10, Learning 1-10, Pending 0
 function getStatus(score) {
-  score = parseFloat(String(score).replace('%', '')) || 0;
+  score = parseFloat(score) || 0;
   if (score > 10) return 'Citing';
   if (score >= 1)  return 'Learning';
   return 'Pending';
 }
 
-// Calculate week-over-week % change for a platform score
-function calcChange(newScore, oldRaw) {
-  var oldScore = parseFloat(String(oldRaw || '').replace('%', '')) || 0;
+// Calculate week-over-week % change (both values are plain numbers)
+function calcChange(newScore, oldScore) {
+  oldScore = parseFloat(oldScore) || 0;
   newScore = parseFloat(newScore) || 0;
   if (oldScore === 0) {
     return newScore > 0 ? 'First score — no previous data' : '+0% change from previous week';
@@ -52,10 +55,11 @@ function calcChange(newScore, oldRaw) {
 function doGet(e) {
   var action = (e.parameter && e.parameter.action) ? e.parameter.action : '';
   try {
-    if (action === 'setup')  { setupSheet(); return respond('Sheet ready'); }
-    if (action === 'score')  { return scoreAll(); }
-    if (action === 'read')   { return readAll(); }
-    if (action === 'upsert') { upsertFromParams(e.parameter); return respond('OK'); }
+    if (action === 'setup')   { setupSheet();   return respond('Sheet ready'); }
+    if (action === 'repair')  { repairSheet();  return respond('Sheet repaired'); }
+    if (action === 'score')   { return scoreAll(); }
+    if (action === 'read')    { return readAll(); }
+    if (action === 'upsert')  { upsertFromParams(e.parameter); return respond('OK'); }
   } catch (err) {
     return respond('Error: ' + err.message);
   }
@@ -68,7 +72,7 @@ function respond(msg) {
   ).setMimeType(ContentService.MimeType.TEXT);
 }
 
-// ── Sheet Setup ──────────────────────────────────────────────
+// ── Sheet Setup (clears all data — only for fresh start) ────
 function setupSheet() {
   var ss    = SpreadsheetApp.openById(SHEET_ID);
   var sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
@@ -79,6 +83,60 @@ function setupSheet() {
   hdr.setFontColor('#ffffff');
   hdr.setFontWeight('bold');
   sheet.setFrozenRows(1);
+  formatScoreColumns(sheet);
+}
+
+// ── Sheet Repair (adds missing columns, fixes score format — preserves data) ──
+function repairSheet() {
+  var ss      = SpreadsheetApp.openById(SHEET_ID);
+  var sheet   = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) { setupSheet(); return; }
+  var existing = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+
+  // Add any HEADERS columns that are missing
+  HEADERS.forEach(function(h) {
+    if (existing.indexOf(h) === -1) {
+      var col = sheet.getLastColumn() + 1;
+      sheet.getRange(1, col).setValue(h);
+      existing.push(h);
+    }
+  });
+
+  // Re-order columns to match HEADERS order
+  // (simpler: just ensure all exist — ordering can be done manually in sheet)
+
+  // Fix score columns: if stored as decimals (e.g. 0.12), convert to integers (12)
+  var data    = sheet.getDataRange().getValues();
+  var headers = data[0];
+  var scoreCols = ['ChatGPT', 'Claude', 'Gemini', 'Perplexity', 'AI Visibility'];
+  scoreCols.forEach(function(col) {
+    var idx = headers.indexOf(col);
+    if (idx === -1) return;
+    for (var r = 1; r < data.length; r++) {
+      var val = data[r][idx];
+      if (val === '' || val === null) continue;
+      var num = parseFloat(val);
+      // If stored as decimal percentage (e.g. 0.12 instead of 12), multiply by 100
+      if (num > 0 && num < 1) {
+        sheet.getRange(r + 1, idx + 1).setValue(Math.round(num * 100));
+      }
+    }
+  });
+
+  formatScoreColumns(sheet);
+  Logger.log('repairSheet complete');
+}
+
+// Force score columns to plain text format so Sheets doesn't auto-convert numbers
+function formatScoreColumns(sheet) {
+  var headers  = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  var scoreCols = ['ChatGPT', 'Claude', 'Gemini', 'Perplexity', 'AI Visibility'];
+  var lastRow  = Math.max(sheet.getLastRow(), 2);
+  scoreCols.forEach(function(col) {
+    var idx = headers.indexOf(col);
+    if (idx === -1) return;
+    sheet.getRange(2, idx + 1, lastRow - 1, 1).setNumberFormat('0');
+  });
 }
 
 // ── Score All Authors ────────────────────────────────────────
@@ -100,13 +158,19 @@ function scoreAll() {
       continue;
     }
 
-    // Capture previous scores before overwriting (strip % for comparison)
-    var oldChatGPT    = row['ChatGPT']    || '0';
-    var oldClaude     = row['Claude']     || '0';
-    var oldGemini     = row['Gemini']     || '0';
-    var oldPerplexity = row['Perplexity'] || '0';
+    // Capture previous scores (plain numbers) for Details calculation
+    var oldChatGPT    = parseFloat(row['ChatGPT'])    || 0;
+    var oldClaude     = parseFloat(row['Claude'])     || 0;
+    var oldGemini     = parseFloat(row['Gemini'])     || 0;
+    var oldPerplexity = parseFloat(row['Perplexity']) || 0;
 
-    Logger.log('Scoring: ' + name + ' — ' + title);
+    // If old values look like decimals (<1), they're leftover % format — fix them
+    if (oldChatGPT    > 0 && oldChatGPT    < 1) oldChatGPT    = Math.round(oldChatGPT    * 100);
+    if (oldClaude     > 0 && oldClaude     < 1) oldClaude     = Math.round(oldClaude     * 100);
+    if (oldGemini     > 0 && oldGemini     < 1) oldGemini     = Math.round(oldGemini     * 100);
+    if (oldPerplexity > 0 && oldPerplexity < 1) oldPerplexity = Math.round(oldPerplexity * 100);
+
+    Logger.log('Scoring: ' + name + ' (prev: ChatGPT=' + oldChatGPT + ', Perplexity=' + oldPerplexity + ')');
     var scored = callPerplexity(name, title);
     Utilities.sleep(2000);
     if (!scored) { Logger.log('Perplexity returned null for ' + name); continue; }
@@ -117,13 +181,13 @@ function scoreAll() {
     var perplexity = scored.perplexity || 0;
     var aiVis      = Math.round((chatgpt + claude + gemini + perplexity) / 4);
 
-    // Rolling 10-week AI Chart
+    // Rolling 10-week AI Chart (plain numbers)
     var existing = String(row['AI Chart'] || '').replace(/<[^>]+>/g, '').trim();
     var chartArr = existing ? existing.split(',').map(function(v) { return v.trim(); }) : [];
     chartArr.push(String(aiVis));
     if (chartArr.length > 10) chartArr = chartArr.slice(chartArr.length - 10);
 
-    // Week-over-week % change per platform
+    // Week-over-week Details
     var chatgptDetail    = calcChange(chatgpt,    oldChatGPT);
     var claudeDetail     = calcChange(claude,     oldClaude);
     var geminiDetail     = calcChange(gemini,     oldGemini);
@@ -136,21 +200,21 @@ function scoreAll() {
     var queries  = scored.queries          || [];
 
     var update = {
-      'page_item_url':     slug,
-      'ChatGPT':           chatgpt    + '%',
-      'Claude':            claude     + '%',
-      'Gemini':            gemini     + '%',
-      'Perplexity':        perplexity + '%',
-      'AI Visibility':     aiVis      + '%',
-      'ChatGPT Status':    getStatus(chatgpt),
-      'Claude Status':     getStatus(claude),
-      'Gemini Status':     getStatus(gemini),
-      'Perplexity Status': getStatus(perplexity),
+      'page_item_url':      slug,
+      'ChatGPT':            chatgpt,
+      'Claude':             claude,
+      'Gemini':             gemini,
+      'Perplexity':         perplexity,
+      'AI Visibility':      aiVis,
+      'ChatGPT Status':     getStatus(chatgpt),
+      'Claude Status':      getStatus(claude),
+      'Gemini Status':      getStatus(gemini),
+      'Perplexity Status':  getStatus(perplexity),
       'ChatGPT Details':    chatgptDetail,
       'Claude Details':     claudeDetail,
       'Gemini Details':     geminiDetail,
       'Perplexity Details': perplexityDetail,
-      'AI Chart':          chartArr.join(','),
+      'AI Chart':           chartArr.join(','),
       'Citation Queries 1': queries[0] || '',
       'Citation Queries 2': queries[1] || '',
       'Citation Queries 3': queries[2] || '',
@@ -166,11 +230,11 @@ function scoreAll() {
       'Strategic_Why_4': topics[3] ? topics[3].why   : '',
       'Blog_Topic_5':    topics[4] ? topics[4].topic : '',
       'Strategic_Why_5': topics[4] ? topics[4].why   : '',
-      'Keyword_1': keywords[0] || '',
-      'Keyword_2': keywords[1] || '',
-      'Keyword_3': keywords[2] || '',
-      'Keyword_4': keywords[3] || '',
-      'Keyword_5': keywords[4] || '',
+      'Keyword_1':         keywords[0] || '',
+      'Keyword_2':         keywords[1] || '',
+      'Keyword_3':         keywords[2] || '',
+      'Keyword_4':         keywords[3] || '',
+      'Keyword_5':         keywords[4] || '',
       'Suggested_Title_1': titles[0] || '',
       'Suggested_Title_2': titles[1] || '',
       'Suggested_Title_3': titles[2] || '',
@@ -180,9 +244,12 @@ function scoreAll() {
 
     updateSheetRow(sheet, headers, slug, update);
     Logger.log('Done: ' + name + ' — AI Visibility: ' + aiVis + '%');
-    results.push({ slug: slug, name: name, aiVisibility: aiVis + '%',
+    results.push({
+      slug: slug, name: name,
+      aiVisibility: aiVis + '%',
       chatgpt: chatgpt + '%', claude: claude + '%',
-      gemini: gemini + '%', perplexity: perplexity + '%' });
+      gemini: gemini + '%', perplexity: perplexity + '%'
+    });
   }
 
   Logger.log('Scoring complete. Total scored: ' + results.length);
