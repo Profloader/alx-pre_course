@@ -4,7 +4,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 var CONFIG = {
-  SHEET_ID:      'YOUR_GOOGLE_SHEET_ID_HERE',   // From your Sheet URL
+  SHEET_ID:      '1uvBJcTGdhKSR1p4JT5wULZcZjtpjulE9TdgpsftO8ic',   // From your Sheet URL
   BOOKS_SHEET:   'Books',
   MEMBERS_SHEET: 'Members',
   MAX_BOOKS:     12,                            // Total cards shown on page
