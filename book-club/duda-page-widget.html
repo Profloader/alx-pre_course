@@ -1,0 +1,270 @@
+<!--
+  AXITOS FREE BOOK CLUB — Duda Page Widget
+  ─────────────────────────────────────────
+  In Duda editor:
+    1. Add an HTML widget to your Free Book Club page
+    2. Paste this entire file into it
+    3. Replace YOUR_APPS_SCRIPT_WEB_APP_URL_HERE with your deployed Apps Script URL
+-->
+
+<div id="axbc-root" style="max-width:1100px;margin:0 auto;padding:0 16px 48px">
+
+  <!-- Personalized welcome banner (visible only when Firebase user is logged in) -->
+  <div id="axbc-welcome" style="display:none;background:linear-gradient(135deg,#5c3d99 0%,#7b5bb6 100%);color:#fff;border-radius:14px;padding:22px 28px;margin-bottom:36px;align-items:center;gap:16px;box-shadow:0 4px 20px rgba(92,61,153,0.25)">
+    <span style="font-size:38px;flex-shrink:0">👋</span>
+    <div>
+      <div id="axbc-welcome-msg" style="font-size:19px;font-weight:700"></div>
+      <div style="font-size:14px;opacity:0.82;margin-top:3px">Your free books are ready — enjoy every page!</div>
+    </div>
+  </div>
+
+  <!-- Page header -->
+  <div style="text-align:center;margin-bottom:40px">
+    <div style="font-size:44px;margin-bottom:10px">📚</div>
+    <h2 style="font-size:28px;font-weight:800;color:#1a1a1a;margin:0 0 8px">Free Book Club</h2>
+    <p style="color:#777;font-size:15px;margin:0;max-width:480px;margin-left:auto;margin-right:auto">
+      Every eBook below is <strong style="color:#5c3d99">$0.00</strong> — no catch, no credit card. Just free reading.
+    </p>
+  </div>
+
+  <!-- Loading skeleton -->
+  <div id="axbc-loading">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:24px">
+      <div class="axbc-skeleton"></div>
+      <div class="axbc-skeleton"></div>
+      <div class="axbc-skeleton"></div>
+      <div class="axbc-skeleton"></div>
+      <div class="axbc-skeleton"></div>
+      <div class="axbc-skeleton"></div>
+    </div>
+  </div>
+
+  <!-- Book grid (populated by JS) -->
+  <div id="axbc-grid" style="display:none"></div>
+
+  <!-- Empty / error state -->
+  <div id="axbc-empty" style="display:none;text-align:center;padding:56px 24px;color:#aaa">
+    <div style="font-size:40px;margin-bottom:14px">😔</div>
+    <div style="font-size:16px;font-weight:600;color:#666;margin-bottom:8px">No books available right now</div>
+    <div style="font-size:14px">Check back soon — new free eBooks are added regularly.</div>
+  </div>
+
+</div>
+
+<!-- ─── STYLES ──────────────────────────────────────────────────────────────── -->
+<style>
+  #axbc-root * { box-sizing: border-box; }
+
+  /* Skeleton loader */
+  .axbc-skeleton {
+    border-radius: 10px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: axbc-shimmer 1.4s infinite;
+    aspect-ratio: 2/3;
+    min-height: 220px;
+  }
+  @keyframes axbc-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Book card */
+  .axbc-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.07);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+  }
+  .axbc-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 28px rgba(92,61,153,0.18);
+  }
+  .axbc-cover-wrap {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 2/3;
+    background: #f0edf7;
+  }
+  .axbc-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+  }
+  .axbc-card:hover .axbc-cover { transform: scale(1.04); }
+  .axbc-free-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #22c55e;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 7px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .axbc-info {
+    padding: 13px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .axbc-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+  .axbc-author {
+    font-size: 12px;
+    color: #999;
+    margin-bottom: 12px;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .axbc-btn {
+    display: block;
+    background: #5c3d99;
+    color: #fff;
+    text-align: center;
+    padding: 9px 12px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  .axbc-btn:hover { background: #4a2f80; color: #fff; }
+
+  /* Grid */
+  #axbc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 24px;
+  }
+
+  /* Mobile */
+  @media (max-width: 500px) {
+    #axbc-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .axbc-info  { padding: 10px 10px 12px; }
+    .axbc-title { font-size: 12px; }
+  }
+</style>
+
+<!-- ─── SCRIPT ─────────────────────────────────────────────────────────────── -->
+<script>
+(function () {
+  // Replace this with your deployed Apps Script Web App URL
+  var ENDPOINT = 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+
+  // ── Firebase personalized welcome ────────────────────────────────────────
+  function initWelcome() {
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i);
+        if (!key || key.indexOf('firebase:authUser') !== 0) continue;
+
+        var user     = JSON.parse(localStorage.getItem(key));
+        var fullName = user.displayName || user.email || '';
+        var first    = fullName.split(/[\s@]/)[0]; // first name or email username
+        if (!first) break;
+
+        var banner = document.getElementById('axbc-welcome');
+        var msg    = document.getElementById('axbc-welcome-msg');
+        if (banner && msg) {
+          msg.textContent = 'Welcome back, ' + first + '!';
+          banner.style.display = 'flex';
+        }
+        break;
+      }
+    } catch (e) { /* silent — auth not critical for page function */ }
+  }
+
+  // ── HTML escaping (XSS prevention) ──────────────────────────────────────
+  function esc(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // ── Render book grid ─────────────────────────────────────────────────────
+  function renderBooks(books) {
+    var loading = document.getElementById('axbc-loading');
+    var grid    = document.getElementById('axbc-grid');
+    var empty   = document.getElementById('axbc-empty');
+
+    loading.style.display = 'none';
+
+    if (!books || books.length === 0) {
+      empty.style.display = 'block';
+      return;
+    }
+
+    books.forEach(function (book) {
+      var a         = document.createElement('a');
+      a.href        = esc(book.download_link);
+      a.target      = '_blank';
+      a.rel         = 'noopener noreferrer';
+      a.className   = 'axbc-card';
+      a.setAttribute('aria-label', esc(book.title) + ' by ' + esc(book.author) + ' — free ebook');
+      a.innerHTML = (
+        '<div class="axbc-cover-wrap">' +
+          '<img class="axbc-cover" src="' + esc(book.cover_url) + '" alt="Cover of ' + esc(book.title) + '" loading="lazy">' +
+          '<span class="axbc-free-badge">Free</span>' +
+        '</div>' +
+        '<div class="axbc-info">' +
+          '<div class="axbc-title">' + esc(book.title) + '</div>' +
+          '<div class="axbc-author">' + esc(book.author) + '</div>' +
+          '<span class="axbc-btn">Get Free eBook →</span>' +
+        '</div>'
+      );
+      grid.appendChild(a);
+    });
+
+    grid.style.display = 'grid';
+  }
+
+  // ── Fetch books from Apps Script endpoint ────────────────────────────────
+  function loadBooks() {
+    fetch(ENDPOINT)
+      .then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(renderBooks)
+      .catch(function () {
+        document.getElementById('axbc-loading').style.display = 'none';
+        document.getElementById('axbc-empty').style.display   = 'block';
+      });
+  }
+
+  // ── Init ─────────────────────────────────────────────────────────────────
+  function init() {
+    initWelcome();
+    loadBooks();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
