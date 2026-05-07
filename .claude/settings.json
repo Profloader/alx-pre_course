@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(*)",
+      "mcp__da5c0cca-59e3-4f02-8237-8a13a271d48f__get_collections",
+      "mcp__da5c0cca-59e3-4f02-8237-8a13a271d48f__update_collection_rows"
+    ]
+  }
+}
