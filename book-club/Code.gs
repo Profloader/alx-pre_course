@@ -8,6 +8,9 @@ var CONFIG = {
   MEMBERS_SHEET:      'Members',
   BOOK_CLUB_URL:      'https://www.axitos.ai/book-club',
 
+  // ── Get a FREE key: console.cloud.google.com → Enable "Books API" → Credentials → Create API Key ──
+  GOOGLE_BOOKS_API_KEY: '',   // ← paste your key here, e.g. 'AIzaSy...'
+
   // Primary publisher — shows first. Switch to Axitos Publishing when ready.
   PRIMARY_PUBLISHER:  'Kharis Publishing',
 
@@ -50,7 +53,8 @@ function fetchPublisherBooks(publisher, maxPrice, limit) {
       + '&filter=ebooks'
       + '&printType=books'
       + '&langRestrict=en'
-      + '&maxResults=40';
+      + '&maxResults=40'
+      + (CONFIG.GOOGLE_BOOKS_API_KEY ? '&key=' + CONFIG.GOOGLE_BOOKS_API_KEY : '');
 
     var res = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
     if (res.getResponseCode() !== 200) {
