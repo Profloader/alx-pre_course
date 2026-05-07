@@ -288,13 +288,45 @@
     return books;
   }
 
-  // ── Fetch one Amazon RSS feed via allorigins CORS proxy ──────────────────
+  // ── Fetch one Amazon RSS feed, trying two CORS proxies in sequence ────────
   function fetchAmazonFeed(feedUrl) {
-    var proxy = 'https://api.allorigins.win/get?url=' + encodeURIComponent(feedUrl);
-    return fetch(proxy)
-      .then(function (r) { return r.ok ? r.json() : { contents: '' }; })
-      .then(function (data) { return parseAmazonRSS(data.contents || ''); })
-      .catch(function () { return []; });
+    return fetchViaProxy(feedUrl, 'allorigins')
+      .then(function (books) {
+        if (books.length > 0) return books;
+        console.log('[BookClub] allorigins returned 0 books, trying corsproxy...');
+        return fetchViaProxy(feedUrl, 'corsproxy');
+      });
+  }
+
+  function fetchViaProxy(feedUrl, proxy) {
+    var proxyUrl = proxy === 'allorigins'
+      ? 'https://api.allorigins.win/get?url=' + encodeURIComponent(feedUrl)
+      : 'https://corsproxy.io/?' + encodeURIComponent(feedUrl);
+
+    return fetch(proxyUrl)
+      .then(function (r) {
+        console.log('[BookClub] ' + proxy + ' status:', r.status, 'for', feedUrl);
+        if (!r.ok) return '';
+        return proxy === 'allorigins'
+          ? r.json().then(function (d) {
+              console.log('[BookClub] allorigins http_code:', d.status && d.status.http_code);
+              console.log('[BookClub] content preview:', (d.contents || '').substring(0, 300));
+              return d.contents || '';
+            })
+          : r.text().then(function (t) {
+              console.log('[BookClub] corsproxy content preview:', t.substring(0, 300));
+              return t;
+            });
+      })
+      .then(function (xml) {
+        var books = parseAmazonRSS(xml);
+        console.log('[BookClub] ' + proxy + ' parsed ' + books.length + ' books from ' + feedUrl);
+        return books;
+      })
+      .catch(function (e) {
+        console.error('[BookClub] ' + proxy + ' error:', e);
+        return [];
+      });
   }
 
   // ── Load all books: Axitos first, Amazon fills the rest ──────────────────
