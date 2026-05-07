@@ -4,7 +4,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 var CONFIG = {
-  SHEET_ID:      'YOUR_GOOGLE_SHEET_ID_HERE',
+  SHEET_ID:      '1uvBJcTGdhKSR1p4JT5wULZcZjtpjulE9TdgpsftO8ic',
   BOOKS_SHEET:   'Books',
   MEMBERS_SHEET: 'Members',
   BOOK_CLUB_URL: 'https://www.axitos.ai/book-club'
