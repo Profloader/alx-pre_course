@@ -204,7 +204,7 @@
       var isFree      = book.price_num === 0 || book.price === 'Free';
       var badgeClass  = isFree ? 'free' : 'paid';
       var badgeLabel  = isFree ? 'Free' : esc(book.price);
-      var btnLabel    = isFree ? 'Get Free eBook →' : 'Get on Amazon →';
+      var btnLabel    = isFree ? 'Get Free eBook →' : 'Find on Amazon →';
 
       var a = document.createElement('a');
       a.href      = esc(book.download_link);
