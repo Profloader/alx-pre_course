@@ -7,7 +7,8 @@ var CONFIG = {
   SHEET_ID:      '1uvBJcTGdhKSR1p4JT5wULZcZjtpjulE9TdgpsftO8ic',
   BOOKS_SHEET:   'Books',
   MEMBERS_SHEET: 'Members',
-  BOOK_CLUB_URL: 'https://www.axitos.ai/book-club'
+  BOOK_CLUB_URL: 'https://www.axitos.ai/book-club',
+  MAX_PRICE:     10   // show ebooks priced at or below this amount
 };
 
 // ─── WEB APP ENDPOINT ─────────────────────────────────────────────────────────
@@ -20,14 +21,14 @@ function doGet(e) {
 }
 
 // ─── BOOK LIST BUILDER ────────────────────────────────────────────────────────
-// Only serves Axitos's own $0 books. Amazon free books are fetched
-// directly in the browser widget (Apps Script IPs are blocked by Amazon).
 function buildBookList() {
-  return getAxitosBooks();
+  return getBooks();
 }
 
-// ─── AXITOS BOOKS (from Google Sheet) ────────────────────────────────────────
-function getAxitosBooks() {
+// ─── BOOKS (from Google Sheet) ───────────────────────────────────────────────
+// Sheet columns: ASIN | Title | Author | Price | Amazon Link* | Cover URL*
+// * Amazon Link and Cover URL are auto-filled by Sheet formula — see README tab
+function getBooks() {
   try {
     var ss    = SpreadsheetApp.openById(CONFIG.SHEET_ID);
     var sheet = ss.getSheetByName(CONFIG.BOOKS_SHEET);
@@ -37,31 +38,40 @@ function getAxitosBooks() {
     if (data.length < 2) return [];
 
     var h         = data[0].map(function(v){ return v.toString().trim(); });
+    var asinIdx   = h.indexOf('ASIN');
     var titleIdx  = h.indexOf('Title');
     var authorIdx = h.indexOf('Author');
-    var coverIdx  = h.indexOf('Cover URL');
-    var linkIdx   = h.indexOf('Amazon Link');
     var priceIdx  = h.indexOf('Price');
+    var linkIdx   = h.indexOf('Amazon Link');
+    var coverIdx  = h.indexOf('Cover URL');
 
     var books = [];
     for (var i = 1; i < data.length; i++) {
       var row   = data[i];
+      var asin  = (row[asinIdx] || '').toString().trim();
       var price = parseFloat(row[priceIdx]);
-      if (isNaN(price) || price !== 0) continue;
+
+      if (!asin || isNaN(price) || price > CONFIG.MAX_PRICE) continue;
+
+      // Fall back to formula-generated URLs if columns are blank
+      var coverUrl = (row[coverIdx] || '').toString().trim()
+        || 'https://images-na.ssl-images-amazon.com/images/P/' + asin + '.01.L.jpg';
+      var amazonLink = (row[linkIdx] || '').toString().trim()
+        || 'https://www.amazon.com/dp/' + asin;
 
       books.push({
-        id:            'axitos-' + i,
-        title:         row[titleIdx]  || '',
-        author:        row[authorIdx] || '',
-        cover_url:     row[coverIdx]  || '',
-        download_link: row[linkIdx]   || '',
-        price:         '$0.00',
-        source:        'axitos'
+        id:            'book-' + i,
+        title:         (row[titleIdx]  || '').toString().trim(),
+        author:        (row[authorIdx] || '').toString().trim(),
+        cover_url:     coverUrl,
+        download_link: amazonLink,
+        price:         price === 0 ? 'Free' : '$' + price.toFixed(2),
+        price_num:     price
       });
     }
     return books;
   } catch (e) {
-    console.error('getAxitosBooks:', e);
+    console.error('getBooks:', e);
     return [];
   }
 }

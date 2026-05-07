@@ -1,33 +1,30 @@
 <!--
-  AXITOS FREE BOOK CLUB — Duda Page Widget
-  ─────────────────────────────────────────
-  In Duda editor:
-    1. Add an HTML widget to your Free Book Club page
-    2. Paste this entire file into it
-    3. Replace https://script.google.com/macros/s/AKfycbyXpLkm5YWduvctKzsGDGX_BXZWUj4RFuq6TJ50vPIf2gPKq5GdHGIb8EwKRQfTZMck/exec with your deployed Apps Script URL
+  AXITOS BOOK CLUB — Duda Page Widget
+  ─────────────────────────────────────
+  Paste this entire file into a Duda HTML widget on your Book Club page.
 -->
 
 <div id="axbc-root" style="max-width:1100px;margin:0 auto;padding:0 16px 48px">
 
-  <!-- Personalized welcome banner (visible only when Firebase user is logged in) -->
+  <!-- Personalized welcome (Firebase logged-in users only) -->
   <div id="axbc-welcome" style="display:none;background:linear-gradient(135deg,#5c3d99 0%,#7b5bb6 100%);color:#fff;border-radius:14px;padding:22px 28px;margin-bottom:36px;align-items:center;gap:16px;box-shadow:0 4px 20px rgba(92,61,153,0.25)">
     <span style="font-size:38px;flex-shrink:0">👋</span>
     <div>
       <div id="axbc-welcome-msg" style="font-size:19px;font-weight:700"></div>
-      <div style="font-size:14px;opacity:0.82;margin-top:3px">Your free books are ready — enjoy every page!</div>
+      <div style="font-size:14px;opacity:0.82;margin-top:3px">Your curated eBooks are ready — enjoy every page!</div>
     </div>
   </div>
 
   <!-- Page header -->
   <div style="text-align:center;margin-bottom:40px">
     <div style="font-size:44px;margin-bottom:10px">📚</div>
-    <h2 style="font-size:28px;font-weight:800;color:#1a1a1a;margin:0 0 8px">Free Book Club</h2>
+    <h2 style="font-size:28px;font-weight:800;color:#1a1a1a;margin:0 0 8px">Book Club eBooks</h2>
     <p style="color:#777;font-size:15px;margin:0;max-width:480px;margin-left:auto;margin-right:auto">
-      Every eBook below is <strong style="color:#5c3d99">$0.00</strong> — no catch, no credit card. Just free reading.
+      Hand-picked Kindle eBooks — all under <strong style="color:#5c3d99">$10</strong>. Click any book to get it on Amazon.
     </p>
   </div>
 
-  <!-- Loading skeleton -->
+  <!-- Skeleton loading placeholders -->
   <div id="axbc-loading">
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:24px">
       <div class="axbc-skeleton"></div>
@@ -39,23 +36,21 @@
     </div>
   </div>
 
-  <!-- Book grid (populated by JS) -->
+  <!-- Book grid -->
   <div id="axbc-grid" style="display:none"></div>
 
-  <!-- Empty / error state -->
+  <!-- Empty state -->
   <div id="axbc-empty" style="display:none;text-align:center;padding:56px 24px;color:#aaa">
-    <div style="font-size:40px;margin-bottom:14px">😔</div>
-    <div style="font-size:16px;font-weight:600;color:#666;margin-bottom:8px">No books available right now</div>
-    <div style="font-size:14px">Check back soon — new free eBooks are added regularly.</div>
+    <div style="font-size:40px;margin-bottom:14px">📖</div>
+    <div style="font-size:16px;font-weight:600;color:#666;margin-bottom:8px">New picks coming soon</div>
+    <div style="font-size:14px">Check back shortly — our editors are selecting the next batch.</div>
   </div>
 
 </div>
 
-<!-- ─── STYLES ──────────────────────────────────────────────────────────────── -->
 <style>
   #axbc-root * { box-sizing: border-box; }
 
-  /* Skeleton loader */
   .axbc-skeleton {
     border-radius: 10px;
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
@@ -69,7 +64,6 @@
     100% { background-position: -200% 0; }
   }
 
-  /* Book card */
   .axbc-card {
     background: #fff;
     border-radius: 12px;
@@ -98,19 +92,21 @@
     transition: transform 0.3s ease;
   }
   .axbc-card:hover .axbc-cover { transform: scale(1.04); }
-  .axbc-free-badge {
+
+  .axbc-price-badge {
     position: absolute;
     top: 8px;
     right: 8px;
-    background: #22c55e;
-    color: #fff;
     font-size: 10px;
     font-weight: 800;
     padding: 3px 7px;
     border-radius: 20px;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.4px;
     text-transform: uppercase;
   }
+  .axbc-price-badge.free  { background: #22c55e; color: #fff; }
+  .axbc-price-badge.paid  { background: #5c3d99; color: #fff; }
+
   .axbc-info {
     padding: 13px 14px 14px;
     display: flex;
@@ -131,7 +127,7 @@
   .axbc-author {
     font-size: 12px;
     color: #999;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     flex: 1;
     white-space: nowrap;
     overflow: hidden;
@@ -151,14 +147,12 @@
   }
   .axbc-btn:hover { background: #4a2f80; color: #fff; }
 
-  /* Grid */
   #axbc-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 24px;
   }
 
-  /* Mobile */
   @media (max-width: 500px) {
     #axbc-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
     .axbc-info  { padding: 10px 10px 12px; }
@@ -166,24 +160,11 @@
   }
 </style>
 
-<!-- ─── SCRIPT ─────────────────────────────────────────────────────────────── -->
 <script>
 (function () {
-  // Your deployed Apps Script Web App URL (serves Axitos's own $0 books)
-  var AXITOS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyXpLkm5YWduvctKzsGDGX_BXZWUj4RFuq6TJ50vPIf2gPKq5GdHGIb8EwKRQfTZMck/exec';
+  var ENDPOINT = 'https://script.google.com/macros/s/AKfycbyXpLkm5YWduvctKzsGDGX_BXZWUj4RFuq6TJ50vPIf2gPKq5GdHGIb8EwKRQfTZMck/exec';
 
-  // Amazon Top 100 Free Kindle RSS feeds, fetched browser-side via a CORS
-  // proxy (allorigins.win) — free, no account needed.
-  // Amazon blocks server-side requests but allows browser + proxy fetches.
-  var AMAZON_FEEDS = [
-    'https://www.amazon.com/gp/rss/bestsellers/digital-text/2245476011/', // All Free Kindle
-    'https://www.amazon.com/gp/rss/bestsellers/digital-text/158591011/',  // Fiction
-    'https://www.amazon.com/gp/rss/bestsellers/digital-text/2577013011/'  // Business
-  ];
-  var MAX_BOOKS   = 12;
-  var seenAsins   = {};
-
-  // ── Firebase personalized welcome ────────────────────────────────────────
+  // ── Firebase welcome ─────────────────────────────────────────────────────
   function initWelcome() {
     try {
       for (var i = 0; i < localStorage.length; i++) {
@@ -203,170 +184,64 @@
     } catch (e) {}
   }
 
-  // ── HTML escaping ────────────────────────────────────────────────────────
   function esc(str) {
     return String(str || '')
       .replace(/&/g, '&amp;').replace(/</g, '&lt;')
       .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
-  // ── Render one book card into the grid ───────────────────────────────────
-  function addCard(book) {
+  // ── Render books ─────────────────────────────────────────────────────────
+  function renderBooks(books) {
+    document.getElementById('axbc-loading').style.display = 'none';
+
+    if (!books || books.length === 0) {
+      document.getElementById('axbc-empty').style.display = 'block';
+      return;
+    }
+
     var grid = document.getElementById('axbc-grid');
-    var a    = document.createElement('a');
-    a.href   = esc(book.download_link);
-    a.target = '_blank';
-    a.rel    = 'noopener noreferrer';
-    a.className = 'axbc-card';
-    a.setAttribute('aria-label', esc(book.title) + ' — free ebook');
-    a.innerHTML = (
-      '<div class="axbc-cover-wrap">' +
-        '<img class="axbc-cover" src="' + esc(book.cover_url) + '" ' +
-             'alt="' + esc(book.title) + '" loading="lazy" ' +
-             'onerror="this.parentNode.parentNode.style.display=\'none\'">' +
-        '<span class="axbc-free-badge">Free</span>' +
-      '</div>' +
-      '<div class="axbc-info">' +
-        '<div class="axbc-title">' + esc(book.title) + '</div>' +
-        '<div class="axbc-author">' + esc(book.author) + '</div>' +
-        '<span class="axbc-btn">Get Free eBook →</span>' +
-      '</div>'
-    );
-    grid.appendChild(a);
-  }
+    books.forEach(function (book) {
+      var isFree      = book.price_num === 0 || book.price === 'Free';
+      var badgeClass  = isFree ? 'free' : 'paid';
+      var badgeLabel  = isFree ? 'Free' : esc(book.price);
+      var btnLabel    = isFree ? 'Get Free eBook →' : 'Get on Amazon →';
 
-  function showGrid() {
-    document.getElementById('axbc-loading').style.display = 'none';
-    document.getElementById('axbc-grid').style.display    = 'grid';
-  }
-
-  function showEmpty() {
-    document.getElementById('axbc-loading').style.display = 'none';
-    document.getElementById('axbc-empty').style.display   = 'block';
-  }
-
-  // ── Parse Amazon RSS XML, return array of book objects ───────────────────
-  function parseAmazonRSS(xmlStr) {
-    var books  = [];
-    var parser = new DOMParser();
-    var doc    = parser.parseFromString(xmlStr, 'text/xml');
-    var items  = doc.querySelectorAll('item');
-
-    items.forEach(function (item) {
-      var titleEl = item.querySelector('title');
-      var linkEl  = item.querySelector('link') || item.querySelector('guid');
-      if (!titleEl || !linkEl) return;
-
-      var rawLink = linkEl.textContent || linkEl.getAttribute('href') || '';
-      var asinM   = rawLink.match(/\/dp\/([A-Z0-9]{10})/i);
-      if (!asinM) return;
-      var asin = asinM[1].toUpperCase();
-      if (seenAsins[asin]) return;
-      seenAsins[asin] = true;
-
-      var title = (titleEl.textContent || '')
-        .replace(/\s*\(Kindle Edition\)/gi, '')
-        .replace(/\s*\[Kindle Edition\]/gi, '')
-        .replace(/&amp;/g, '&').trim();
-      if (!title) return;
-
-      var desc    = item.querySelector('description');
-      var descTxt = desc ? desc.textContent : '';
-      var authM   = descTxt.match(/by\s+([A-Z][^<\n,]{2,40})/i);
-      var author  = authM ? authM[1].trim() : '';
-
-      books.push({
-        title:         title,
-        author:        author,
-        cover_url:     'https://images-na.ssl-images-amazon.com/images/P/' + asin + '.01.L.jpg',
-        download_link: 'https://www.amazon.com/dp/' + asin,
-        price:         '$0.00',
-        source:        'amazon'
-      });
+      var a = document.createElement('a');
+      a.href      = esc(book.download_link);
+      a.target    = '_blank';
+      a.rel       = 'noopener noreferrer';
+      a.className = 'axbc-card';
+      a.setAttribute('aria-label', esc(book.title) + ' — ' + esc(book.price));
+      a.innerHTML = (
+        '<div class="axbc-cover-wrap">' +
+          '<img class="axbc-cover" src="' + esc(book.cover_url) + '" ' +
+               'alt="' + esc(book.title) + '" loading="lazy" ' +
+               'onerror="this.closest(\'.axbc-card\').style.display=\'none\'">' +
+          '<span class="axbc-price-badge ' + badgeClass + '">' + badgeLabel + '</span>' +
+        '</div>' +
+        '<div class="axbc-info">' +
+          '<div class="axbc-title">' + esc(book.title) + '</div>' +
+          '<div class="axbc-author">' + esc(book.author) + '</div>' +
+          '<span class="axbc-btn">' + btnLabel + '</span>' +
+        '</div>'
+      );
+      grid.appendChild(a);
     });
 
-    return books;
+    grid.style.display = 'grid';
   }
 
-  // ── Fetch one Amazon RSS feed, trying two CORS proxies in sequence ────────
-  function fetchAmazonFeed(feedUrl) {
-    return fetchViaProxy(feedUrl, 'allorigins')
-      .then(function (books) {
-        if (books.length > 0) return books;
-        console.log('[BookClub] allorigins returned 0 books, trying corsproxy...');
-        return fetchViaProxy(feedUrl, 'corsproxy');
-      });
-  }
-
-  function fetchViaProxy(feedUrl, proxy) {
-    var proxyUrl = proxy === 'allorigins'
-      ? 'https://api.allorigins.win/get?url=' + encodeURIComponent(feedUrl)
-      : 'https://corsproxy.io/?' + encodeURIComponent(feedUrl);
-
-    return fetch(proxyUrl)
-      .then(function (r) {
-        console.log('[BookClub] ' + proxy + ' status:', r.status, 'for', feedUrl);
-        if (!r.ok) return '';
-        return proxy === 'allorigins'
-          ? r.json().then(function (d) {
-              console.log('[BookClub] allorigins http_code:', d.status && d.status.http_code);
-              console.log('[BookClub] content preview:', (d.contents || '').substring(0, 300));
-              return d.contents || '';
-            })
-          : r.text().then(function (t) {
-              console.log('[BookClub] corsproxy content preview:', t.substring(0, 300));
-              return t;
-            });
-      })
-      .then(function (xml) {
-        var books = parseAmazonRSS(xml);
-        console.log('[BookClub] ' + proxy + ' parsed ' + books.length + ' books from ' + feedUrl);
-        return books;
-      })
-      .catch(function (e) {
-        console.error('[BookClub] ' + proxy + ' error:', e);
-        return [];
-      });
-  }
-
-  // ── Load all books: Axitos first, Amazon fills the rest ──────────────────
+  // ── Fetch from Apps Script ────────────────────────────────────────────────
   function loadBooks() {
-    var axitosBooks = [];
-
-    // Step 1: fetch Axitos's own $0 books from Apps Script
-    fetch(AXITOS_ENDPOINT)
+    fetch(ENDPOINT)
       .then(function (r) { return r.ok ? r.json() : []; })
-      .catch(function () { return []; })
-      .then(function (books) {
-        axitosBooks = Array.isArray(books) ? books : [];
-        axitosBooks.forEach(function (b) {
-          if (b.id) seenAsins[b.id] = true; // prevent Amazon duplicates
-          addCard(b);
-        });
-
-        var needed = MAX_BOOKS - axitosBooks.length;
-        if (needed <= 0) { showGrid(); return; }
-
-        // Step 2: fetch Amazon free books to fill remaining slots
-        // Chain feeds sequentially to respect the `needed` limit
-        return AMAZON_FEEDS.reduce(function (chain, feedUrl) {
-          return chain.then(function (remaining) {
-            if (remaining <= 0) return 0;
-            return fetchAmazonFeed(feedUrl).then(function (feedBooks) {
-              feedBooks.slice(0, remaining).forEach(addCard);
-              return remaining - feedBooks.length;
-            });
-          });
-        }, Promise.resolve(needed));
-      })
-      .then(function () {
-        var grid = document.getElementById('axbc-grid');
-        if (grid.children.length === 0) { showEmpty(); } else { showGrid(); }
-      })
-      .catch(showEmpty);
+      .then(renderBooks)
+      .catch(function () {
+        document.getElementById('axbc-loading').style.display = 'none';
+        document.getElementById('axbc-empty').style.display   = 'block';
+      });
   }
 
-  // ── Init ─────────────────────────────────────────────────────────────────
   function init() {
     initWelcome();
     loadBooks();
