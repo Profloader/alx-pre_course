@@ -27,7 +27,7 @@ function doGet(e) {
   var cache  = CacheService.getScriptCache();
   var cached = cache.get('bookList');
 
-  if (cached) {
+  if (cached && cached !== '[]') {
     var out = ContentService.createTextOutput(cached);
     out.setMimeType(ContentService.MimeType.JSON);
     return out;
@@ -35,11 +35,21 @@ function doGet(e) {
 
   var books = buildBookList();
   var json  = JSON.stringify(books);
-  cache.put('bookList', json, 21600); // cache 6 hours
+
+  // Only cache a non-empty result so a bad cold-start never blocks for 6 hours
+  if (books.length > 0) {
+    cache.put('bookList', json, 21600); // 6 hours
+  }
 
   var out = ContentService.createTextOutput(json);
   out.setMimeType(ContentService.MimeType.JSON);
   return out;
+}
+
+// Run this once in the Apps Script editor any time you want to force a fresh fetch
+function clearCache() {
+  CacheService.getScriptCache().remove('bookList');
+  console.log('Cache cleared — next doGet will re-scrape Amazon.');
 }
 
 // ─── BOOK LIST BUILDER ────────────────────────────────────────────────────────
