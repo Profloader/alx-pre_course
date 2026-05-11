@@ -17,10 +17,13 @@
   var SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSlMvi9MKODUmniC_9UjQliUOmjcqGIwUXjNcX0xUL1sA-gOHZW3TNvYxQTzQ_H4WLJHeWSZvU8Nm4P/pub?gid=0&single=true&output=csv";
   var SIGNUP_PAGE_URL = "https://www.axitos.ai/first-edition-book-club";
 
-  // Pages where the popup is allowed to appear (pathname matching)
+  // Pages where the popup is allowed to appear (pathname matching).
+  // Add "/home" here if Duda uses that as the home page slug.
   var ALLOWED_PATHS = [
-    "/",                          // home page
-    "/first-edition-book-club",   // Book Club landing page
+    "/",
+    "",
+    "/home",
+    "/first-edition-book-club",
   ];
 
   // Column indices in your sheet (0-based). Adjust to match your columns.
@@ -41,9 +44,11 @@
   // ─────────────────────────────────────────────────────────────────────────
 
   function isAllowedPage() {
-    var path = window.location.pathname.replace(/\/$/, "") || "/";
+    var path = window.location.pathname.replace(/\/$/, "").toLowerCase();
+    // Treat bare root as home
+    if (path === "") return true;
     for (var i = 0; i < ALLOWED_PATHS.length; i++) {
-      var allowed = ALLOWED_PATHS[i].replace(/\/$/, "") || "/";
+      var allowed = ALLOWED_PATHS[i].replace(/\/$/, "").toLowerCase();
       if (path === allowed) return true;
     }
     return false;
