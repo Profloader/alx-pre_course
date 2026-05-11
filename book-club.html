@@ -1,6 +1,5 @@
 <style>
   .bc-wrap * { box-sizing: border-box; }
-
   .bc-wrap {
     font-family: 'Georgia', serif;
     color: #1a1a2e;
@@ -25,7 +24,6 @@
       radial-gradient(ellipse 50% 60% at 80% 10%, rgba(232,93,4,.13) 0%, transparent 70%);
     pointer-events: none;
   }
-
   .bc-badge {
     display: inline-block;
     background: rgba(251,138,85,.15);
@@ -40,7 +38,6 @@
     border-radius: 100px;
     margin-bottom: 28px;
   }
-
   .bc-hero h1 {
     font-size: clamp(2rem, 5vw, 3.6rem);
     font-weight: normal;
@@ -51,7 +48,6 @@
     color: #ffffff !important;
   }
   .bc-hero h1 em { font-style: italic; color: #fb8a55; }
-
   .bc-hero p {
     font-family: Arial, sans-serif;
     font-size: clamp(.95rem, 2vw, 1.1rem);
@@ -60,7 +56,6 @@
     margin: 0 auto 40px;
     line-height: 1.75;
   }
-
   .bc-cta {
     background: #fb8a55;
     color: #fff;
@@ -74,9 +69,10 @@
     letter-spacing: .3px;
     box-shadow: 0 4px 22px rgba(251,138,85,.35);
     transition: background .2s, transform .15s;
+    text-decoration: none;
+    display: inline-block;
   }
   .bc-cta:hover { background: #e85d04; transform: translateY(-2px); }
-
   .bc-hero-note {
     display: block;
     margin-top: 16px;
@@ -84,6 +80,15 @@
     font-size: 12px;
     color: rgba(255,255,255,.35);
   }
+
+  /* ── MEMBER GREETING (hero) ── */
+  .bc-member-hello {
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    color: rgba(255,255,255,.6);
+    margin-bottom: 14px;
+  }
+  .bc-member-hello strong { color: #fb8a55; }
 
   /* ── WAVE ── */
   .bc-wave { display: block; width: 100%; margin-bottom: -2px; }
@@ -203,6 +208,8 @@
     border-radius: 8px;
     cursor: pointer;
     transition: background .2s, transform .15s;
+    text-decoration: none;
+    display: inline-block;
   }
   .bc-cta-dark:hover { background: #2d2d4e; transform: translateY(-2px); }
   .bc-signin-link {
@@ -216,6 +223,25 @@
     background: none; border: none; color: #e85d04;
     cursor: pointer; font-size: 12px; text-decoration: underline; padding: 0;
   }
+
+  /* ── MEMBER PANEL (bottom) ── */
+  .bc-member-panel {
+    background: #fff8f3;
+    border: 1px solid #f0e8e0;
+    border-radius: 12px;
+    padding: 28px 32px;
+    display: inline-block;
+    max-width: 420px;
+    width: 100%;
+  }
+  .bc-member-panel p {
+    font-family: Arial, sans-serif;
+    font-size: 15px;
+    color: #5c5c7a;
+    margin: 0 0 20px;
+    line-height: 1.6;
+  }
+  .bc-member-panel p strong { color: #1a1a2e; }
 
   /* ── MODAL ── */
   .bc-modal-overlay {
@@ -315,8 +341,18 @@
     <div class="bc-badge">Axitos Publishing &nbsp;·&nbsp; Members Only</div>
     <h1>Your next great read<br>is already <em>waiting for you.</em></h1>
     <p>The First Edition Book Club delivers free books straight to your hands — fresh titles across every genre, hand-picked the moment they drop. No subscriptions. No catch. Just good books.</p>
-    <button class="bc-cta" onclick="bcOpenModal()">Join the Book Club — It's Free</button>
-    <span class="bc-hero-note">Instant access &nbsp;·&nbsp; No credit card required</span>
+
+    <!-- Guest: show join button -->
+    <div id="bc-hero-guest">
+      <button class="bc-cta" onclick="bcOpenModal()">Join the Book Club — It's Free</button>
+      <span class="bc-hero-note">Instant access &nbsp;·&nbsp; No credit card required</span>
+    </div>
+
+    <!-- Member: show greeting + go button (hidden until auth confirmed) -->
+    <div id="bc-hero-member" style="display:none">
+      <p class="bc-member-hello">Welcome back, <strong id="bc-hero-name"></strong>!</p>
+      <a href="https://www.axitos.ai/book-club" class="bc-cta">Go to Your Book Club →</a>
+    </div>
   </div>
 
   <svg class="bc-wave" viewBox="0 0 1440 54" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
@@ -363,10 +399,22 @@
 
   <!-- BOTTOM CTA -->
   <div class="bc-bottom">
-    <h2>Ready to start your<br>first edition?</h2>
-    <p>Create your free Axitos account and become a First Edition member today. Your next favourite book is one click away.</p>
-    <button class="bc-cta-dark" onclick="bcOpenModal()">Create My Free Account</button>
-    <span class="bc-signin-link">Already a member? <button onclick="bcOpenModal()">Sign in here</button></span>
+
+    <!-- Guest state -->
+    <div id="bc-bottom-guest">
+      <h2>Ready to start your<br>first edition?</h2>
+      <p>Create your free Axitos account and become a First Edition member today. Your next favourite book is one click away.</p>
+      <button class="bc-cta-dark" onclick="bcOpenModal()">Create My Free Account</button>
+      <span class="bc-signin-link">Already a member? <button onclick="bcOpenModal()">Sign in here</button></span>
+    </div>
+
+    <!-- Member state -->
+    <div id="bc-bottom-member" style="display:none">
+      <h2>You're in.<br>Your shelf awaits.</h2>
+      <p>Head over to your Book Club page to browse and claim the latest free titles.</p>
+      <a href="https://www.axitos.ai/book-club" class="bc-cta-dark">Go to Your Book Club →</a>
+    </div>
+
   </div>
 
 </div><!-- /bc-wrap -->
@@ -433,10 +481,40 @@
 </div>
 
 <script>
+  var BC_BOOK_CLUB_URL = 'https://www.axitos.ai/book-club';
+
+  /* ── Auth state: swap UI for logged-in members ── */
+  firebase.auth().onAuthStateChanged(function(user) {
+    var heroGuest    = document.getElementById('bc-hero-guest');
+    var heroMember   = document.getElementById('bc-hero-member');
+    var bottomGuest  = document.getElementById('bc-bottom-guest');
+    var bottomMember = document.getElementById('bc-bottom-member');
+
+    if (user) {
+      var firstName = (user.displayName || user.email).split(' ')[0];
+      document.getElementById('bc-hero-name').textContent = firstName;
+      heroGuest.style.display    = 'none';
+      heroMember.style.display   = '';
+      bottomGuest.style.display  = 'none';
+      bottomMember.style.display = '';
+    } else {
+      heroGuest.style.display    = '';
+      heroMember.style.display   = 'none';
+      bottomGuest.style.display  = '';
+      bottomMember.style.display = 'none';
+    }
+  });
+
+  /* ── Modal ── */
   function bcOpenModal()  { document.getElementById('bcAuthModal').classList.add('open'); }
   function bcCloseModal() { document.getElementById('bcAuthModal').classList.remove('open'); }
   function bcOverlayClick(e) { if (e.target === e.currentTarget) bcCloseModal(); }
   document.addEventListener('keydown', function(e) { if (e.key === 'Escape') bcCloseModal(); });
+
+  /* ── After auth: redirect to book club ── */
+  function bcRedirect() {
+    window.location.href = BC_BOOK_CLUB_URL;
+  }
 
   function bcSaveContact(user, isNewUser) {
     if (!isNewUser) return;
@@ -463,7 +541,10 @@
   function bcAuthGoogle() {
     var provider = new firebase.auth.GoogleAuthProvider();
     firebase.auth().signInWithPopup(provider)
-      .then(function(r) { bcSaveContact(r.user, r.additionalUserInfo.isNewUser); bcCloseModal(); })
+      .then(function(r) {
+        bcSaveContact(r.user, r.additionalUserInfo.isNewUser);
+        bcRedirect();
+      })
       .catch(function(err) { document.getElementById('bc-si-error').textContent = err.message; });
   }
 
@@ -476,7 +557,7 @@
     if (!email || !pw) { err.textContent = 'Please fill in all fields.'; return; }
     btn.disabled = true; btn.textContent = 'Signing in...';
     firebase.auth().signInWithEmailAndPassword(email, pw)
-      .then(function() { bcCloseModal(); })
+      .then(function() { bcRedirect(); })
       .catch(function(e) {
         err.textContent = (e.code === 'auth/wrong-password' || e.code === 'auth/user-not-found')
           ? 'Invalid email or password.' : e.message;
@@ -499,7 +580,7 @@
       .then(function(cred) {
         return cred.user.updateProfile({ displayName: name }).then(function() {
           bcSaveContact(cred.user, true);
-          bcCloseModal();
+          bcRedirect();
         });
       })
       .catch(function(e) {
