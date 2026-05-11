@@ -8,17 +8,17 @@ var CONFIG = {
   MEMBERS_SHEET:      'Members',
   BOOK_CLUB_URL:      'https://www.axitos.ai/book-club',
 
-  // ── Get a FREE key: console.cloud.google.com → Enable "Books API" → Credentials → Create API Key ──
-  GOOGLE_BOOKS_API_KEY: '',   // ← paste your key here, e.g. 'AIzaSy...'
+  // Fallback only — get free key at console.cloud.google.com → Enable "Books API" → Credentials → API key
+  GOOGLE_BOOKS_API_KEY: '',
 
   // Primary publisher — shows first. Switch to Axitos Publishing when ready.
   PRIMARY_PUBLISHER:  'Kharis Publishing',
 
-  // Axitos books (empty publisher = skip that search for now)
+  // Axitos books (empty publisher = skip for now)
   AXITOS_PUBLISHER:   'Axitos Publishing',
 
-  MAX_PRICE:          10,    // show ebooks at or below this price (USD)
-  MAX_BOOKS:          12     // total cards on the page
+  MAX_PRICE:          10,   // show ebooks at or below this price (USD)
+  MAX_BOOKS:          12    // total cards on the page
 };
 
 // ─── WEB APP ENDPOINT ─────────────────────────────────────────────────────────
@@ -30,20 +30,137 @@ function doGet(e) {
 }
 
 // ─── BOOK LIST BUILDER ────────────────────────────────────────────────────────
-// Priority: Axitos books first → Kharis fills remaining slots
 function buildBookList() {
-  var axitosBooks = fetchPublisherBooks(CONFIG.AXITOS_PUBLISHER, CONFIG.MAX_PRICE);
+  var axitosBooks = fetchAmazonBooks(CONFIG.AXITOS_PUBLISHER, CONFIG.MAX_PRICE);
   var needed      = CONFIG.MAX_BOOKS - axitosBooks.length;
   var primary     = needed > 0
-    ? fetchPublisherBooks(CONFIG.PRIMARY_PUBLISHER, CONFIG.MAX_PRICE, needed)
+    ? fetchAmazonBooks(CONFIG.PRIMARY_PUBLISHER, CONFIG.MAX_PRICE, needed)
     : [];
   return axitosBooks.concat(primary);
 }
 
-// ─── GOOGLE BOOKS API FETCH ───────────────────────────────────────────────────
-// Google Books API is free, no key required for up to 1000 req/day.
-// Apps Script runs on Google infrastructure so this call is never blocked.
-function fetchPublisherBooks(publisher, maxPrice, limit) {
+// ─── PRIMARY: AMAZON KINDLE SEARCH SCRAPING ───────────────────────────────────
+function fetchAmazonBooks(publisher, maxPrice, limit) {
+  if (!publisher) return [];
+  limit = limit || CONFIG.MAX_BOOKS;
+
+  var maxCents = Math.round(maxPrice * 100);
+  var url = 'https://www.amazon.com/s'
+    + '?k='  + encodeURIComponent('"' + publisher + '"')
+    + '&i=digital-text'                                    // Kindle store
+    + '&s=date-desc-rank'                                  // newest first
+    + '&rh=' + encodeURIComponent('p_36:0-' + maxCents);  // price 0 – maxPrice
+
+  try {
+    var res = UrlFetchApp.fetch(url, {
+      headers: {
+        'User-Agent':      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+        'Accept':          'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Sec-Fetch-Dest':  'document',
+        'Sec-Fetch-Mode':  'navigate',
+        'Sec-Fetch-Site':  'none'
+      },
+      muteHttpExceptions: true
+    });
+
+    var code = res.getResponseCode();
+    if (code !== 200) {
+      console.warn('Amazon ' + code + ' for "' + publisher + '" — trying Google Books');
+      return fetchGoogleBooks(publisher, maxPrice, limit);
+    }
+
+    var html = res.getContentText();
+
+    // Detect CAPTCHA / bot wall
+    if (/captcha|robot check|ap-captcha/i.test(html)) {
+      console.warn('Amazon CAPTCHA for "' + publisher + '" — trying Google Books');
+      return fetchGoogleBooks(publisher, maxPrice, limit);
+    }
+
+    var books = parseAmazonResults(html, maxPrice, limit);
+    console.log('Amazon("' + publisher + '"): ' + books.length + ' books');
+
+    if (books.length === 0) {
+      console.warn('Amazon returned 0 results for "' + publisher + '" — trying Google Books');
+      return fetchGoogleBooks(publisher, maxPrice, limit);
+    }
+
+    return books;
+
+  } catch (e) {
+    console.error('Amazon exception for "' + publisher + '":', e);
+    return fetchGoogleBooks(publisher, maxPrice, limit);
+  }
+}
+
+function parseAmazonResults(html, maxPrice, limit) {
+  var books = [];
+  var seen  = {};
+
+  // Locate each product card by its data-asin attribute
+  var re = /data-asin="([A-Z0-9]{10})"/g;
+  var positions = [];
+  var m;
+  while ((m = re.exec(html)) !== null) {
+    positions.push({ asin: m[1], idx: m.index });
+  }
+
+  for (var i = 0; i < positions.length && books.length < limit; i++) {
+    var asin = positions[i].asin;
+    if (!asin || seen[asin]) continue;
+    seen[asin] = true;
+
+    // Slice ~6 KB around this card (enough for one result, not too much)
+    var start = positions[i].idx;
+    var end   = positions[i + 1] ? positions[i + 1].idx : start + 6000;
+    var block = html.substring(start, Math.min(end, start + 6000));
+
+    // Skip sponsored / ad placements
+    if (/AdHolder|s-sponsored-label|sponsoredUx/i.test(block)) continue;
+
+    // Title ── the main clickable link text
+    var titleM = block.match(/class="[^"]*a-text-normal[^"]*">([^<]{3,150})</);
+    if (!titleM) continue;
+    var title = titleM[1].trim();
+
+    // Cover image ── prefer scraped src, fall back to ASIN CDN URL
+    var imgM = block.match(/class="[^"]*s-image[^"]*"\s[^>]*src="([^"]+)"/);
+    if (!imgM) imgM = block.match(/src="([^"]+)"\s[^>]*class="[^"]*s-image[^"]*"/);
+    var coverUrl = imgM
+      ? imgM[1]
+      : 'https://images-na.ssl-images-amazon.com/images/P/' + asin + '.01.L.jpg';
+
+    // Author ── secondary-color text near the title row
+    var authorM = block.match(/class="[^"]*a-size-base[^"]*a-color-secondary[^"]*">([^<]{2,80})</);
+    var author = authorM ? authorM[1].trim().replace(/^by\s+/i, '') : '';
+
+    // Price ── aria-hidden price span carries the display value
+    var priceNum = 0;
+    var priceStr = 'Free';
+    var priceM   = block.match(/aria-hidden="true"[^>]*>([\$£€][\d,.]+)</);
+    if (priceM) {
+      priceNum = parseFloat(priceM[1].replace(/[^\d.]/g, '')) || 0;
+      if (priceNum > maxPrice) continue;
+      priceStr = priceNum === 0 ? 'Free' : '$' + priceNum.toFixed(2);
+    }
+
+    books.push({
+      id:            asin,
+      title:         title,
+      author:        author,
+      cover_url:     coverUrl,
+      download_link: 'https://www.amazon.com/dp/' + asin,  // direct product page
+      price:         priceStr,
+      price_num:     priceNum
+    });
+  }
+
+  return books;
+}
+
+// ─── FALLBACK: GOOGLE BOOKS API ───────────────────────────────────────────────
+function fetchGoogleBooks(publisher, maxPrice, limit) {
   if (!publisher) return [];
   limit = limit || CONFIG.MAX_BOOKS;
 
@@ -58,7 +175,7 @@ function fetchPublisherBooks(publisher, maxPrice, limit) {
 
     var res = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
     if (res.getResponseCode() !== 200) {
-      console.error('Google Books API error:', res.getResponseCode(), res.getContentText().substring(0, 200));
+      console.error('Google Books API error:', res.getResponseCode());
       return [];
     }
 
@@ -78,32 +195,27 @@ function fetchPublisherBooks(publisher, maxPrice, limit) {
       var price = (isForSale && sale.listPrice) ? sale.listPrice.amount : 0;
       if (price > maxPrice) continue;
 
-      // Require a cover image — skip books without one
       var imgs      = info.imageLinks || {};
       var thumbnail = (imgs.thumbnail || imgs.smallThumbnail || '').replace('http://', 'https://');
       if (!thumbnail) continue;
 
-      // Build Amazon Kindle search link from ISBN (most reliable)
       var isbn = extractISBN(info.industryIdentifiers || []);
-      var amazonLink = 'https://www.amazon.com/s?i=digital-text&k='
-        + encodeURIComponent(isbn || info.title || '');
-
       books.push({
         id:            item.id,
         title:         info.title || '',
         author:        (info.authors || []).join(', '),
         cover_url:     thumbnail,
-        download_link: amazonLink,
+        download_link: 'https://www.amazon.com/s?i=digital-text&k=' + encodeURIComponent(isbn || info.title || ''),
         price:         price === 0 ? 'Free' : '$' + price.toFixed(2),
         price_num:     price
       });
     }
 
-    console.log('fetchPublisherBooks(' + publisher + '): found ' + books.length + ' books');
+    console.log('Google Books("' + publisher + '"): ' + books.length + ' books');
     return books;
 
   } catch (e) {
-    console.error('fetchPublisherBooks(' + publisher + '):', e);
+    console.error('Google Books exception for "' + publisher + '":', e);
     return [];
   }
 }
@@ -118,8 +230,6 @@ function extractISBN(identifiers) {
 }
 
 // ─── EMAIL NOTIFICATION ───────────────────────────────────────────────────────
-// Trigger: Apps Script → Triggers → checkAndNotifyNewBooks → Time-driven → Day
-// First run seeds the cache; subsequent runs email members about new books only.
 function checkAndNotifyNewBooks() {
   var props       = PropertiesService.getScriptProperties();
   var seenIdsJson = props.getProperty('seenBookIds');
@@ -128,7 +238,6 @@ function checkAndNotifyNewBooks() {
   var currentIds   = currentBooks.map(function (b) { return b.id; });
 
   if (!seenIdsJson) {
-    // First run — save state, no email (avoids blasting members with all books)
     props.setProperty('seenBookIds', JSON.stringify(currentIds));
     console.log('First run: seeded ' + currentIds.length + ' book IDs. No email sent.');
     return;
@@ -168,7 +277,7 @@ function sendMemberEmails(newBooks) {
         buildPlainEmail(name, newBooks),
         { htmlBody: buildHTMLEmail(name, newBooks) }
       );
-      Utilities.sleep(300); // stay under Gmail quota
+      Utilities.sleep(300);
     } catch (e) {
       console.error('Email failed for ' + email + ':', e);
     }
@@ -202,7 +311,7 @@ function buildHTMLEmail(name, books) {
       +     '<span style="background:' + (isFree ? '#22c55e' : '#5c3d99') + ';color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;display:inline-block;margin-bottom:10px">'
       +       (isFree ? 'FREE' : b.price)
       +     '</span><br>'
-      +     '<a href="' + b.download_link + '" style="background:#5c3d99;color:#fff;padding:7px 16px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600;display:inline-block;margin-top:6px">Find on Amazon →</a>'
+      +     '<a href="' + b.download_link + '" style="background:#5c3d99;color:#fff;padding:7px 16px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600;display:inline-block;margin-top:6px">View on Amazon →</a>'
       +   '</td>'
       + '</tr>'
       + '</table>'
