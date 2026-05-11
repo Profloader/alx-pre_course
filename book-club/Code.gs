@@ -25,7 +25,7 @@ var CONFIG = {
 // ─── WEB APP ENDPOINT ─────────────────────────────────────────────────────────
 function doGet(e) {
   var cache  = CacheService.getScriptCache();
-  var cached = cache.get('bookList');
+  var cached = cache.get('bookList_v2');
 
   if (cached && cached !== '[]') {
     var out = ContentService.createTextOutput(cached);
@@ -38,7 +38,7 @@ function doGet(e) {
 
   // Only cache a non-empty result so a bad cold-start never blocks for 6 hours
   if (books.length > 0) {
-    cache.put('bookList', json, 21600); // 6 hours
+    cache.put('bookList_v2', json, 21600); // 6 hours
   }
 
   var out = ContentService.createTextOutput(json);
@@ -46,9 +46,9 @@ function doGet(e) {
   return out;
 }
 
-// Run this once in the Apps Script editor any time you want to force a fresh fetch
+// Increment the key suffix (v2, v3...) in doGet above to bust the cache any time
 function clearCache() {
-  CacheService.getScriptCache().remove('bookList');
+  CacheService.getScriptCache().removeAll(['bookList_v2']);
   console.log('Cache cleared — next doGet will re-scrape Amazon.');
 }
 
