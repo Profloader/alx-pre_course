@@ -20,7 +20,7 @@
     <div style="font-size:44px;margin-bottom:10px">📚</div>
     <h2 style="font-size:28px;font-weight:800;color:#1a1a1a;margin:0 0 8px">Book Club eBooks</h2>
     <p style="color:#777;font-size:15px;margin:0;max-width:480px;margin-left:auto;margin-right:auto">
-      Hand-picked Kindle eBooks — all under <strong style="color:#5c3d99">$10</strong>. Click any book to get it on Amazon.
+      Hand-picked Kindle eBooks — free &amp; under <strong style="color:#5c3d99">$1</strong>. Click any book to get it on Amazon.
     </p>
   </div>
 
@@ -87,7 +87,7 @@
   .axbc-cover {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     display: block;
     transition: transform 0.3s ease;
   }
@@ -162,7 +162,9 @@
 
 <script>
 (function () {
-  var ENDPOINT = 'https://script.google.com/macros/s/AKfycbyXpLkm5YWduvctKzsGDGX_BXZWUj4RFuq6TJ50vPIf2gPKq5GdHGIb8EwKRQfTZMck/exec';
+  var ENDPOINT  = 'https://script.google.com/macros/s/AKfycbyXpLkm5YWduvctKzsGDGX_BXZWUj4RFuq6TJ50vPIf2gPKq5GdHGIb8EwKRQfTZMck/exec';
+  var CACHE_KEY = 'axbc_books_v1';
+  var CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
 
   // ── Firebase welcome ─────────────────────────────────────────────────────
   function initWelcome() {
@@ -200,11 +202,14 @@
     }
 
     var grid = document.getElementById('axbc-grid');
+    // Clear any previous cards (in case of background refresh)
+    grid.innerHTML = '';
+
     books.forEach(function (book) {
-      var isFree      = book.price_num === 0 || book.price === 'Free';
-      var badgeClass  = isFree ? 'free' : 'paid';
-      var badgeLabel  = isFree ? 'Free' : esc(book.price);
-      var btnLabel    = isFree ? 'Get Free eBook →' : 'Find on Amazon →';
+      var isFree     = book.price_num === 0 || book.price === 'Free';
+      var badgeClass = isFree ? 'free' : 'paid';
+      var badgeLabel = isFree ? 'Free' : esc(book.price);
+      var btnLabel   = isFree ? 'Get Free eBook →' : 'View on Amazon →';
 
       var a = document.createElement('a');
       a.href      = esc(book.download_link);
@@ -231,14 +236,41 @@
     grid.style.display = 'grid';
   }
 
-  // ── Fetch from Apps Script ────────────────────────────────────────────────
+  // ── Load with localStorage cache ──────────────────────────────────────────
   function loadBooks() {
+    try {
+      var raw = localStorage.getItem(CACHE_KEY);
+      if (raw) {
+        var saved = JSON.parse(raw);
+        if (saved.books && saved.books.length > 0) {
+          renderBooks(saved.books);
+          // Cache still fresh — no network call needed
+          if (Date.now() - saved.ts < CACHE_TTL) return;
+          // Cache is stale — refresh silently in background
+          fetchRemote(true);
+          return;
+        }
+      }
+    } catch (e) {}
+    // Nothing cached — fetch and show
+    fetchRemote(false);
+  }
+
+  function fetchRemote(silent) {
     fetch(ENDPOINT)
       .then(function (r) { return r.ok ? r.json() : []; })
-      .then(renderBooks)
+      .then(function (books) {
+        try {
+          localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), books: books }));
+        } catch (e) {}
+        if (!silent) renderBooks(books);
+        else if (books && books.length > 0) renderBooks(books); // refresh visible grid
+      })
       .catch(function () {
-        document.getElementById('axbc-loading').style.display = 'none';
-        document.getElementById('axbc-empty').style.display   = 'block';
+        if (!silent) {
+          document.getElementById('axbc-loading').style.display = 'none';
+          document.getElementById('axbc-empty').style.display   = 'block';
+        }
       });
   }
 

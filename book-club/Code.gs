@@ -17,16 +17,29 @@ var CONFIG = {
   // Axitos books (empty publisher = skip for now)
   AXITOS_PUBLISHER:   'Axitos Publishing',
 
-  MAX_PRICE:          10,   // show ebooks at or below this price (USD)
+  // 0.99 = Kharis test threshold. Change to 0 once Axitos publishes free books.
+  MAX_PRICE:          0.99,
   MAX_BOOKS:          12    // total cards on the page
 };
 
 // ─── WEB APP ENDPOINT ─────────────────────────────────────────────────────────
 function doGet(e) {
-  var books  = buildBookList();
-  var output = ContentService.createTextOutput(JSON.stringify(books));
-  output.setMimeType(ContentService.MimeType.JSON);
-  return output;
+  var cache  = CacheService.getScriptCache();
+  var cached = cache.get('bookList');
+
+  if (cached) {
+    var out = ContentService.createTextOutput(cached);
+    out.setMimeType(ContentService.MimeType.JSON);
+    return out;
+  }
+
+  var books = buildBookList();
+  var json  = JSON.stringify(books);
+  cache.put('bookList', json, 21600); // cache 6 hours
+
+  var out = ContentService.createTextOutput(json);
+  out.setMimeType(ContentService.MimeType.JSON);
+  return out;
 }
 
 // ─── BOOK LIST BUILDER ────────────────────────────────────────────────────────
@@ -124,12 +137,12 @@ function parseAmazonResults(html, maxPrice, limit) {
     if (!titleM) continue;
     var title = titleM[1].trim();
 
-    // Cover image ── prefer scraped src, fall back to ASIN CDN URL
+    // Cover image ── strip Amazon size tokens (e.g. ._AC_SY160_) for full resolution
     var imgM = block.match(/class="[^"]*s-image[^"]*"\s[^>]*src="([^"]+)"/);
     if (!imgM) imgM = block.match(/src="([^"]+)"\s[^>]*class="[^"]*s-image[^"]*"/);
     var coverUrl = imgM
-      ? imgM[1]
-      : 'https://images-na.ssl-images-amazon.com/images/P/' + asin + '.01.L.jpg';
+      ? imgM[1].replace(/\._[A-Z0-9,_]+_(?=\.[a-z]+)/i, '')
+      : 'https://images-na.ssl-images-amazon.com/images/P/' + asin + '.01.LZZZZZZZ.jpg';
 
     // Author ── secondary-color text near the title row
     var authorM = block.match(/class="[^"]*a-size-base[^"]*a-color-secondary[^"]*">([^<]{2,80})</);
