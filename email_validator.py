@@ -81,26 +81,49 @@ def parse_csv(filepath: str) -> list[dict]:
     with open(filepath, encoding="utf-8-sig", newline="") as f:
         reader = _csv.DictReader(f)
         headers = reader.fieldnames or []
-        has_name     = "Name" in headers
-        has_split    = "First name" in headers or "First Name" in headers
+
+        # Detect format by inspecting headers
+        has_name      = "Name" in headers
+        has_split     = "First name" in headers or "First Name" in headers
+        has_numeric   = "11" in headers  # numeric-column format (bookstores sheet)
+
         for row in reader:
-            if has_name:
-                name = row.get("Name", "").strip()
-            elif has_split:
-                fn = row.get("First name", row.get("First Name", "")).strip()
-                ln = row.get("Last name",  row.get("Last Name",  "")).strip()
-                name = f"{fn} {ln}".strip()
+            if has_numeric:
+                # Numeric-header format: 0=Company, 8=Contact, 9=Title, 10=Phone, 11=Email
+                name    = row.get("8", "").strip()
+                email   = row.get("11", "").strip()
+                phone   = row.get("10", "").strip()
+                title   = row.get("9", "").strip()
+                company = row.get("0", "").strip()
+                source  = row.get("7", "").strip()   # website
+                city    = row.get("2", "").strip()
+                state   = row.get("3", "").strip()
             else:
-                name = ""
+                if has_name:
+                    name = row.get("Name", "").strip()
+                elif has_split:
+                    fn   = row.get("First name", row.get("First Name", "")).strip()
+                    ln   = row.get("Last name",  row.get("Last Name",  "")).strip()
+                    name = f"{fn} {ln}".strip()
+                else:
+                    name = ""
+                email   = row.get("Email", "").strip()
+                phone   = row.get("Phone Number", row.get("Phone", "")).strip()
+                title   = row.get("Title", "").strip()
+                company = row.get("Company", "").strip()
+                source  = row.get("Source", row.get("Address", "")).strip()
+                city    = row.get("City", "").strip()
+                state   = row.get("State", "").strip()
+
             rows.append({
                 "Name":    name,
-                "Email":   row.get("Email", "").strip(),
-                "Phone":   row.get("Phone Number", row.get("Phone", "")).strip(),
-                "Title":   row.get("Title", "").strip(),
-                "Company": row.get("Company", "").strip(),
-                "Source":  row.get("Source", row.get("Address", "")).strip(),
-                "City":    row.get("City", "").strip(),
-                "State":   row.get("State", "").strip(),
+                "Email":   email,
+                "Phone":   phone,
+                "Title":   title,
+                "Company": company,
+                "Source":  source,
+                "City":    city,
+                "State":   state,
             })
     return rows
 
@@ -496,8 +519,8 @@ def _write_summary(ws, results):
 # ── Entry point ────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    SOURCE = "/home/user/alx-pre_course/leads2_raw.csv"
-    OUT    = "/home/user/alx-pre_course/contacts2_validated.xlsx"
+    SOURCE = "/home/user/alx-pre_course/leads3_raw.csv"
+    OUT    = "/home/user/alx-pre_course/contacts3_validated.xlsx"
 
     print("Parsing contacts...")
     rows = parse_csv(SOURCE)
