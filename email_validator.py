@@ -80,14 +80,27 @@ def parse_csv(filepath: str) -> list[dict]:
     rows = []
     with open(filepath, encoding="utf-8-sig", newline="") as f:
         reader = _csv.DictReader(f)
+        headers = reader.fieldnames or []
+        has_name     = "Name" in headers
+        has_split    = "First name" in headers or "First Name" in headers
         for row in reader:
+            if has_name:
+                name = row.get("Name", "").strip()
+            elif has_split:
+                fn = row.get("First name", row.get("First Name", "")).strip()
+                ln = row.get("Last name",  row.get("Last Name",  "")).strip()
+                name = f"{fn} {ln}".strip()
+            else:
+                name = ""
             rows.append({
-                "Name":    row.get("Name", "").strip(),
+                "Name":    name,
                 "Email":   row.get("Email", "").strip(),
-                "Phone":   row.get("Phone Number", "").strip(),
+                "Phone":   row.get("Phone Number", row.get("Phone", "")).strip(),
                 "Title":   row.get("Title", "").strip(),
                 "Company": row.get("Company", "").strip(),
-                "Source":  row.get("Source", "").strip(),
+                "Source":  row.get("Source", row.get("Address", "")).strip(),
+                "City":    row.get("City", "").strip(),
+                "State":   row.get("State", "").strip(),
             })
     return rows
 
@@ -280,6 +293,8 @@ def process_contacts(rows: list[dict]) -> list[dict]:
             "Catch-all":         "Yes" if is_catchall else "No",
             "Catch-all Note":    catchall_note,
             "Risk":              risk_label,
+            "City":              row.get("City", ""),
+            "State":             row.get("State", ""),
         })
     return results
 
@@ -320,6 +335,8 @@ COLUMNS = [
     ("Phone", 22),
     ("Title", 30),
     ("Company", 30),
+    ("City", 18),
+    ("State", 10),
     ("Source", 45),
 ]
 
@@ -479,8 +496,8 @@ def _write_summary(ws, results):
 # ── Entry point ────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    SOURCE = "/home/user/alx-pre_course/leads_raw.csv"
-    OUT    = "/home/user/alx-pre_course/contacts_validated.xlsx"
+    SOURCE = "/home/user/alx-pre_course/leads2_raw.csv"
+    OUT    = "/home/user/alx-pre_course/contacts2_validated.xlsx"
 
     print("Parsing contacts...")
     rows = parse_csv(SOURCE)
