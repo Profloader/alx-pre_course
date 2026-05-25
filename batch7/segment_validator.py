@@ -589,7 +589,7 @@ def write_summary_sheet(ws, segment_stats: list[dict], global_stats: dict):
     row_i += 1
     ws.cell(row_i, 1, "MISSING SOURCE SHEETS:").font = Font(bold=True, color="CC0000")
     row_i += 1
-    for missing in ["Christians AU (no data provided)", "Random AU (no data provided)"]:
+    for missing in ["Christians AU (no data provided)"]:
         cell = ws.cell(row_i, 1, f"  - {missing}")
         cell.font = Font(italic=True, color="CC0000")
         ws.row_dimensions[row_i].height = 18
@@ -609,6 +609,7 @@ SEGMENT_FILES = [
     ("non_christian_au.csv", "Non-Christian AU", True),
     ("random_uk.csv",        "Random UK",        True),
     ("random_us.csv",        "Random US",        True),
+    ("random_au.csv",        "Random AU",        True),
     ("agencies.csv",         "Agencies",         True),
     ("bookstores.csv",       "Bookstores",       False),
 ]
@@ -690,7 +691,8 @@ def main():
     )
     all_random = (
         validated_by_segment.get("Random US", []) +
-        validated_by_segment.get("Random UK", [])
+        validated_by_segment.get("Random UK", []) +
+        validated_by_segment.get("Random AU", [])
     )
 
     # All contacts combined
@@ -841,10 +843,10 @@ def main():
     ws10 = make_sheet("Random UK")
     write_segment_sheet(ws10, validated_by_segment.get("Random UK", []))
 
-    # 11. Random AU (empty)
-    print("  Writing: Random AU (empty)")
+    # 11. Random AU
+    print("  Writing: Random AU")
     ws11 = make_sheet("Random AU")
-    write_empty_sheet(ws11, "No data provided — missing from source sheets")
+    write_segment_sheet(ws11, validated_by_segment.get("Random AU", []))
 
     # 12. All Random
     print("  Writing: All Random")
@@ -899,7 +901,6 @@ def main():
   ---
   Missing source sheets:
     - Christians AU  (no data provided)
-    - Random AU      (no data provided)
 {'='*70}
 
   Per-segment breakdown:
