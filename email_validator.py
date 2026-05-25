@@ -85,10 +85,15 @@ def parse_csv(filepath: str) -> list[dict]:
         # Detect format by inspecting headers
         has_name      = "Name" in headers
         has_split     = "First name" in headers or "First Name" in headers
+        has_username  = "Username" in headers and "Email" in headers
         has_numeric   = "0" in headers and not has_name and not has_split
 
         for row in reader:
-            if has_numeric:
+            if has_username and not has_name and not has_split:
+                name  = row.get("Username", "").strip()
+                email = row.get("Email", "").strip()
+                phone = title = company = source = city = state = ""
+            elif has_numeric:
                 if "Result" in headers and "11" not in headers:
                     # CBS/subscriber format: 0=Email, 1=FirstName, 2=LastName, 4=City, 5=State, 7=Phone
                     email   = row.get("0", "").strip()
@@ -532,8 +537,8 @@ def _write_summary(ws, results):
 # ── Entry point ────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    SOURCE = "/home/user/alx-pre_course/leads6_raw_partial.json"
-    OUT    = "/home/user/alx-pre_course/contacts6_validated_partial.xlsx"
+    SOURCE = "/home/user/alx-pre_course/leads6_full.csv"
+    OUT    = "/home/user/alx-pre_course/contacts6_validated.xlsx"
 
     print("Parsing contacts...")
     if SOURCE.endswith(".json"):
