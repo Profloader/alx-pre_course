@@ -532,11 +532,16 @@ def _write_summary(ws, results):
 # ── Entry point ────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    SOURCE = "/home/user/alx-pre_course/leads5_raw.csv"
-    OUT    = "/home/user/alx-pre_course/contacts5_validated.xlsx"
+    SOURCE = "/home/user/alx-pre_course/leads6_raw_partial.json"
+    OUT    = "/home/user/alx-pre_course/contacts6_validated_partial.xlsx"
 
     print("Parsing contacts...")
-    rows = parse_csv(SOURCE)
+    if SOURCE.endswith(".json"):
+        import json as _json
+        with open(SOURCE) as f:
+            rows = _json.load(f)
+    else:
+        rows = parse_csv(SOURCE)
     print(f"Loaded {len(rows)} contacts.\n")
 
     print("Validating emails (MX + SMTP may take a few minutes)...\n")
