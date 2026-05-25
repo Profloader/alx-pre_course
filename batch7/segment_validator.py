@@ -669,7 +669,7 @@ def main():
     cross_order = [
         "Christians US", "Christians UK",
         "Non-Christian US", "Non-Christian UK", "Non-Christian AU",
-        "Random US", "Random UK",
+        "Random US", "Random UK", "Random AU",
         "Agencies", "Bookstores",
     ]
     global_seen: dict[str, tuple[str, int]] = {}
