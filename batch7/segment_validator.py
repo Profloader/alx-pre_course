@@ -174,22 +174,41 @@ def risk_score(syntax_ok, mx_ok, smtp_ok, is_disposable, is_role, is_catchall, t
 
 # ── CSV Parsing ────────────────────────────────────────────────────────────────
 
+EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+
 def parse_segment_csv(filepath: str, segment_label: str, has_phone: bool = True) -> list[dict]:
-    """Parse a segment CSV with 'Contact X' column naming."""
+    """Parse a segment CSV with 'Contact X' column naming.
+    Also handles LinkedIn-export rows merged without re-aligning columns,
+    where First Name→ContactName, Last Name→ContactEmail, Email→ContactPhone.
+    """
     rows = []
+    skipped_headers = 0
     with open(filepath, encoding="utf-8-sig", newline="") as f:
         reader = csv.DictReader(f)
         for raw_row in reader:
             try:
-                # Normalize column names
                 name    = (raw_row.get("Contact Name", "") or "").strip()
                 email   = (raw_row.get("Contact Email", "") or "").strip()
                 phone   = (raw_row.get("Contact Phone", "") or "").strip() if has_phone else ""
                 title   = (raw_row.get("Contact Title", "") or "").strip()
                 company = (raw_row.get("Contact Company", "") or "").strip()
                 source  = (raw_row.get("Contact Source", "") or "").strip()
-                if not email:
+
+                # Skip embedded repeat-header rows
+                if name in ("Contact Name", "First Name") and email in ("Contact Email", "Last Name"):
+                    skipped_headers += 1
                     continue
+
+                # Detect LinkedIn-shifted format: last name in email col, real email in phone col
+                if email and not EMAIL_RE.match(email) and phone and EMAIL_RE.match(phone):
+                    # name = first name, email col = last name → reassemble full name
+                    name  = f"{name} {email}".strip()
+                    email = phone
+                    phone = ""
+
+                if not email or not EMAIL_RE.match(email):
+                    continue
+
                 rows.append({
                     "Name":    name,
                     "Email":   email,
@@ -201,6 +220,8 @@ def parse_segment_csv(filepath: str, segment_label: str, has_phone: bool = True)
                 })
             except Exception as ex:
                 print(f"  [WARNING] Skipped malformed row in {filepath}: {ex}")
+    if skipped_headers:
+        print(f"  [INFO] Skipped {skipped_headers} embedded header row(s) in {filepath}")
     return rows
 
 # ── Validation ─────────────────────────────────────────────────────────────────
