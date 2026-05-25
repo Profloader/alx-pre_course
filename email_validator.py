@@ -3,7 +3,6 @@ Comprehensive contact email validator.
 Checks: syntax, MX records, SMTP, disposable, role-based, catch-all, typo, risk score.
 """
 
-import json
 import re
 import time
 import csv
@@ -76,28 +75,20 @@ TYPO_MAP = {
 
 # ── Parsing ────────────────────────────────────────────────────────────────────
 
-def parse_sheet(filepath: str) -> list[dict]:
-    with open(filepath) as f:
-        raw = json.load(f)
-    content = raw["fileContent"]
+def parse_csv(filepath: str) -> list[dict]:
+    import csv as _csv
     rows = []
-    for line in content.split("\n"):
-        if not line.startswith("|") or ":-:" in line:
-            continue
-        parts = [p.strip() for p in line.strip("|").split("|")]
-        if len(parts) < 2 or parts[0].lower() == "name":
-            continue
-        # Clean markdown escapes
-        clean = [p.replace("\\+", "+").replace("\\_", "_").replace("\\~", "~")
-                   .replace("\\|", "|").strip() for p in parts]
-        rows.append({
-            "Name":         clean[0] if len(clean) > 0 else "",
-            "Email":        clean[1] if len(clean) > 1 else "",
-            "Phone":        clean[2] if len(clean) > 2 else "",
-            "Title":        clean[3] if len(clean) > 3 else "",
-            "Company":      clean[4] if len(clean) > 4 else "",
-            "Source":       clean[5] if len(clean) > 5 else "",
-        })
+    with open(filepath, encoding="utf-8-sig", newline="") as f:
+        reader = _csv.DictReader(f)
+        for row in reader:
+            rows.append({
+                "Name":    row.get("Name", "").strip(),
+                "Email":   row.get("Email", "").strip(),
+                "Phone":   row.get("Phone Number", "").strip(),
+                "Title":   row.get("Title", "").strip(),
+                "Company": row.get("Company", "").strip(),
+                "Source":  row.get("Source", "").strip(),
+            })
     return rows
 
 # ── Validators ─────────────────────────────────────────────────────────────────
@@ -488,11 +479,11 @@ def _write_summary(ws, results):
 # ── Entry point ────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    SOURCE = "/root/.claude/projects/-home-user-alx-pre-course/5e92832b-c248-4670-9007-1b21e2a4348b/tool-results/mcp-deff9091-639d-42af-897a-688338a561fd-read_file_content-1779703982500.txt"
+    SOURCE = "/home/user/alx-pre_course/leads_raw.csv"
     OUT    = "/home/user/alx-pre_course/contacts_validated.xlsx"
 
     print("Parsing contacts...")
-    rows = parse_sheet(SOURCE)
+    rows = parse_csv(SOURCE)
     print(f"Loaded {len(rows)} contacts.\n")
 
     print("Validating emails (MX + SMTP may take a few minutes)...\n")
