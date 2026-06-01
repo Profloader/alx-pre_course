@@ -185,8 +185,7 @@ COL_WIDTHS = {
 }
 
 def active_cols(rows, extras=None):
-    base = (extras or []) + TEMPLATE_COLS
-    return [c for c in base if any(row.get(c) for row in rows)]
+    return (extras or []) + TEMPLATE_COLS
 
 def write_sheet(ws, rows, cols):
     for i, col in enumerate(cols, 1):
@@ -208,7 +207,7 @@ for label, fp, fmt, outfile in SOURCES:
     if not outfile or label.startswith("B7"): continue
     rows = unique_rows(label, all_by_label[label])
     cols = active_cols(rows)
-    print(f"\nWriting {outfile}  →  {len(rows):,} unique contacts  |  cols: {cols}")
+    print(f"\nWriting {outfile}  →  {len(rows):,} unique contacts")
     wb = openpyxl.Workbook()
     ws = wb.active; ws.title = "Contacts"
     write_sheet(ws, rows, cols)
@@ -221,7 +220,7 @@ for label, *_ in SOURCES:
         b7_rows += unique_rows(label, all_by_label[label])
 
 cols_b7 = active_cols(b7_rows, extras=["segment"])
-print(f"\nWriting 07_batch7_segmented.xlsx  →  {len(b7_rows):,} unique contacts  |  cols: {cols_b7}")
+print(f"\nWriting 07_batch7_segmented.xlsx  →  {len(b7_rows):,} unique contacts")
 wb7 = openpyxl.Workbook()
 ws7 = wb7.active; ws7.title = "Contacts"
 write_sheet(ws7, b7_rows, cols_b7)
@@ -239,7 +238,7 @@ for label, *_ in SOURCES:
         master_rows.append(row)
 
 cols_master = active_cols(master_rows, extras=["source_list"])
-print(f"\nWriting 00_MASTER_all_unique_contacts.xlsx  →  {len(master_rows):,} contacts  |  cols: {cols_master}")
+print(f"\nWriting 00_MASTER_all_unique_contacts.xlsx  →  {len(master_rows):,} contacts")
 wbm = openpyxl.Workbook()
 wsm = wbm.active; wsm.title = "All Contacts"
 write_sheet(wsm, master_rows, cols_master)
