@@ -43,38 +43,89 @@ def fix_email(email):
 BASE = "/home/user/alx-pre_course"
 OUT  = f"{BASE}/final_lists"
 
-# ── Build first-name lookup set (single words only, lowercase) ────────────────
+# ── Build name lookup sets ────────────────────────────────────────────────────
 print("Loading name dictionary...")
 nd = NameDataset()
-FIRST_NAMES = {k.lower() for k in nd.first_names if " " not in k}
-print(f"  {len(FIRST_NAMES):,} single-word first names loaded")
+_ENGLISH = {"US","GB","CA","AU"}
+ALL_NAMES   = {k.lower() for k in nd.first_names if " " not in k}
+ALL_NAMES_4 = {k for k in ALL_NAMES if len(k) >= 4}
+# High-confidence: top-6000 rank in any English-speaking country
+HC_NAMES = set()
+for _name, _data in nd.first_names.items():
+    if " " in _name: continue
+    if any(_data.get("rank",{}).get(cc,99999) <= 6000 for cc in _ENGLISH):
+        HC_NAMES.add(_name.lower())
+print(f"  {len(ALL_NAMES):,} total names  |  {len(HC_NAMES):,} high-confidence English names")
+
+SOCIAL = {"iam","real","xo","thereal","official","im","its","xoxo","hey","hi","yo"}
+VOWELS = set("aeiou")
+
+def _skip_cc(s):
+    """Skip 1-2 leading consonants (initials like 'ln', 'cp')."""
+    i = 0
+    while i < len(s) and s[i] not in VOWELS: i += 1
+    return s[i:] if 1 <= i <= 2 else s
+
+def _is_social_prefix(s):
+    return any(sw.startswith(s) and sw != s for sw in SOCIAL)
+
+def _find(s, name_set):
+    """Longest name_set prefix at start of s; skip social words/prefixes."""
+    best = None
+    for n in range(3, min(len(s)+1, 13)):
+        cand = s[:n]
+        if cand in name_set and cand not in SOCIAL and not _is_social_prefix(cand):
+            best = cand
+    return best
 
 def extract_firstname(username: str) -> str:
-    """Intelligently extract a first name from a username."""
     u = username.strip()
-    if not u:
-        return ""
+    if not u: return ""
     ul = u.lower()
 
-    # Step 1: separator present → first segment
+    # Step 1: separator → first segment
     for sep in [".", "_", "-"]:
         if sep in ul:
             seg = ul.split(sep)[0].strip()
             return seg.capitalize() if seg else u.capitalize()
 
-    # Step 2: concatenated → find longest known-first-name prefix
-    # scan lengths 2..12 and keep the longest hit
-    best = None
-    for length in range(2, min(len(ul) + 1, 13)):
-        prefix = ul[:length]
-        if prefix in FIRST_NAMES:
-            best = prefix            # keep extending to find longest match
+    base = ul.rstrip("0123456789._-+@")
 
-    if best:
-        return best.capitalize()
+    # Step 2: pos-0, both HC and full dict — return immediately if ≥ 4 chars
+    m_hc  = _find(base, HC_NAMES)
+    m_all = _find(base, ALL_NAMES_4)
+    m0 = max((m_hc, m_all), key=lambda x: len(x) if x else 0)
+    if m0 and len(m0) >= 4: return m0.capitalize()
+    best3 = m0  # save any 3-char match
 
-    # Step 3: fallback — capitalise the whole username
-    return u.capitalize()
+    # Step 3: narrow window pos 1-2 (HC only) — catches names after short prefixes
+    for start in [1, 2]:
+        if start >= len(base) - 2: break
+        m2 = _find(base[start:], HC_NAMES)
+        if m2 and len(m2) >= 4: return m2.capitalize()
+        if m2 and (best3 is None or len(m2) > len(best3)):
+            best3 = m2
+
+    # Step 4: social prefix strip → HC pos-0
+    for sp in sorted(SOCIAL, key=len, reverse=True):
+        if base.startswith(sp) and len(base) > len(sp) + 2:
+            m3 = _find(base[len(sp):], HC_NAMES)
+            if m3: return m3.capitalize()
+            break
+
+    # Step 5: skip consonant cluster (max 2) → HC then full dict
+    cand = _skip_cc(base)
+    if cand != base:
+        m4 = _find(cand, HC_NAMES)
+        if m4: return m4.capitalize()
+        m4b = _find(cand, ALL_NAMES_4)
+        if m4b: return m4b.capitalize()
+
+    # Step 6: 3-char HC match as last resort
+    if best3: return best3.capitalize()
+
+    # Step 7: fallback — whole stripped base
+    return base.capitalize()
 
 # ── Load previously established global_seen (same priority order) ─────────────
 # We need to know which emails in this file are globally unique.
