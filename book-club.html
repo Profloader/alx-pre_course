@@ -210,7 +210,8 @@
   function bcRedirect() { window.location.href = BC_BOOK_CLUB_URL; }
   function bcSaveContact(user, isNewUser) {
     if (!isNewUser) return;
-    fetch('https://script.google.com/macros/s/AKfycbwQa8KeQmmlxyefE9KnfLY7Be-1xZLn01JV9u80sE7X1vuWpwb_Yj8rZfO1BdzJ2qOD/exec?name=' + encodeURIComponent(user.displayName || '') + '&email=' + encodeURIComponent(user.email) + '&type=book_club', { method: 'GET', mode: 'no-cors' });
+    var role = new URLSearchParams(window.location.search).get('role') || 'book_club';
+    fetch('https://script.google.com/macros/s/AKfycbwQa8KeQmmlxyefE9KnfLY7Be-1xZLn01JV9u80sE7X1vuWpwb_Yj8rZfO1BdzJ2qOD/exec?name=' + encodeURIComponent(user.displayName || '') + '&email=' + encodeURIComponent(user.email) + '&type=' + encodeURIComponent(role), { method: 'GET', mode: 'no-cors' });
   }
   function bcAuthTab(tab) {
     document.getElementById('bc-signin-section').style.display = tab === 'signin' ? '' : 'none';
