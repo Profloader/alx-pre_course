@@ -9,13 +9,13 @@
  *   1. Publish your Google Sheet: File → Share → Publish to web → CSV
  *   2. Replace SHEET_CSV_URL with the published CSV link
  *   3. Paste this script into the custom body code of the home page
- *      AND the First Edition Book Club landing page only
+ *      AND the Koinita Book Club landing page only
  */
 
 (function () {
   // ─── CONFIG ──────────────────────────────────────────────────────────────
   var SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSlMvi9MKODUmniC_9UjQliUOmjcqGIwUXjNcX0xUL1sA-gOHZW3TNvYxQTzQ_H4WLJHeWSZvU8Nm4P/pub?gid=0&single=true&output=csv";
-  var SIGNUP_PAGE_URL = "https://www.axitos.ai/first-edition-book-club";
+  var SIGNUP_PAGE_URL = "https://www.axitos.ai/koinita";
 
   // Pages where the popup is allowed to appear (pathname matching).
   // Add "/home" here if Duda uses that as the home page slug.
@@ -23,7 +23,7 @@
     "/",
     "",
     "/home",
-    "/first-edition-book-club",
+    "/koinita",
   ];
 
   // Column indices in your sheet (0-based). Adjust to match your columns.
