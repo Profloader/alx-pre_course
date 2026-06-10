@@ -1,357 +1,96 @@
 <style>
   .bc-wrap * { box-sizing: border-box; }
-  .bc-wrap {
-    font-family: 'Georgia', serif;
-    color: #1a1a2e;
-    width: 100%;
-  }
+  .bc-wrap { font-family: 'Georgia', serif; color: #1a1a2e; width: 100%; }
 
-  /* ── HERO ── */
-  .bc-hero {
-    background: #1a1a2e;
-    color: #fff;
-    text-align: center;
-    padding: 80px 24px 90px;
-    position: relative;
-    overflow: hidden;
-  }
-  .bc-hero::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 60% 50% at 20% 80%, rgba(251,138,85,.18) 0%, transparent 70%),
-      radial-gradient(ellipse 50% 60% at 80% 10%, rgba(232,93,4,.13) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  .bc-badge {
-    display: inline-block;
-    background: rgba(251,138,85,.15);
-    border: 1px solid rgba(251,138,85,.35);
-    color: #fb8a55;
-    font-family: Arial, sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    padding: 6px 16px;
-    border-radius: 100px;
-    margin-bottom: 28px;
-  }
-  .bc-hero h1 {
-    font-size: clamp(2rem, 5vw, 3.6rem);
-    font-weight: normal;
-    line-height: 1.18;
-    max-width: 720px;
-    margin: 0 auto 24px;
-    letter-spacing: -.5px;
-    color: #ffffff !important;
-  }
+  .bc-hero { background: #1a1a2e; color: #fff; text-align: center; padding: 80px 24px 90px; position: relative; overflow: hidden; }
+  .bc-hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 60% 50% at 20% 80%, rgba(251,138,85,.18) 0%, transparent 70%), radial-gradient(ellipse 50% 60% at 80% 10%, rgba(232,93,4,.13) 0%, transparent 70%); pointer-events: none; }
+  .bc-badge { display: inline-block; background: rgba(251,138,85,.15); border: 1px solid rgba(251,138,85,.35); color: #fb8a55; font-family: Arial, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 6px 16px; border-radius: 100px; margin-bottom: 28px; }
+  .bc-hero h1 { font-size: clamp(2rem, 5vw, 3.6rem); font-weight: normal; line-height: 1.18; max-width: 720px; margin: 0 auto 24px; letter-spacing: -.5px; color: #ffffff !important; }
   .bc-hero h1 em { font-style: italic; color: #fb8a55; }
-  .bc-hero p {
-    font-family: Arial, sans-serif;
-    font-size: clamp(.95rem, 2vw, 1.1rem);
-    color: rgba(255,255,255,.68);
-    max-width: 520px;
-    margin: 0 auto 40px;
-    line-height: 1.75;
-  }
-  .bc-cta {
-    background: #fb8a55;
-    color: #fff;
-    border: none;
-    padding: 16px 40px;
-    font-family: Arial, sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    border-radius: 8px;
-    cursor: pointer;
-    letter-spacing: .3px;
-    box-shadow: 0 4px 22px rgba(251,138,85,.35);
-    transition: background .2s, transform .15s;
-    text-decoration: none;
-    display: inline-block;
-  }
+  .bc-hero-desc { font-family: Arial, sans-serif; font-size: clamp(.95rem, 2vw, 1.1rem); color: rgba(255,255,255,.68); max-width: 520px; margin: 0 auto 40px; line-height: 1.75; }
+  .bc-cta { background: #fb8a55; color: #fff; border: none; padding: 16px 40px; font-family: Arial, sans-serif; font-size: 15px; font-weight: 700; border-radius: 8px; cursor: pointer; letter-spacing: .3px; box-shadow: 0 4px 22px rgba(251,138,85,.35); transition: background .2s, transform .15s; text-decoration: none; display: inline-block; }
   .bc-cta:hover { background: #e85d04; transform: translateY(-2px); }
-  .bc-hero-note {
-    display: block;
-    margin-top: 16px;
-    font-family: Arial, sans-serif;
-    font-size: 12px;
-    color: rgba(255,255,255,.35);
-  }
+  .bc-hero-note { display: block; margin-top: 16px; font-family: Arial, sans-serif; font-size: 12px; color: rgba(255,255,255,.35); }
 
-  /* ── MEMBER GREETING (hero) ── */
-  .bc-member-hello {
-    font-family: Arial, sans-serif;
-    font-size: 14px;
-    color: rgba(255,255,255,.6);
-    margin-bottom: 14px;
-  }
-  .bc-member-hello strong { color: #fb8a55; }
+  .bc-welcome-heading { font-size: clamp(2rem, 5vw, 3.2rem) !important; font-weight: normal !important; color: #ffffff !important; line-height: 1.22 !important; max-width: 700px; margin: 0 auto 12px !important; letter-spacing: -.3px; }
+  .bc-welcome-heading span { color: #fb8a55; }
+  .bc-welcome-sub { font-family: Arial, sans-serif; font-size: 15px; color: rgba(255,255,255,.55); margin-bottom: 32px; }
+  .bc-cta-big { background: #fb8a55; color: #fff !important; border: none; padding: 20px 56px; font-family: Arial, sans-serif; font-size: 18px; font-weight: 700; border-radius: 10px; cursor: pointer; letter-spacing: .3px; box-shadow: 0 6px 28px rgba(251,138,85,.4); transition: background .2s, transform .15s; text-decoration: none !important; display: inline-block; }
+  .bc-cta-big:hover { background: #e85d04; transform: translateY(-2px); }
 
-  /* ── WAVE ── */
   .bc-wave { display: block; width: 100%; margin-bottom: -2px; }
 
-  /* ── WHAT IS IT ── */
-  .bc-about {
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 64px 24px 48px;
-  }
-  .bc-label {
-    font-family: Arial, sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-    color: #e85d04;
-    margin-bottom: 14px;
-  }
-  .bc-about h2 {
-    font-size: clamp(1.5rem, 3vw, 2.2rem);
-    font-weight: normal;
-    line-height: 1.3;
-    margin: 0 0 20px;
-    max-width: 580px;
-  }
-  .bc-about p {
-    font-family: Arial, sans-serif;
-    font-size: 15px;
-    color: #5c5c7a;
-    line-height: 1.8;
-    max-width: 640px;
-    margin-bottom: 14px;
-  }
+  .bc-about { max-width: 860px; margin: 0 auto; padding: 64px 24px 48px; }
+  .bc-label { font-family: Arial, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: #e85d04; margin-bottom: 14px; }
+  .bc-about h2 { font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: normal; line-height: 1.3; margin: 0 0 14px; max-width: 580px; }
+  .bc-about > p { font-family: Arial, sans-serif; font-size: 15px; color: #5c5c7a; line-height: 1.8; max-width: 640px; margin-bottom: 36px; }
+  .bc-steps { display: flex; flex-direction: column; gap: 24px; max-width: 640px; }
+  .bc-step { display: flex; align-items: flex-start; gap: 20px; }
+  .bc-step-num { flex-shrink: 0; width: 36px; height: 36px; background: #fb8a55; color: #fff; border-radius: 50%; font-family: Arial, sans-serif; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+  .bc-step-body h3 { font-family: Arial, sans-serif; font-size: 15px; font-weight: 700; margin: 0 0 5px; color: #1a1a2e; }
+  .bc-step-body p { font-family: Arial, sans-serif; font-size: 14px; color: #5c5c7a; line-height: 1.7; margin: 0; }
 
-  /* ── PERKS ── */
-  .bc-perks {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 18px;
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 0 24px 64px;
-  }
-  .bc-perk {
-    background: #fff8f3;
-    border: 1px solid #f0e8e0;
-    border-radius: 12px;
-    padding: 28px 22px;
-  }
+  .bc-perks { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; max-width: 860px; margin: 0 auto; padding: 0 24px 64px; }
+  .bc-perk { background: #fff8f3; border: 1px solid #f0e8e0; border-radius: 12px; padding: 28px 22px; }
   .bc-perk-icon { font-size: 24px; display: block; margin-bottom: 12px; }
-  .bc-perk h3 {
-    font-family: Arial, sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    margin: 0 0 7px;
-  }
-  .bc-perk p {
-    font-family: Arial, sans-serif;
-    font-size: 13px;
-    color: #5c5c7a;
-    line-height: 1.6;
-    margin: 0;
-  }
+  .bc-perk h3 { font-family: Arial, sans-serif; font-size: 14px; font-weight: 700; margin: 0 0 7px; }
+  .bc-perk p { font-family: Arial, sans-serif; font-size: 13px; color: #5c5c7a; line-height: 1.6; margin: 0; }
 
-  /* ── QUOTE ── */
-  .bc-quote {
-    background: #fff8f3;
-    border-top: 1px solid #f0e8e0;
-    border-bottom: 1px solid #f0e8e0;
-    text-align: center;
-    padding: 60px 24px;
-  }
-  .bc-quote blockquote {
-    font-size: clamp(1.05rem, 2.2vw, 1.4rem);
-    font-style: italic;
-    line-height: 1.55;
-    color: #1a1a2e;
-    max-width: 640px;
-    margin: 0 auto 16px;
-  }
-  .bc-quote cite {
-    font-family: Arial, sans-serif;
-    font-size: 13px;
-    color: #5c5c7a;
-    font-style: normal;
-  }
+  .bc-quote { background: #fff8f3; border-top: 1px solid #f0e8e0; border-bottom: 1px solid #f0e8e0; text-align: center; padding: 60px 24px; }
+  .bc-quote blockquote { font-size: clamp(1.05rem, 2.2vw, 1.4rem); font-style: italic; line-height: 1.55; color: #1a1a2e; max-width: 640px; margin: 0 auto 16px; }
+  .bc-quote cite { font-family: Arial, sans-serif; font-size: 13px; color: #5c5c7a; font-style: normal; }
 
-  /* ── BOTTOM CTA ── */
-  .bc-bottom {
-    text-align: center;
-    padding: 80px 24px 90px;
-  }
-  .bc-bottom h2 {
-    font-size: clamp(1.5rem, 3vw, 2.2rem);
-    font-weight: normal;
-    line-height: 1.3;
-    margin: 0 auto 14px;
-    max-width: 480px;
-  }
-  .bc-bottom p {
-    font-family: Arial, sans-serif;
-    font-size: 15px;
-    color: #5c5c7a;
-    line-height: 1.75;
-    max-width: 460px;
-    margin: 0 auto 34px;
-  }
-  .bc-cta-dark {
-    background: #1a1a2e;
-    color: #fff;
-    border: none;
-    padding: 16px 40px;
-    font-family: Arial, sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background .2s, transform .15s;
-    text-decoration: none;
-    display: inline-block;
-  }
+  .bc-bottom { text-align: center; padding: 80px 24px 90px; }
+  .bc-bottom h2 { font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: normal; line-height: 1.3; margin: 0 auto 14px; max-width: 480px; }
+  .bc-bottom p { font-family: Arial, sans-serif; font-size: 15px; color: #5c5c7a; line-height: 1.75; max-width: 460px; margin: 0 auto 34px; }
+  .bc-cta-dark { background: #1a1a2e; color: #fff; border: none; padding: 16px 40px; font-family: Arial, sans-serif; font-size: 15px; font-weight: 700; border-radius: 8px; cursor: pointer; transition: background .2s, transform .15s; text-decoration: none; display: inline-block; }
   .bc-cta-dark:hover { background: #2d2d4e; transform: translateY(-2px); }
-  .bc-signin-link {
-    display: block;
-    margin-top: 16px;
-    font-family: Arial, sans-serif;
-    font-size: 12px;
-    color: #bbb;
-  }
-  .bc-signin-link button {
-    background: none; border: none; color: #e85d04;
-    cursor: pointer; font-size: 12px; text-decoration: underline; padding: 0;
-  }
+  .bc-signin-link { display: block; margin-top: 16px; font-family: Arial, sans-serif; font-size: 12px; color: #bbb; }
+  .bc-signin-link button { background: none; border: none; color: #e85d04; cursor: pointer; font-size: 12px; text-decoration: underline; padding: 0; }
 
-  /* ── MEMBER PANEL (bottom) ── */
-  .bc-member-panel {
-    background: #fff8f3;
-    border: 1px solid #f0e8e0;
-    border-radius: 12px;
-    padding: 28px 32px;
-    display: inline-block;
-    max-width: 420px;
-    width: 100%;
-  }
-  .bc-member-panel p {
-    font-family: Arial, sans-serif;
-    font-size: 15px;
-    color: #5c5c7a;
-    margin: 0 0 20px;
-    line-height: 1.6;
-  }
-  .bc-member-panel p strong { color: #1a1a2e; }
-
-  /* ── MODAL ── */
-  .bc-modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(20,20,40,.55);
-    backdrop-filter: blur(4px);
-    z-index: 99999;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
+  .bc-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(20,20,40,.55); backdrop-filter: blur(4px); z-index: 99999; align-items: center; justify-content: center; padding: 20px; }
   .bc-modal-overlay.open { display: flex; }
-  .bc-modal-box {
-    background: #fff;
-    border-radius: 14px;
-    padding: 40px 36px 32px;
-    width: 100%;
-    max-width: 440px;
-    position: relative;
-    box-shadow: 0 20px 60px rgba(0,0,0,.22);
-    animation: bcSlideUp .25s ease;
-  }
-  @keyframes bcSlideUp {
-    from { opacity: 0; transform: translateY(18px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .bc-modal-close {
-    position: absolute; top: 14px; right: 18px;
-    background: none; border: none; font-size: 22px;
-    color: #aaa; cursor: pointer; line-height: 1;
-  }
+  .bc-modal-box { background: #fff; border-radius: 14px; padding: 40px 36px 32px; width: 100%; max-width: 440px; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,.22); animation: bcSlideUp .25s ease; }
+  @keyframes bcSlideUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+  .bc-modal-close { position: absolute; top: 14px; right: 18px; background: none; border: none; font-size: 22px; color: #aaa; cursor: pointer; line-height: 1; }
   .bc-modal-close:hover { color: #555; }
-  .bc-modal-logo {
-    font-family: Arial, sans-serif; font-size: 11px; font-weight: 700;
-    letter-spacing: 1.5px; text-transform: uppercase;
-    color: #e85d04; margin-bottom: 20px;
-  }
+  .bc-modal-logo { font-family: Arial, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #e85d04; margin-bottom: 20px; }
 
-  /* ── AUTH WIDGET ── */
   #bc-auth-box { font-family: Arial, sans-serif; }
   .bc-auth-tabs { display: flex; margin-bottom: 22px; border-bottom: 2px solid #eee; }
-  .bc-auth-tab {
-    flex: 1; padding: 11px; background: none; border: none;
-    font-size: 14px; cursor: pointer; color: #999;
-    border-bottom: 3px solid transparent; margin-bottom: -2px; font-weight: 500;
-  }
+  .bc-auth-tab { flex: 1; padding: 11px; background: none; border: none; font-size: 14px; cursor: pointer; color: #999; border-bottom: 3px solid transparent; margin-bottom: -2px; font-weight: 500; }
   .bc-auth-tab.active { color: #222; border-bottom-color: #fb8a55; font-weight: 700; }
-  .bc-auth-input {
-    width: 100%; padding: 11px 13px; margin-bottom: 11px;
-    border: 1px solid #ddd; border-radius: 6px; font-size: 14px;
-    box-sizing: border-box; outline: none;
-  }
+  .bc-auth-input { width: 100%; padding: 11px 13px; margin-bottom: 11px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box; outline: none; }
   .bc-auth-input:focus { border-color: #e85d04; }
-  .bc-auth-btn {
-    width: 100%; padding: 12px; background: #fb8a55; color: #fff;
-    border: none; border-radius: 6px; font-size: 15px; font-weight: 600;
-    cursor: pointer; margin-bottom: 10px;
-  }
+  .bc-auth-btn { width: 100%; padding: 12px; background: #fb8a55; color: #fff; border: none; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
   .bc-auth-btn:hover { opacity: .9; }
   .bc-auth-btn:disabled { opacity: .5; cursor: not-allowed; }
-  .bc-google-btn {
-    width: 100%; padding: 11px; background: #fff; color: #333;
-    border: 1px solid #ddd; border-radius: 6px; font-size: 14px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    gap: 10px; margin-bottom: 14px; font-weight: 500;
-  }
+  .bc-google-btn { width: 100%; padding: 11px; background: #fff; color: #333; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 14px; font-weight: 500; }
   .bc-google-btn:hover { background: #f7f7f7; }
-  .bc-auth-divider {
-    text-align: center; color: #bbb; font-size: 13px;
-    margin: 14px 0; position: relative;
-  }
-  .bc-auth-divider::before, .bc-auth-divider::after {
-    content: ''; position: absolute; top: 50%;
-    width: 44%; height: 1px; background: #eee;
-  }
-  .bc-auth-divider::before { left: 0; }
-  .bc-auth-divider::after  { right: 0; }
-  .bc-auth-error   { color: #e53e3e; font-size: 13px; margin-bottom: 8px; min-height: 18px; }
+  .bc-auth-divider { text-align: center; color: #bbb; font-size: 13px; margin: 14px 0; position: relative; }
+  .bc-auth-divider::before, .bc-auth-divider::after { content: ''; position: absolute; top: 50%; width: 44%; height: 1px; background: #eee; }
+  .bc-auth-divider::before { left: 0; } .bc-auth-divider::after { right: 0; }
+  .bc-auth-error { color: #e53e3e; font-size: 13px; margin-bottom: 8px; min-height: 18px; }
   .bc-auth-success { color: #38a169; font-size: 13px; margin-bottom: 8px; }
-  .bc-auth-link {
-    background: none; border: none; color: #e85d04;
-    cursor: pointer; font-size: 13px; text-decoration: underline; padding: 0;
-  }
+  .bc-auth-link { background: none; border: none; color: #e85d04; cursor: pointer; font-size: 13px; text-decoration: underline; padding: 0; }
   .bc-auth-footer { text-align: center; margin-top: 12px; font-size: 13px; color: #666; }
 
-  @media (max-width: 500px) {
-    .bc-modal-box { padding: 30px 18px 24px; }
-  }
+  @media (max-width: 500px) { .bc-modal-box { padding: 30px 18px 24px; } .bc-cta-big { padding: 18px 36px; font-size: 16px; } }
 </style>
 
 <div class="bc-wrap">
-
-  <!-- HERO -->
   <div class="bc-hero">
-    <div class="bc-badge">Axitos Publishing &nbsp;·&nbsp; Members Only</div>
-    <h1>Your next great read<br>is already <em>waiting for you.</em></h1>
-    <p>The First Edition Book Club delivers free books straight to your hands — fresh titles across every genre, hand-picked the moment they drop. No subscriptions. No catch. Just good books.</p>
-
-    <!-- Guest: show join button -->
+    <div class="bc-badge">Free Membership &nbsp;·&nbsp; Free Books For Life</div>
     <div id="bc-hero-guest">
-      <button class="bc-cta" onclick="bcOpenModal()">Join the Book Club — It's Free</button>
+      <h1>Your next great read<br>is <em>free &amp; awaits you.</em></h1>
+      <p class="bc-hero-desc">Koinita Book Club delivers free books straight to your hands — fresh titles across every genre, hand-picked the moment they drop. No subscriptions. No catch. Just good books.</p>
+      <button class="bc-cta" onclick="bcOpenModal()">Join Koinita Book Club — It's Free</button>
       <span class="bc-hero-note">Instant access &nbsp;·&nbsp; No credit card required</span>
     </div>
-
-    <!-- Member: show greeting + go button (hidden until auth confirmed) -->
     <div id="bc-hero-member" style="display:none">
-      <p class="bc-member-hello">Welcome back, <strong id="bc-hero-name"></strong>!</p>
-      <a href="https://www.axitos.ai/book-club" class="bc-cta">Go to Your Book Club →</a>
+      <h2 class="bc-welcome-heading">Welcome back to<br>Koinita Book Club, <span id="bc-hero-name"></span>!</h2>
+      <p class="bc-welcome-sub">Your next free read is waiting for you.</p>
+      <a href="https://www.axitos.ai/book-club" class="bc-cta-big">Go to Your Book Club →</a>
     </div>
   </div>
 
@@ -359,79 +98,71 @@
     <path fill="#1a1a2e" d="M0 0h1440v27c-180 36-360 27-720 27S180 63 0 27V0z"/>
   </svg>
 
-  <!-- WHAT IS IT -->
   <div class="bc-about">
-    <p class="bc-label">What is this?</p>
-    <h2>Books for every reader,<br>every season.</h2>
-    <p>At Axitos Publishing, we believe great literature should reach every reader — not just those who can afford it. The First Edition Book Club is our way of giving back: every time we release a new title, club members are the first to know and the first to get it, completely free.</p>
-    <p>Whether you live for literary fiction, thrive on self-development, or lose yourself in fantasy — we have a shelf with your name on it. Our catalogue spans dozens of categories, curated to match what our readers actually want to read.</p>
+    <p class="bc-label">How it works</p>
+    <h2>Your free books,<br>three simple steps.</h2>
+    <p>Every title in Koinita Book Club is available on Amazon Kindle at no cost. No special app required — just a free Amazon account and you're good to go.</p>
+    <div class="bc-steps">
+      <div class="bc-step">
+        <div class="bc-step-num">1</div>
+        <div class="bc-step-body">
+          <h3>Browse your Book Club</h3>
+          <p>Head to your members-only Book Club page and pick any title that catches your eye — we add new books regularly across all genres.</p>
+        </div>
+      </div>
+      <div class="bc-step">
+        <div class="bc-step-num">2</div>
+        <div class="bc-step-body">
+          <h3>Click the book link</h3>
+          <p>Each book has a direct link to its Amazon Kindle listing. One click takes you straight to the Amazon page — no searching needed.</p>
+        </div>
+      </div>
+      <div class="bc-step">
+        <div class="bc-step-num">3</div>
+        <div class="bc-step-body">
+          <h3>Download free on Kindle</h3>
+          <p>The book is listed at $0.00 on Amazon. Add it to your Kindle library and it's yours for life — no renewal, no expiry, no catch.</p>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- PERKS -->
   <div class="bc-perks">
-    <div class="bc-perk">
-      <span class="bc-perk-icon">📖</span>
-      <h3>Free Books, Always</h3>
-      <p>Every release is offered to members at no cost. No hidden fees, ever.</p>
-    </div>
-    <div class="bc-perk">
-      <span class="bc-perk-icon">🎯</span>
-      <h3>Every Genre, Every Mood</h3>
-      <p>Fiction, non-fiction, self-growth, mystery — we cover the full spectrum.</p>
-    </div>
-    <div class="bc-perk">
-      <span class="bc-perk-icon">⚡</span>
-      <h3>First to Know</h3>
-      <p>Members get early access before titles are listed anywhere else.</p>
-    </div>
-    <div class="bc-perk">
-      <span class="bc-perk-icon">🔔</span>
-      <h3>Drop Alerts</h3>
-      <p>We notify you the moment a new book is available — no hunting required.</p>
-    </div>
+    <div class="bc-perk"><span class="bc-perk-icon">📖</span><h3>Free Books, Always</h3><p>Every release is offered to members at no cost. No hidden fees, ever.</p></div>
+    <div class="bc-perk"><span class="bc-perk-icon">🎯</span><h3>Every Genre, Every Mood</h3><p>Fiction, non-fiction, self-growth, mystery — we cover the full spectrum.</p></div>
+    <div class="bc-perk"><span class="bc-perk-icon">⚡</span><h3>First to Know</h3><p>Members get early access before titles are listed anywhere else.</p></div>
+    <div class="bc-perk"><span class="bc-perk-icon">🔔</span><h3>Drop Alerts</h3><p>We notify you the moment a new book is available — no hunting required.</p></div>
   </div>
 
-  <!-- QUOTE -->
   <div class="bc-quote">
     <blockquote>"A reader lives a thousand lives before he dies. The one who never reads lives only one."</blockquote>
     <cite>— George R.R. Martin</cite>
   </div>
 
-  <!-- BOTTOM CTA -->
   <div class="bc-bottom">
-
-    <!-- Guest state -->
     <div id="bc-bottom-guest">
-      <h2>Ready to start your<br>first edition?</h2>
-      <p>Create your free Axitos account and become a First Edition member today. Your next favourite book is one click away.</p>
+      <h2>Ready to start your<br>first free read?</h2>
+      <p>Create your free Koinita account and become a member today. Your next favourite book is one click away.</p>
       <button class="bc-cta-dark" onclick="bcOpenModal()">Create My Free Account</button>
       <span class="bc-signin-link">Already a member? <button onclick="bcOpenModal()">Sign in here</button></span>
     </div>
-
-    <!-- Member state -->
     <div id="bc-bottom-member" style="display:none">
       <h2>You're in.<br>Your shelf awaits.</h2>
-      <p>Head over to your Book Club page to browse and claim the latest free titles.</p>
+      <p>Head over to your Book Club page to browse and claim the latest free titles on Amazon Kindle.</p>
       <a href="https://www.axitos.ai/book-club" class="bc-cta-dark">Go to Your Book Club →</a>
     </div>
-
   </div>
+</div>
 
-</div><!-- /bc-wrap -->
-
-
-<!-- MODAL -->
 <div class="bc-modal-overlay" id="bcAuthModal" onclick="bcOverlayClick(event)">
   <div class="bc-modal-box">
     <button class="bc-modal-close" onclick="bcCloseModal()">&times;</button>
-    <div class="bc-modal-logo">First Edition Book Club</div>
-
+    <div class="bc-modal-logo">Koinita Book Club</div>
     <div id="bc-auth-box">
       <div class="bc-auth-tabs">
         <button class="bc-auth-tab active" id="bc-tab-signin" onclick="bcAuthTab('signin')">Sign In</button>
         <button class="bc-auth-tab" id="bc-tab-signup" onclick="bcAuthTab('signup')">Create Account</button>
       </div>
-
       <button class="bc-google-btn" onclick="bcAuthGoogle()">
         <svg width="18" height="18" viewBox="0 0 48 48">
           <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.2l6.8-6.8C35.8 2.4 30.2 0 24 0 14.8 0 6.9 5.4 2.9 13.3l7.9 6.1C12.6 13.1 17.9 9.5 24 9.5z"/>
@@ -441,21 +172,14 @@
         </svg>
         Continue with Google
       </button>
-
       <div class="bc-auth-divider">or</div>
-
-      <!-- Sign In -->
       <div id="bc-signin-section">
         <input class="bc-auth-input" type="email" id="bc-si-email" placeholder="Email address">
         <input class="bc-auth-input" type="password" id="bc-si-password" placeholder="Password">
         <p class="bc-auth-error" id="bc-si-error"></p>
         <button class="bc-auth-btn" id="bc-si-btn" onclick="bcAuthSignIn()">Sign In</button>
-        <div class="bc-auth-footer">
-          <button class="bc-auth-link" onclick="bcAuthShowForgot()">Forgot password?</button>
-        </div>
+        <div class="bc-auth-footer"><button class="bc-auth-link" onclick="bcAuthShowForgot()">Forgot password?</button></div>
       </div>
-
-      <!-- Sign Up -->
       <div id="bc-signup-section" style="display:none">
         <input class="bc-auth-input" type="text" id="bc-su-name" placeholder="Full Name">
         <input class="bc-auth-input" type="email" id="bc-su-email" placeholder="Email address">
@@ -463,68 +187,41 @@
         <p class="bc-auth-error" id="bc-su-error"></p>
         <button class="bc-auth-btn" id="bc-su-btn" onclick="bcAuthSignUp()">Create Account</button>
       </div>
-
-      <!-- Forgot Password -->
       <div id="bc-forgot-section" style="display:none">
         <p style="font-size:14px;color:#666;margin-bottom:12px">Enter your email and we'll send a reset link.</p>
         <input class="bc-auth-input" type="email" id="bc-fp-email" placeholder="Email address">
         <p class="bc-auth-error" id="bc-fp-error"></p>
         <p class="bc-auth-success" id="bc-fp-success"></p>
         <button class="bc-auth-btn" onclick="bcAuthSendReset()">Send Reset Email</button>
-        <div class="bc-auth-footer">
-          <button class="bc-auth-link" onclick="bcAuthTab('signin')">Back to Sign In</button>
-        </div>
+        <div class="bc-auth-footer"><button class="bc-auth-link" onclick="bcAuthTab('signin')">Back to Sign In</button></div>
       </div>
     </div>
-
   </div>
 </div>
 
 <script>
   var BC_BOOK_CLUB_URL = 'https://www.axitos.ai/book-club';
-
-  /* ── Auth state: swap UI for logged-in members ── */
   firebase.auth().onAuthStateChanged(function(user) {
-    var heroGuest    = document.getElementById('bc-hero-guest');
-    var heroMember   = document.getElementById('bc-hero-member');
-    var bottomGuest  = document.getElementById('bc-bottom-guest');
-    var bottomMember = document.getElementById('bc-bottom-member');
-
+    var hg = document.getElementById('bc-hero-guest'), hm = document.getElementById('bc-hero-member');
+    var bg = document.getElementById('bc-bottom-guest'), bm = document.getElementById('bc-bottom-member');
     if (user) {
-      var firstName = (user.displayName || user.email).split(' ')[0];
-      document.getElementById('bc-hero-name').textContent = firstName;
-      heroGuest.style.display    = 'none';
-      heroMember.style.display   = '';
-      bottomGuest.style.display  = 'none';
-      bottomMember.style.display = '';
+      document.getElementById('bc-hero-name').textContent = (user.displayName || user.email).split(' ')[0];
+      hg.style.display = 'none'; hm.style.display = '';
+      bg.style.display = 'none'; bm.style.display = '';
     } else {
-      heroGuest.style.display    = '';
-      heroMember.style.display   = 'none';
-      bottomGuest.style.display  = '';
-      bottomMember.style.display = 'none';
+      hg.style.display = ''; hm.style.display = 'none';
+      bg.style.display = ''; bm.style.display = 'none';
     }
   });
-
-  /* ── Modal ── */
   function bcOpenModal()  { document.getElementById('bcAuthModal').classList.add('open'); }
   function bcCloseModal() { document.getElementById('bcAuthModal').classList.remove('open'); }
   function bcOverlayClick(e) { if (e.target === e.currentTarget) bcCloseModal(); }
   document.addEventListener('keydown', function(e) { if (e.key === 'Escape') bcCloseModal(); });
-
-  /* ── After auth: redirect to book club ── */
-  function bcRedirect() {
-    window.location.href = BC_BOOK_CLUB_URL;
-  }
-
+  function bcRedirect() { window.location.href = BC_BOOK_CLUB_URL; }
   function bcSaveContact(user, isNewUser) {
     if (!isNewUser) return;
-    var url = 'https://script.google.com/macros/s/AKfycbwQa8KeQmmlxyefE9KnfLY7Be-1xZLn01JV9u80sE7X1vuWpwb_Yj8rZfO1BdzJ2qOD/exec'
-      + '?name='  + encodeURIComponent(user.displayName || '')
-      + '&email=' + encodeURIComponent(user.email)
-      + '&type=book_club';
-    fetch(url, { method: 'GET', mode: 'no-cors' });
+    fetch('https://script.google.com/macros/s/AKfycbwQa8KeQmmlxyefE9KnfLY7Be-1xZLn01JV9u80sE7X1vuWpwb_Yj8rZfO1BdzJ2qOD/exec?name=' + encodeURIComponent(user.displayName || '') + '&email=' + encodeURIComponent(user.email) + '&type=book_club', { method: 'GET', mode: 'no-cors' });
   }
-
   function bcAuthTab(tab) {
     document.getElementById('bc-signin-section').style.display = tab === 'signin' ? '' : 'none';
     document.getElementById('bc-signup-section').style.display = tab === 'signup' ? '' : 'none';
@@ -532,75 +229,40 @@
     document.getElementById('bc-tab-signin').classList.toggle('active', tab === 'signin');
     document.getElementById('bc-tab-signup').classList.toggle('active', tab === 'signup');
   }
-
-  function bcAuthShowForgot() {
-    document.getElementById('bc-signin-section').style.display = 'none';
-    document.getElementById('bc-forgot-section').style.display = '';
-  }
-
+  function bcAuthShowForgot() { document.getElementById('bc-signin-section').style.display = 'none'; document.getElementById('bc-forgot-section').style.display = ''; }
   function bcAuthGoogle() {
-    var provider = new firebase.auth.GoogleAuthProvider();
-    firebase.auth().signInWithPopup(provider)
-      .then(function(r) {
-        bcSaveContact(r.user, r.additionalUserInfo.isNewUser);
-        bcRedirect();
-      })
+    firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())
+      .then(function(r) { bcSaveContact(r.user, r.additionalUserInfo.isNewUser); bcRedirect(); })
       .catch(function(err) { document.getElementById('bc-si-error').textContent = err.message; });
   }
-
   function bcAuthSignIn() {
-    var email = document.getElementById('bc-si-email').value.trim();
-    var pw    = document.getElementById('bc-si-password').value;
-    var btn   = document.getElementById('bc-si-btn');
-    var err   = document.getElementById('bc-si-error');
+    var email = document.getElementById('bc-si-email').value.trim(), pw = document.getElementById('bc-si-password').value;
+    var btn = document.getElementById('bc-si-btn'), err = document.getElementById('bc-si-error');
     err.textContent = '';
     if (!email || !pw) { err.textContent = 'Please fill in all fields.'; return; }
     btn.disabled = true; btn.textContent = 'Signing in...';
     firebase.auth().signInWithEmailAndPassword(email, pw)
       .then(function() { bcRedirect(); })
-      .catch(function(e) {
-        err.textContent = (e.code === 'auth/wrong-password' || e.code === 'auth/user-not-found')
-          ? 'Invalid email or password.' : e.message;
-        btn.disabled = false; btn.textContent = 'Sign In';
-      });
+      .catch(function(e) { err.textContent = (e.code === 'auth/wrong-password' || e.code === 'auth/user-not-found') ? 'Invalid email or password.' : e.message; btn.disabled = false; btn.textContent = 'Sign In'; });
   }
-
   function bcAuthSignUp() {
-    var name  = document.getElementById('bc-su-name').value.trim();
-    var email = document.getElementById('bc-su-email').value.trim();
-    var pw    = document.getElementById('bc-su-password').value;
-    var btn   = document.getElementById('bc-su-btn');
-    var err   = document.getElementById('bc-su-error');
+    var name = document.getElementById('bc-su-name').value.trim(), email = document.getElementById('bc-su-email').value.trim(), pw = document.getElementById('bc-su-password').value;
+    var btn = document.getElementById('bc-su-btn'), err = document.getElementById('bc-su-error');
     err.textContent = '';
-    if (!name)  { err.textContent = 'Please enter your name.'; return; }
+    if (!name) { err.textContent = 'Please enter your name.'; return; }
     if (!email) { err.textContent = 'Please enter your email.'; return; }
-    if (!pw)    { err.textContent = 'Please enter a password.'; return; }
+    if (!pw) { err.textContent = 'Please enter a password.'; return; }
     btn.disabled = true; btn.textContent = 'Creating account...';
     firebase.auth().createUserWithEmailAndPassword(email, pw)
-      .then(function(cred) {
-        return cred.user.updateProfile({ displayName: name }).then(function() {
-          bcSaveContact(cred.user, true);
-          bcRedirect();
-        });
-      })
-      .catch(function(e) {
-        err.textContent = e.code === 'auth/email-already-in-use'
-          ? 'An account with this email already exists.' : e.message;
-        btn.disabled = false; btn.textContent = 'Create Account';
-      });
+      .then(function(cred) { return cred.user.updateProfile({ displayName: name }).then(function() { bcSaveContact(cred.user, true); bcRedirect(); }); })
+      .catch(function(e) { err.textContent = e.code === 'auth/email-already-in-use' ? 'An account with this email already exists.' : e.message; btn.disabled = false; btn.textContent = 'Create Account'; });
   }
-
   function bcAuthSendReset() {
-    var email = document.getElementById('bc-fp-email').value.trim();
-    var err   = document.getElementById('bc-fp-error');
-    var succ  = document.getElementById('bc-fp-success');
+    var email = document.getElementById('bc-fp-email').value.trim(), err = document.getElementById('bc-fp-error'), succ = document.getElementById('bc-fp-success');
     err.textContent = ''; succ.textContent = '';
     if (!email) { err.textContent = 'Please enter your email.'; return; }
     firebase.auth().sendPasswordResetEmail(email)
       .then(function() { succ.textContent = 'Reset email sent! Check your inbox.'; })
-      .catch(function(e) {
-        err.textContent = e.code === 'auth/user-not-found'
-          ? 'No account found with this email.' : e.message;
-      });
+      .catch(function(e) { err.textContent = e.code === 'auth/user-not-found' ? 'No account found with this email.' : e.message; });
   }
 </script>
