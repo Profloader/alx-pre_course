@@ -20,15 +20,14 @@
 
   .bc-wave { display: block; width: 100%; margin-bottom: -2px; }
 
-  .bc-about { max-width: 860px; margin: 0 auto; padding: 64px 24px 48px; }
-  .bc-label { font-family: Arial, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: #e85d04; margin-bottom: 14px; }
-  .bc-about h2 { font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: normal; line-height: 1.3; margin: 0 0 14px; max-width: 580px; }
-  .bc-about > p { font-family: Arial, sans-serif; font-size: 15px; color: #5c5c7a; line-height: 1.8; max-width: 640px; margin-bottom: 36px; }
-  .bc-steps { display: flex; flex-direction: column; gap: 24px; max-width: 640px; }
-  .bc-step { display: flex; align-items: flex-start; gap: 20px; }
-  .bc-step-num { flex-shrink: 0; width: 36px; height: 36px; background: #fb8a55; color: #fff; border-radius: 50%; font-family: Arial, sans-serif; font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
-  .bc-step-body h3 { font-family: Arial, sans-serif; font-size: 15px; font-weight: 700; margin: 0 0 5px; color: #1a1a2e; }
-  .bc-step-body p { font-family: Arial, sans-serif; font-size: 14px; color: #5c5c7a; line-height: 1.7; margin: 0; }
+  .bc-hero-how { margin: 52px auto 0; max-width: 860px; position: relative; z-index: 1; }
+  .bc-hero-how-label { font-family: Arial, sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: rgba(251,138,85,.7); margin-bottom: 18px; }
+  .bc-hero-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .bc-hero-step { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: 10px; padding: 20px 18px; text-align: left; }
+  .bc-hero-step-num { width: 26px; height: 26px; background: #fb8a55; color: #fff; border-radius: 50%; font-family: Arial, sans-serif; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+  .bc-hero-step h3 { font-family: Arial, sans-serif; font-size: 13px; font-weight: 700; color: #fff; margin: 0 0 5px; }
+  .bc-hero-step p { font-family: Arial, sans-serif; font-size: 12px; color: rgba(255,255,255,.48); line-height: 1.65; margin: 0; }
+  @media (max-width: 640px) { .bc-hero-steps { grid-template-columns: 1fr; } }
 
   .bc-perks { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; max-width: 860px; margin: 0 auto; padding: 0 24px 64px; }
   .bc-perk { background: #fff8f3; border: 1px solid #f0e8e0; border-radius: 12px; padding: 28px 22px; }
@@ -92,40 +91,31 @@
       <button class="bc-cta" onclick="bcOpenModal()">Join Koinita Book Club — It's Free</button>
       <span class="bc-hero-note">Instant access &nbsp;·&nbsp; No credit card required</span>
     </div>
+    <div class="bc-hero-how">
+      <p class="bc-hero-how-label">How it works</p>
+      <div class="bc-hero-steps">
+        <div class="bc-hero-step">
+          <div class="bc-hero-step-num">1</div>
+          <h3>Browse your Book Club</h3>
+          <p>Pick any title from your members-only page — new books added regularly across all genres.</p>
+        </div>
+        <div class="bc-hero-step">
+          <div class="bc-hero-step-num">2</div>
+          <h3>Click the book link</h3>
+          <p>One click takes you straight to the Amazon Kindle listing — no searching needed.</p>
+        </div>
+        <div class="bc-hero-step">
+          <div class="bc-hero-step-num">3</div>
+          <h3>Download free on Kindle</h3>
+          <p>Listed at $0.00 on Amazon. Add it to your library and it's yours for life — no renewal, no catch.</p>
+        </div>
+      </div>
+    </div>
   </div>
 
   <svg class="bc-wave" viewBox="0 0 1440 54" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
     <path fill="#1a1a2e" d="M0 0h1440v27c-180 36-360 27-720 27S180 63 0 27V0z"/>
   </svg>
-
-  <div class="bc-about">
-    <p class="bc-label">How it works</p>
-    <h2>Your free books,<br>three simple steps.</h2>
-    <p>Every title in Koinita Book Club is available on Amazon Kindle at no cost. No special app required — just a free Amazon account and you're good to go.</p>
-    <div class="bc-steps">
-      <div class="bc-step">
-        <div class="bc-step-num">1</div>
-        <div class="bc-step-body">
-          <h3>Browse your Book Club</h3>
-          <p>Head to your members-only Book Club page and pick any title that catches your eye — we add new books regularly across all genres.</p>
-        </div>
-      </div>
-      <div class="bc-step">
-        <div class="bc-step-num">2</div>
-        <div class="bc-step-body">
-          <h3>Click the book link</h3>
-          <p>Each book has a direct link to its Amazon Kindle listing. One click takes you straight to the Amazon page — no searching needed.</p>
-        </div>
-      </div>
-      <div class="bc-step">
-        <div class="bc-step-num">3</div>
-        <div class="bc-step-body">
-          <h3>Download free on Kindle</h3>
-          <p>The book is listed at $0.00 on Amazon. Add it to your Kindle library and it's yours for life — no renewal, no expiry, no catch.</p>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <div class="bc-perks">
     <div class="bc-perk"><span class="bc-perk-icon">📖</span><h3>Free Books, Always</h3><p>Every release is offered to members at no cost. No hidden fees, ever.</p></div>
