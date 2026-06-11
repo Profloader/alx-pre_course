@@ -1137,12 +1137,14 @@ a { color: inherit; text-decoration: none; }
             <p class="form-error" id="formError" role="alert" aria-live="assertive" hidden>Sorry — something went wrong submitting your query. Please try again, or reach us via our <a href="https://www.axitos.ai/contact">contact page</a>.</p>
             <p class="form-disclaimer">Submission is free. No fees, no obligations. We review every query personally and respond within 14 business days. Submitting a query does not guarantee acquisition.</p>
           </div>
-          <div class="form-success" id="formSuccess" role="alert" aria-live="polite" hidden>
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="20 6 9 17 4 12"/></svg>
-            <h3>Query Received</h3>
-            <p>Thank you. Our editorial team will review your submission and respond within 14 business days. Please check your email for a confirmation.</p>
-          </div>
         </form>
+        <!-- Success panel is a SIBLING of the form (not a child) so that hiding
+             the form on submit does not also hide this confirmation message. -->
+        <div class="form-success" id="formSuccess" role="status" aria-live="polite" hidden>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="20 6 9 17 4 12"/></svg>
+          <h3>Query Received</h3>
+          <p>Thank you. Our editorial team will review your submission and respond within 14 business days. Please check your email for a confirmation.</p>
+        </div>
       </div>
     </section>
 
