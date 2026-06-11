@@ -1266,6 +1266,11 @@ if (synopsisField && charCount) {
   });
 }
 
+/* === QUERY SUBMISSION ENDPOINT ===
+   Paste the Apps Script Web App URL here after deploying apps-script/Code.gs.
+   It looks like: https://script.google.com/macros/s/AKfy..../exec */
+const QUERY_ENDPOINT = 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+
 /* === FORM VALIDATION === */
 const queryForm = document.getElementById('queryForm');
 const submitBtn = document.getElementById('submitBtn');
@@ -1314,9 +1319,34 @@ if (queryForm) {
       return;
     }
     submitBtn.disabled = true; submitBtn.textContent = 'Submitting…';
-    await new Promise(resolve => setTimeout(resolve, 1400));
-    queryForm.style.display = 'none'; formSuccess.hidden = false;
-    formSuccess.scrollIntoView({behavior:'smooth',block:'center'});
+
+    // Capture the readable genre label (not the option value) for the sheet.
+    const genreSel = document.getElementById('genre');
+    const genreLabel = (genreSel && genreSel.selectedIndex >= 0) ? genreSel.options[genreSel.selectedIndex].text : '';
+
+    const payload = new URLSearchParams();
+    payload.append('firstName', document.getElementById('firstName').value.trim());
+    payload.append('lastName', document.getElementById('lastName').value.trim());
+    payload.append('email', document.getElementById('email').value.trim());
+    payload.append('bookTitle', document.getElementById('bookTitle').value.trim());
+    payload.append('genre', genreLabel);
+    payload.append('model', document.getElementById('model').value);
+    payload.append('wordCount', document.getElementById('wordCount').value.trim());
+    payload.append('synopsis', document.getElementById('synopsis').value.trim());
+    payload.append('platform', document.getElementById('platform').value.trim());
+    payload.append('humanAuthored', document.getElementById('humanAuthored').checked ? 'true' : 'false');
+
+    try {
+      // 'no-cors' + urlencoded body = a "simple request": no CORS preflight,
+      // which is how Apps Script web apps accept browser form posts. The
+      // response is opaque (unreadable), so we confirm success optimistically.
+      await fetch(QUERY_ENDPOINT, { method: 'POST', mode: 'no-cors', body: payload });
+      queryForm.style.display = 'none'; formSuccess.hidden = false;
+      formSuccess.scrollIntoView({behavior:'smooth',block:'center'});
+    } catch (err) {
+      submitBtn.disabled = false; submitBtn.textContent = 'Submit My Query';
+      alert('Sorry — something went wrong submitting your query. Please try again, or email us directly.');
+    }
   });
 }
 </script>
