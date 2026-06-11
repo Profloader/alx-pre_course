@@ -347,13 +347,24 @@ a { color: inherit; text-decoration: none; }
 .char-count { font-size: var(--text-xs); color: var(--color-text-faint); text-align: right; }
 .form-group-checkbox { flex-direction: row; align-items: flex-start; gap: 0; flex-wrap: wrap; }
 .checkbox-label { display: flex; gap: 0.75rem; align-items: flex-start; cursor: pointer; font-size: var(--text-sm); color: var(--color-text-muted); line-height: 1.5; }
-.checkbox-label input[type="checkbox"] { width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; accent-color: var(--color-primary); cursor: pointer; }
+/* Restore native rendering: the shared ".form-group input" rule sets
+   appearance:none, which on a checkbox hides its checked/unchecked state.
+   !important also defends against platform (Duda) resets. */
+.checkbox-label input[type="checkbox"] { -webkit-appearance: auto !important; appearance: auto !important; width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; accent-color: var(--color-primary); cursor: pointer; }
 .form-submit-area { display: flex; flex-direction: column; gap: 0.75rem; }
 .form-disclaimer { font-size: var(--text-xs); color: var(--color-text-muted); text-align: center; line-height: 1.6; }
 .form-success { padding: 2.5rem; background: var(--color-surface); border: 1.5px solid #2d7a2d; border-radius: var(--radius-xl); text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.75rem; }
 .form-success svg { color: #2d7a2d; }
 .form-success h3 { font-family: var(--font-body); font-size: var(--text-lg); font-weight: 600; }
 .form-success p { font-size: var(--text-sm); color: var(--color-text-muted); }
+/* The success panel must stay hidden until submission succeeds. Its own
+   display:flex was overriding the [hidden] attribute, so it showed on load. */
+.form-success[hidden] { display: none !important; }
+.form-error { font-size: var(--text-sm); color: #c0392b; text-align: center; line-height: 1.6; }
+.form-error[hidden] { display: none !important; }
+.form-error a { color: #c0392b; text-decoration: underline; text-underline-offset: 2px; }
+/* Honeypot anti-spam field: kept off-screen (not display:none, so bots still fill it). */
+.hp-field { position: absolute !important; left: -9999px !important; top: auto; width: 1px; height: 1px; overflow: hidden; }
 @media (max-width: 560px) { .form-row-2 { grid-template-columns: 1fr; } }
 
 /* === FOOTER === */
@@ -546,6 +557,7 @@ a { color: inherit; text-decoration: none; }
   font-family: var(--font-body) !important;
   font-size: var(--text-lg) !important;
   font-weight: 600 !important;
+  color: var(--color-text) !important;
 }
 
 /* Brand wordmark */
@@ -1115,8 +1127,14 @@ a { color: inherit; text-decoration: none; }
             </label>
             <span class="field-error" id="humanAuthoredError" role="alert" aria-live="polite"></span>
           </div>
+          <!-- Honeypot anti-spam field: humans never see or fill this; bots do. -->
+          <div class="hp-field" aria-hidden="true">
+            <label for="company">Company (leave this field empty)</label>
+            <input type="text" id="company" name="company" tabindex="-1" autocomplete="off" />
+          </div>
           <div class="form-submit-area">
             <button type="submit" class="btn btn-primary btn-large btn-full" id="submitBtn">Submit My Query</button>
+            <p class="form-error" id="formError" role="alert" aria-live="assertive" hidden>Sorry — something went wrong submitting your query. Please try again, or reach us via our <a href="https://www.axitos.ai/contact">contact page</a>.</p>
             <p class="form-disclaimer">Submission is free. No fees, no obligations. We review every query personally and respond within 14 business days. Submitting a query does not guarantee acquisition.</p>
           </div>
           <div class="form-success" id="formSuccess" role="alert" aria-live="polite" hidden>
@@ -1269,12 +1287,37 @@ if (synopsisField && charCount) {
 /* === QUERY SUBMISSION ENDPOINT ===
    Paste the Apps Script Web App URL here after deploying apps-script/Code.gs.
    It looks like: https://script.google.com/macros/s/AKfy..../exec */
-const QUERY_ENDPOINT = 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+const QUERY_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzN9UK2vKOzQCEcxOuzBWuAQ-49BpXI7rERhZdnY6m6ZzWoh3SzMjOLv0JXkT5hcTuIOw/exec';
+
+/* Submits via JSONP so we can READ the endpoint's response. Apps Script web
+   apps don't send CORS headers, so a normal fetch can't read the reply — which
+   means we could never tell success from failure. JSONP (a GET with a callback)
+   sidesteps CORS and returns the server's JSON result, so we show the success
+   panel ONLY when the server confirms the row was written. */
+function submitQuery(params) {
+  return new Promise((resolve, reject) => {
+    const cbName = 'axitosCb_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
+    const qs = new URLSearchParams(params);
+    qs.append('callback', cbName);
+    const script = document.createElement('script');
+    const timer = setTimeout(() => { cleanup(); reject(new Error('timeout')); }, 20000);
+    function cleanup() {
+      clearTimeout(timer);
+      try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+    window[cbName] = (resp) => { cleanup(); resolve(resp); };
+    script.onerror = () => { cleanup(); reject(new Error('network')); };
+    script.src = QUERY_ENDPOINT + '?' + qs.toString();
+    document.body.appendChild(script);
+  });
+}
 
 /* === FORM VALIDATION === */
 const queryForm = document.getElementById('queryForm');
 const submitBtn = document.getElementById('submitBtn');
 const formSuccess = document.getElementById('formSuccess');
+const formError = document.getElementById('formError');
 function validateField(id, errorId, message) {
   const field = document.getElementById(id); const errorEl = document.getElementById(errorId);
   if (!field) return true;
@@ -1319,33 +1362,43 @@ if (queryForm) {
       return;
     }
     submitBtn.disabled = true; submitBtn.textContent = 'Submitting…';
+    if (formError) formError.hidden = true;
+
+    // Honeypot: a hidden field humans never see. If it's filled, treat it as a
+    // bot — show the normal success UI but send nothing to the sheet.
+    const hp = document.getElementById('company');
+    if (hp && hp.value.trim() !== '') {
+      queryForm.style.display = 'none'; formSuccess.hidden = false;
+      formSuccess.scrollIntoView({behavior:'smooth',block:'center'});
+      return;
+    }
 
     // Capture the readable genre label (not the option value) for the sheet.
     const genreSel = document.getElementById('genre');
     const genreLabel = (genreSel && genreSel.selectedIndex >= 0) ? genreSel.options[genreSel.selectedIndex].text : '';
 
-    const payload = new URLSearchParams();
-    payload.append('firstName', document.getElementById('firstName').value.trim());
-    payload.append('lastName', document.getElementById('lastName').value.trim());
-    payload.append('email', document.getElementById('email').value.trim());
-    payload.append('bookTitle', document.getElementById('bookTitle').value.trim());
-    payload.append('genre', genreLabel);
-    payload.append('model', document.getElementById('model').value);
-    payload.append('wordCount', document.getElementById('wordCount').value.trim());
-    payload.append('synopsis', document.getElementById('synopsis').value.trim());
-    payload.append('platform', document.getElementById('platform').value.trim());
-    payload.append('humanAuthored', document.getElementById('humanAuthored').checked ? 'true' : 'false');
+    const params = {
+      firstName: document.getElementById('firstName').value.trim(),
+      lastName:  document.getElementById('lastName').value.trim(),
+      email:     document.getElementById('email').value.trim(),
+      bookTitle: document.getElementById('bookTitle').value.trim(),
+      genre:     genreLabel,
+      model:     document.getElementById('model').value,
+      wordCount: document.getElementById('wordCount').value.trim(),
+      synopsis:  document.getElementById('synopsis').value.trim(),
+      platform:  document.getElementById('platform').value.trim(),
+      humanAuthored: document.getElementById('humanAuthored').checked ? 'true' : 'false'
+    };
 
     try {
-      // 'no-cors' + urlencoded body = a "simple request": no CORS preflight,
-      // which is how Apps Script web apps accept browser form posts. The
-      // response is opaque (unreadable), so we confirm success optimistically.
-      await fetch(QUERY_ENDPOINT, { method: 'POST', mode: 'no-cors', body: payload });
+      const resp = await submitQuery(params);
+      // Show success ONLY when the server confirms the write.
+      if (!resp || !resp.ok) throw new Error(resp && resp.error ? resp.error : 'Submission failed.');
       queryForm.style.display = 'none'; formSuccess.hidden = false;
       formSuccess.scrollIntoView({behavior:'smooth',block:'center'});
     } catch (err) {
       submitBtn.disabled = false; submitBtn.textContent = 'Submit My Query';
-      alert('Sorry — something went wrong submitting your query. Please try again, or email us directly.');
+      if (formError) { formError.hidden = false; formError.scrollIntoView({behavior:'smooth',block:'center'}); }
     }
   });
 }
