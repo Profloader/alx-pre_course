@@ -376,43 +376,205 @@ a { color: inherit; text-decoration: none; }
 .fade-up.visible { opacity: 1; transform: translateY(0); }
 
 /* ============================================================
-   HEADING COLOR ENFORCEMENT
-   Re-asserts the designed heading colors with !important so the
+   HEADING STYLE ENFORCEMENT  (color + typography)
+   Re-asserts each heading's designed COLOR and TYPOGRAPHY
+   (font-family, font-size, font-weight, letter-spacing,
+   line-height, font-style, text-transform) with !important so the
    hosting platform's global stylesheet (e.g. Duda) cannot override
-   them and force headings to black. Values, theme-awareness, layout,
-   and responsive behavior are all preserved exactly — this block
-   only locks in the colors already defined above. Placed last so it
+   them — Duda resets heading fonts/sizes to its own theme defaults,
+   which is why headings rendered in the wrong font and size.
+   Every value below is copied verbatim from the design above,
+   including the fluid clamp() font sizes, so colors, fonts,
+   responsive scaling, and layout all stay exactly as designed.
+   This block only locks in existing values. Placed last so it
    wins on source order against injected platform rules.
    ============================================================ */
 
-/* Section eyebrow labels — antique gold */
-.section-label { color: var(--color-accent) !important; }
+/* Section eyebrow labels */
+.section-label {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-xs) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  color: var(--color-accent) !important;
+}
 
-/* Section headlines — navy on light surfaces (default) */
-.section-headline { color: var(--color-text) !important; }
+/* Section headlines (h2) — navy display serif on light surfaces */
+.section-headline {
+  font-family: var(--font-display) !important;
+  font-size: var(--text-2xl) !important;
+  font-weight: 600 !important;
+  line-height: 1.1 !important;
+  color: var(--color-text) !important;
+}
+/* Section headline on the dark Process section — cream */
+.section-process .section-headline { color: #f5f0e8 !important; }
 
-/* Headings on light surfaces — navy */
-.ai-explanation h3,
-.geo-card h4,
-.model-name,
-.feature-card h3,
-.what-text .lead-text { color: var(--color-text) !important; }
+/* Hero headline (h1) — cream display serif with gold emphasis */
+.hero-headline {
+  font-family: var(--font-display) !important;
+  font-size: var(--text-hero) !important;
+  font-weight: 600 !important;
+  line-height: 1.0 !important;
+  letter-spacing: -0.01em !important;
+  color: #f5f0e8 !important;
+}
+.hero-headline em { font-style: italic !important; color: var(--color-accent) !important; }
 
-/* Genre column labels — muted */
-.genre-column h3 { color: var(--color-text-muted) !important; }
-.genre-column li { color: var(--color-text) !important; }
+/* Hero stat numbers — display serif, gold */
+.stat-number {
+  font-family: var(--font-display) !important;
+  font-size: clamp(1.5rem, 3vw, 2.25rem) !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  color: var(--color-accent) !important;
+}
 
-/* Hero headline — cream with gold emphasis (on dark surface) */
-.hero-headline { color: #f5f0e8 !important; }
-.hero-headline em { color: var(--color-accent) !important; }
+/* What-section lead paragraph — display serif */
+.what-text .lead-text {
+  font-family: var(--font-display) !important;
+  font-size: var(--text-lg) !important;
+  line-height: 1.6 !important;
+  color: var(--color-text) !important;
+}
 
-/* Headings on dark surfaces — cream */
-.section-process .section-headline,
-.process-step h3,
-.ai-quote-block blockquote { color: #f5f0e8 !important; }
+/* Feature card titles (h3) — body font */
+.feature-card h3 {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-sm) !important;
+  font-weight: 600 !important;
+  color: var(--color-text) !important;
+}
 
-/* Footer column headings */
-.footer-col h4 { color: rgba(245,240,232,0.4) !important; }
+/* Process step big numbers — display serif */
+.step-number {
+  font-family: var(--font-display) !important;
+  font-size: clamp(2rem, 4vw, 3rem) !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  letter-spacing: -0.02em !important;
+}
+
+/* Process step titles (h3) — body font, cream on dark */
+.process-step h3 {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-base) !important;
+  font-weight: 600 !important;
+  color: #f5f0e8 !important;
+}
+
+/* AI big stat numbers — display serif, gold */
+.ai-stat-large {
+  font-family: var(--font-display) !important;
+  font-size: clamp(2.5rem, 5vw, 4rem) !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  color: var(--color-accent) !important;
+}
+
+/* AI explanation heading (h3) — display serif */
+.ai-explanation h3 {
+  font-family: var(--font-display) !important;
+  font-size: var(--text-xl) !important;
+  font-weight: 600 !important;
+  color: var(--color-text) !important;
+}
+
+/* GEO card titles (h4) — body font */
+.geo-card h4 {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-sm) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em !important;
+  color: var(--color-text) !important;
+}
+
+/* AI quote — display serif italic, cream on dark */
+.ai-quote-block blockquote {
+  font-family: var(--font-display) !important;
+  font-size: var(--text-xl) !important;
+  font-style: italic !important;
+  line-height: 1.4 !important;
+  color: #f5f0e8 !important;
+}
+
+/* Publishing model names (h3) — display serif */
+.model-name {
+  font-family: var(--font-display) !important;
+  font-size: var(--text-xl) !important;
+  font-weight: 600 !important;
+  color: var(--color-text) !important;
+}
+
+/* Publishing model price labels — body font, gold */
+.model-price {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-sm) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  color: var(--color-accent) !important;
+}
+
+/* Genre column labels (h3) — body font, muted */
+.genre-column h3 {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-sm) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: var(--color-text-muted) !important;
+}
+/* Genre list entries — display serif */
+.genre-column li {
+  font-family: var(--font-display) !important;
+  font-size: var(--text-lg) !important;
+  font-weight: 500 !important;
+  color: var(--color-text) !important;
+}
+
+/* FAQ question rows (summary) — body font */
+.faq-item summary {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-base) !important;
+  font-weight: 500 !important;
+}
+
+/* Form success heading (h3) — body font */
+.form-success h3 {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-lg) !important;
+  font-weight: 600 !important;
+}
+
+/* Brand wordmark */
+.logo-text {
+  font-family: var(--font-display) !important;
+  font-size: 1.2rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em !important;
+  line-height: 1.1 !important;
+}
+.logo-text em {
+  font-family: var(--font-body) !important;
+  font-style: normal !important;
+  font-size: 0.7rem !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+  color: var(--color-text-muted) !important;
+}
+
+/* Footer column headings (h4) — body font */
+.footer-col h4 {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-xs) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+  color: rgba(245,240,232,0.4) !important;
+}
 </style>
 </head>
 <body>
