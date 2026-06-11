@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- SEO / AEO / GEO optimized meta -->
+  <title>Axitos Publishing House | Traditional Book Publishing with AI Visibility</title>
+  <meta name="description" content="Axitos Publishing House is a traditional book publisher with no upfront author fees. We acquire, edit, produce, and distribute your book globally — then build your AI search authority through GEO and AEO so you get cited by ChatGPT, Perplexity, and Google AI." />
+  <meta name="keywords" content="traditional book publisher, no upfront fees, AI visibility for books, GEO for books, AEO book publishing, generative engine optimization, answer engine optimization, book publisher Aurora Illinois, AI citation royalties, independent book publisher" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Axitos Publishing House | Traditional Book Publishing with AI Visibility" />
+  <meta property="og:description" content="We acquire, publish, and globally distribute your book at no cost to authors — and position you as a cited authority in AI search engines." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.axitos.ai/" />
+
+  <!-- Schema.org structured data for GEO/AEO -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Axitos Publishing House",
+    "alternateName": "Axitos",
+    "url": "https://www.axitos.ai",
+    "description": "Axitos Publishing House is an independent traditional book publisher offering no-upfront-fee publishing, global distribution, and AI visibility marketing including GEO and AEO for authors.",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Aurora",
+      "addressRegion": "IL",
+      "addressCountry": "US"
+    },
+    "sameAs": ["https://www.axitos.ai"],
+    "offers": [
+      {
+        "@type": "Offer",
+        "name": "Traditional Publishing Partnership",
+        "description": "No upfront cost. Axitos invests in editing, cover design, production, and global distribution. Authors earn 30% net royalties.",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      {
+        "@type": "Offer",
+        "name": "Premium Publishing Partnership",
+        "description": "A fully supported, premium publishing experience for thought leaders. Single upfront investment. Authors earn 50% net royalties.",
+        "priceSpecification": {
+          "@type": "PriceSpecification",
+          "description": "Single upfront investment"
+        }
+      }
+    ]
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+<style>
+/* ============================================================
+   AXITOS PUBLISHING HOUSE — Homepage v2
+   Design: Perplexity session (preserved exactly)
+   Palette: Deep navy + warm parchment + antique gold
+   ============================================================ */
+
+:root,
+[data-theme='light'] {
+  --color-bg: #f8f6f1;
+  --color-surface: #faf8f4;
+  --color-surface-2: #fcfbf8;
+  --color-surface-offset: #f1ede4;
+  --color-surface-dark: #1a1a2e;
+  --color-surface-mid: #16213e;
+  --color-divider: #e0d9ce;
+  --color-border: #d5cfc4;
+  --color-text: #1c1c2e;
+  --color-text-muted: #6b6860;
+  --color-text-faint: #b0aca4;
+  --color-text-inverse: #f8f6f1;
+  --color-accent: #b8860b;
+  --color-accent-hover: #9a6e09;
+  --color-accent-active: #7d5907;
+  --color-accent-light: #f5ecd5;
+  --color-primary: #0f3d57;
+  --color-primary-hover: #0a2e42;
+  --color-primary-active: #061f2e;
+  --color-primary-text: #f8f6f1;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --transition: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  --shadow-sm: 0 1px 3px rgba(28,28,46,0.06);
+  --shadow-md: 0 4px 16px rgba(28,28,46,0.09);
+  --shadow-lg: 0 12px 40px rgba(28,28,46,0.13);
+  --content-narrow: 680px;
+  --content-default: 1000px;
+  --content-wide: 1200px;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Inter', 'Helvetica Neue', sans-serif;
+  --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --text-sm: clamp(0.875rem, 0.82rem + 0.3vw, 1rem);
+  --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  --text-lg: clamp(1.125rem, 1rem + 0.6vw, 1.5rem);
+  --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+  --text-2xl: clamp(2rem, 1.2rem + 2.5vw, 3.5rem);
+  --text-3xl: clamp(2.5rem, 1rem + 4vw, 5rem);
+  --text-hero: clamp(3rem, 1rem + 6vw, 6.5rem);
+}
+
+[data-theme='dark'] {
+  --color-bg: #0f0f1a;
+  --color-surface: #141428;
+  --color-surface-2: #1a1a32;
+  --color-surface-offset: #12121f;
+  --color-surface-dark: #09090f;
+  --color-surface-mid: #141422;
+  --color-divider: #252538;
+  --color-border: #303048;
+  --color-text: #e8e5de;
+  --color-text-muted: #8a8880;
+  --color-text-faint: #5a5855;
+  --color-text-inverse: #0f0f1a;
+  --color-accent: #d4a017;
+  --color-accent-hover: #e8b528;
+  --color-accent-active: #f0c440;
+  --color-accent-light: #2a2210;
+  --color-primary: #2a6b8f;
+  --color-primary-hover: #1e5472;
+  --color-primary-active: #154060;
+  --color-primary-text: #f8f6f1;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.25);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.35);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.45);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --color-bg: #0f0f1a; --color-surface: #141428; --color-surface-2: #1a1a32;
+    --color-surface-offset: #12121f; --color-surface-dark: #09090f; --color-surface-mid: #141422;
+    --color-divider: #252538; --color-border: #303048; --color-text: #e8e5de;
+    --color-text-muted: #8a8880; --color-text-faint: #5a5855; --color-text-inverse: #0f0f1a;
+    --color-accent: #d4a017; --color-accent-hover: #e8b528; --color-accent-active: #f0c440;
+    --color-accent-light: #2a2210; --color-primary: #2a6b8f; --color-primary-hover: #1e5472;
+    --color-primary-active: #154060; --color-primary-text: #f8f6f1;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; scroll-behavior: smooth; scroll-padding-top: 80px; }
+body { min-height: 100dvh; line-height: 1.65; font-family: var(--font-body); font-size: var(--text-base); color: var(--color-text); background-color: var(--color-bg); }
+img, picture, video, canvas, svg { display: block; max-width: 100%; height: auto; }
+input, button, textarea, select { font: inherit; color: inherit; }
+h1,h2,h3,h4,h5,h6 { text-wrap: balance; line-height: 1.15; font-family: var(--font-display); }
+p, li, figcaption { text-wrap: pretty; }
+button { cursor: pointer; background: none; border: none; }
+a { color: inherit; text-decoration: none; }
+:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; border-radius: var(--radius-sm); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
+
+.container { width: min(var(--content-wide), 100% - 2 * clamp(1rem, 4vw, 3rem)); margin-inline: auto; }
+.container-narrow { max-width: var(--content-narrow); }
+
+.section-label { font-family: var(--font-body); font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-accent); margin-bottom: 0.75rem; }
+.section-headline { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 600; color: var(--color-text); line-height: 1.1; margin-bottom: 1.5rem; }
+.section-sub { font-size: var(--text-base); color: var(--color-text-muted); max-width: 65ch; line-height: 1.7; margin-bottom: 3rem; }
+.section { padding-block: clamp(4rem, 8vw, 7rem); }
+
+.btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: var(--radius-md); font-family: var(--font-body); font-size: var(--text-sm); font-weight: 500; letter-spacing: 0.01em; cursor: pointer; transition: background var(--transition), color var(--transition), border-color var(--transition), box-shadow var(--transition); white-space: nowrap; }
+.btn-primary { background: var(--color-primary); color: var(--color-primary-text); border: 1.5px solid var(--color-primary); }
+.btn-primary:hover { background: var(--color-primary-hover); border-color: var(--color-primary-hover); }
+.btn-primary:active { background: var(--color-primary-active); }
+.btn-outline { background: transparent; color: var(--color-text); border: 1.5px solid var(--color-border); }
+.btn-outline:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.btn-ghost { background: transparent; color: var(--color-text); border: 1.5px solid var(--color-divider); }
+.btn-ghost:hover { border-color: var(--color-text); }
+.btn-large { padding: 0.9rem 2rem; font-size: var(--text-base); }
+.btn-full { width: 100%; justify-content: center; }
+
+/* === NAV — matches axitos.ai live structure === */
+.site-header { position: sticky; top: 0; z-index: 50; background: color-mix(in srgb, var(--color-bg) 92%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--color-divider); transition: box-shadow var(--transition); }
+.nav-inner { display: flex; align-items: center; gap: 1.5rem; padding-block: 0.9rem; }
+.logo { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; color: var(--color-text); flex-shrink: 0; }
+.logo-text { font-family: var(--font-display); font-size: 1.2rem; font-weight: 600; letter-spacing: 0.02em; display: flex; flex-direction: column; line-height: 1.1; }
+.logo-text em { font-style: normal; font-size: 0.7rem; font-family: var(--font-body); font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-muted); }
+.nav-links { display: flex; gap: 1.5rem; align-items: center; margin-left: auto; }
+.nav-links a { font-size: var(--text-sm); color: var(--color-text-muted); transition: color var(--transition); white-space: nowrap; }
+.nav-links a:hover { color: var(--color-text); }
+
+/* More dropdown */
+.nav-more { position: relative; }
+.nav-more-btn { display: flex; align-items: center; gap: 0.3rem; font-size: var(--text-sm); color: var(--color-text-muted); cursor: pointer; background: none; border: none; font-family: var(--font-body); transition: color var(--transition); padding: 0; }
+.nav-more-btn:hover { color: var(--color-text); }
+.nav-more-btn svg { transition: transform var(--transition); }
+.nav-more.open .nav-more-btn svg { transform: rotate(180deg); }
+.nav-dropdown { display: none; position: absolute; top: calc(100% + 12px); right: 0; min-width: 220px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); padding: 0.5rem; z-index: 100; }
+.nav-more.open .nav-dropdown { display: block; }
+.nav-dropdown a { display: block; padding: 0.55rem 1rem; font-size: var(--text-sm); color: var(--color-text-muted); border-radius: var(--radius-md); transition: background var(--transition), color var(--transition); }
+.nav-dropdown a:hover { background: var(--color-surface-offset); color: var(--color-text); }
+
+.nav-actions { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
+.theme-toggle { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--radius-md); color: var(--color-text-muted); transition: color var(--transition), background var(--transition); }
+.theme-toggle:hover { color: var(--color-text); background: var(--color-surface-offset); }
+.mobile-menu-btn { display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--radius-md); color: var(--color-text); margin-left: auto; }
+.mobile-menu { display: none; flex-direction: column; padding: 1rem clamp(1rem, 4vw, 3rem) 1.5rem; border-top: 1px solid var(--color-divider); gap: 0.25rem; }
+.mobile-menu a { padding: 0.6rem 0; font-size: var(--text-sm); color: var(--color-text-muted); border-bottom: 1px solid var(--color-divider); display: block; }
+.mobile-menu.open { display: flex; }
+@media (max-width: 900px) { .nav-links, .nav-more, .nav-actions .nav-cta { display: none; } .mobile-menu-btn { display: flex; } }
+
+/* === HERO === */
+.hero { position: relative; overflow: hidden; padding-block: clamp(5rem, 12vw, 10rem); background: var(--color-surface-dark); color: var(--color-text-inverse); }
+.hero-bg-pattern { position: absolute; inset: 0; background: radial-gradient(ellipse 80% 60% at 70% 40%, rgba(184,134,11,0.08) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 20% 70%, rgba(15,61,87,0.4) 0%, transparent 70%); pointer-events: none; }
+.hero-inner { position: relative; max-width: 860px; }
+.hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; border: 1px solid rgba(184,134,11,0.4); border-radius: 9999px; font-size: var(--text-xs); font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-accent); margin-bottom: 2rem; background: rgba(184,134,11,0.07); }
+.hero-headline { font-family: var(--font-display); font-size: var(--text-hero); font-weight: 600; line-height: 1.0; color: #f5f0e8; margin-bottom: 1.75rem; letter-spacing: -0.01em; }
+.hero-headline em { font-style: italic; color: var(--color-accent); }
+.hero-sub { font-size: var(--text-lg); color: rgba(245,240,232,0.75); max-width: 56ch; line-height: 1.65; margin-bottom: 2.5rem; }
+.hero-cta-group { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+.hero-note { font-size: var(--text-xs); color: rgba(245,240,232,0.5); margin-bottom: 4rem; font-style: italic; }
+.hero-stats { display: flex; align-items: center; gap: 0; flex-wrap: wrap; padding: 2rem 2.5rem; background: rgba(245,240,232,0.05); border: 1px solid rgba(245,240,232,0.1); border-radius: var(--radius-lg); backdrop-filter: blur(4px); }
+.stat { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; min-width: 120px; padding: 0.5rem 1rem; }
+.stat-number { font-family: var(--font-display); font-size: clamp(1.5rem, 3vw, 2.25rem); font-weight: 700; color: var(--color-accent); line-height: 1; }
+.stat-label { font-size: var(--text-xs); color: rgba(245,240,232,0.6); line-height: 1.3; }
+.stat-divider { width: 1px; height: 40px; background: rgba(245,240,232,0.15); align-self: center; flex-shrink: 0; }
+@media (max-width: 600px) { .hero-stats { padding: 1.25rem; gap: 1rem; } .stat { min-width: 45%; padding: 0.25rem 0.5rem; } .stat-divider { display: none; } .hero-cta-group { flex-direction: column; } .hero-cta-group .btn { width: 100%; justify-content: center; } }
+
+/* AI-human banner */
+.ai-human-banner { background: var(--color-primary); color: var(--color-primary-text); padding: 0.85rem var(--pad-x, 2rem); text-align: center; font-size: var(--text-sm); font-weight: 500; letter-spacing: 0.02em; }
+
+/* === TRUST BAR === */
+.trust-bar { background: var(--color-surface-offset); border-bottom: 1px solid var(--color-divider); padding-block: 1.25rem; }
+.trust-inner { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+.trust-label { font-size: var(--text-xs); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted); white-space: nowrap; }
+.trust-logos { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.trust-item { font-size: var(--text-sm); font-weight: 500; color: var(--color-text-muted); }
+.trust-dot { color: var(--color-text-faint); }
+
+/* === WHAT SECTION === */
+.section-what { background: var(--color-bg); }
+.what-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2rem, 5vw, 5rem); align-items: start; }
+.what-text .lead-text { font-size: var(--text-lg); line-height: 1.6; font-family: var(--font-display); color: var(--color-text); margin-bottom: 1.25rem; }
+.what-text p { color: var(--color-text-muted); line-height: 1.7; margin-bottom: 1rem; max-width: 56ch; }
+.what-features { display: flex; flex-direction: column; gap: 1.25rem; }
+.feature-card { display: flex; gap: 1rem; align-items: flex-start; padding: 1.25rem 1.5rem; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); transition: border-color var(--transition), box-shadow var(--transition); }
+.feature-card:hover { border-color: var(--color-accent); box-shadow: var(--shadow-sm); }
+.feature-icon { flex-shrink: 0; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--color-accent-light); color: var(--color-accent); border-radius: var(--radius-md); }
+.feature-card h3 { font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600; margin-bottom: 0.35rem; color: var(--color-text); }
+.feature-card p { font-size: var(--text-sm); color: var(--color-text-muted); line-height: 1.55; }
+@media (max-width: 768px) { .what-grid { grid-template-columns: 1fr; } }
+
+/* Human-authored callout */
+.human-authored-callout { margin-top: 2rem; padding: 1.25rem 1.5rem; border: 2px solid var(--color-primary); border-radius: var(--radius-lg); background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface)); display: flex; gap: 1rem; align-items: flex-start; }
+.human-authored-callout svg { flex-shrink: 0; color: var(--color-primary); margin-top: 2px; }
+.human-authored-callout p { font-size: var(--text-sm); font-weight: 500; color: var(--color-text); line-height: 1.6; }
+
+/* === PROCESS === */
+.section-process { background: var(--color-surface-dark); color: var(--color-text-inverse); }
+.section-process .section-headline { color: #f5f0e8; }
+.section-process .section-sub { color: rgba(245,240,232,0.7); }
+.process-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+.process-step { padding: 2rem; border: 1px solid rgba(245,240,232,0.1); border-radius: var(--radius-lg); background: rgba(245,240,232,0.03); transition: border-color var(--transition), background var(--transition); }
+.process-step:hover { border-color: rgba(184,134,11,0.4); background: rgba(245,240,232,0.05); }
+.step-number { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; color: rgba(184,134,11,0.25); line-height: 1; margin-bottom: 1rem; letter-spacing: -0.02em; }
+.process-step h3 { font-family: var(--font-body); font-size: var(--text-base); font-weight: 600; color: #f5f0e8; margin-bottom: 0.6rem; }
+.process-step p { font-size: var(--text-sm); color: rgba(245,240,232,0.65); line-height: 1.65; }
+
+/* === AI VISIBILITY === */
+.section-ai { background: var(--color-bg); }
+.ai-intro-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 3.5rem; }
+.ai-data-block { padding: 2rem; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); text-align: center; }
+.ai-stat-large { font-family: var(--font-display); font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 700; color: var(--color-accent); line-height: 1; margin-bottom: 0.75rem; }
+.ai-stat-caption { font-size: var(--text-xs); color: var(--color-text-muted); line-height: 1.5; }
+.ai-stat-caption a { color: var(--color-primary); text-decoration: underline; text-underline-offset: 2px; }
+.ai-explanation { max-width: 720px; margin-bottom: 3rem; }
+.ai-explanation h3 { font-family: var(--font-display); font-size: var(--text-xl); font-weight: 600; margin-bottom: 1rem; }
+.ai-explanation p { font-size: var(--text-base); color: var(--color-text-muted); line-height: 1.75; margin-bottom: 1rem; }
+.geo-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; margin-bottom: 3rem; }
+.geo-card { padding: 1.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); transition: border-color var(--transition); }
+.geo-card:hover { border-color: var(--color-accent); }
+.geo-card h4 { font-family: var(--font-body); font-size: var(--text-sm); font-weight: 700; color: var(--color-text); margin-bottom: 0.6rem; letter-spacing: 0.01em; }
+.geo-card p { font-size: var(--text-sm); color: var(--color-text-muted); line-height: 1.65; }
+.ai-quote-block { padding: 2.5rem 3rem; background: var(--color-surface-dark); border-radius: var(--radius-xl); color: var(--color-text-inverse); }
+.ai-quote-block blockquote { font-family: var(--font-display); font-size: var(--text-xl); font-style: italic; color: #f5f0e8; line-height: 1.4; margin-bottom: 1rem; }
+.ai-quote-block cite { font-size: var(--text-sm); color: rgba(245,240,232,0.6); font-style: normal; }
+.ai-quote-block cite a { color: var(--color-accent); text-decoration: underline; }
+@media (max-width: 768px) { .ai-intro-grid { grid-template-columns: 1fr; } .geo-cards { grid-template-columns: 1fr; } .ai-quote-block { padding: 1.75rem; } }
+
+/* === PUBLISHING MODELS === */
+.section-models { background: var(--color-surface-offset); }
+.models-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; align-items: start; }
+.model-card { border-radius: var(--radius-xl); padding: 2.5rem; background: var(--color-surface); border: 1px solid var(--color-border); display: flex; flex-direction: column; gap: 1.25rem; }
+.model-primary { border: 2px solid var(--color-primary); box-shadow: var(--shadow-md); }
+.model-badge { display: inline-flex; padding: 0.3rem 0.9rem; border-radius: 999px; font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; background: var(--color-primary); color: white; width: fit-content; }
+.model-badge-alt { background: var(--color-accent-light); color: var(--color-accent); border: 1px solid rgba(184,134,11,0.3); }
+.model-name { font-family: var(--font-display); font-size: var(--text-xl); font-weight: 600; color: var(--color-text); }
+.model-price { font-family: var(--font-body); font-size: var(--text-sm); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-accent); }
+.model-desc { font-size: var(--text-sm); color: var(--color-text-muted); line-height: 1.7; }
+.model-features { list-style: none; display: flex; flex-direction: column; gap: 0.65rem; }
+.model-features li { display: flex; align-items: flex-start; gap: 0.6rem; font-size: var(--text-sm); color: var(--color-text-muted); line-height: 1.5; }
+.model-features li svg { flex-shrink: 0; color: var(--color-accent); margin-top: 2px; }
+.model-fit { padding: 1rem 1.25rem; background: var(--color-surface-offset); border-radius: var(--radius-md); font-size: var(--text-xs); color: var(--color-text-muted); line-height: 1.6; border: 1px solid var(--color-divider); }
+.model-fit strong { color: var(--color-text); }
+.models-note { font-size: var(--text-sm); color: var(--color-text-muted); text-align: center; font-style: italic; margin-top: 0.5rem; }
+@media (max-width: 768px) { .models-grid { grid-template-columns: 1fr; } }
+
+/* === GENRES === */
+.section-genres { background: var(--color-bg); }
+.genres-grid { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: clamp(2rem, 4vw, 4rem); align-items: start; }
+.genre-column h3 { font-family: var(--font-body); font-size: var(--text-sm); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-muted); margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--color-divider); }
+.genre-column ul { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+.genre-column li { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 500; color: var(--color-text); }
+.genre-feature { padding: 2.5rem; background: var(--color-surface-dark); border-radius: var(--radius-xl); color: var(--color-text-inverse); display: flex; flex-direction: column; gap: 1.75rem; }
+.genre-feature p { font-size: var(--text-sm); color: rgba(245,240,232,0.7); line-height: 1.7; }
+@media (max-width: 768px) { .genres-grid { grid-template-columns: 1fr 1fr; } .genre-feature { grid-column: span 2; } }
+@media (max-width: 480px) { .genres-grid { grid-template-columns: 1fr; } .genre-feature { grid-column: span 1; } }
+
+/* === FAQ === */
+.section-faq { background: var(--color-surface-offset); }
+.section-faq .container { max-width: var(--content-narrow); }
+.faq-list { display: flex; flex-direction: column; gap: 0; }
+.faq-item { border-bottom: 1px solid var(--color-divider); }
+.faq-item:first-child { border-top: 1px solid var(--color-divider); }
+.faq-item summary { padding: 1.25rem 0; font-family: var(--font-body); font-size: var(--text-base); font-weight: 500; color: var(--color-text); cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 1rem; transition: color var(--transition); }
+.faq-item summary:hover { color: var(--color-primary); }
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary::after { content: ''; display: block; width: 16px; height: 16px; flex-shrink: 0; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b6860' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: center; transition: transform var(--transition); }
+.faq-item[open] summary::after { transform: rotate(180deg); }
+.faq-body { padding-bottom: 1.25rem; }
+.faq-body p { font-size: var(--text-sm); color: var(--color-text-muted); line-height: 1.75; max-width: 62ch; }
+.faq-body p + p { margin-top: 0.75rem; }
+.faq-body a { color: var(--color-primary); text-decoration: underline; text-underline-offset: 2px; }
+
+/* === FORM === */
+.section-form { background: var(--color-bg); }
+.form-header { margin-bottom: 3rem; }
+.form-sub { font-size: var(--text-base); color: var(--color-text-muted); line-height: 1.7; max-width: 56ch; }
+.query-form { display: flex; flex-direction: column; gap: 1.5rem; }
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+.form-group label { font-size: var(--text-sm); font-weight: 500; color: var(--color-text); }
+.label-hint { font-weight: 400; color: var(--color-text-muted); }
+.form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.75rem 1rem; border: 1.5px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text); font-size: var(--text-base); line-height: 1.5; transition: border-color var(--transition), box-shadow var(--transition); appearance: none; }
+.form-group select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b6860' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 2.5rem; }
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(15,61,87,0.1); outline: none; }
+.form-group input.error, .form-group textarea.error, .form-group select.error { border-color: #c0392b; }
+.field-error { font-size: var(--text-xs); color: #c0392b; min-height: 1rem; }
+.char-count { font-size: var(--text-xs); color: var(--color-text-faint); text-align: right; }
+.form-group-checkbox { flex-direction: row; align-items: flex-start; gap: 0; flex-wrap: wrap; }
+.checkbox-label { display: flex; gap: 0.75rem; align-items: flex-start; cursor: pointer; font-size: var(--text-sm); color: var(--color-text-muted); line-height: 1.5; }
+.checkbox-label input[type="checkbox"] { width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; accent-color: var(--color-primary); cursor: pointer; }
+.form-submit-area { display: flex; flex-direction: column; gap: 0.75rem; }
+.form-disclaimer { font-size: var(--text-xs); color: var(--color-text-muted); text-align: center; line-height: 1.6; }
+.form-success { padding: 2.5rem; background: var(--color-surface); border: 1.5px solid #2d7a2d; border-radius: var(--radius-xl); text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.75rem; }
+.form-success svg { color: #2d7a2d; }
+.form-success h3 { font-family: var(--font-body); font-size: var(--text-lg); font-weight: 600; }
+.form-success p { font-size: var(--text-sm); color: var(--color-text-muted); }
+@media (max-width: 560px) { .form-row-2 { grid-template-columns: 1fr; } }
+
+/* === FOOTER === */
+.site-footer { background: var(--color-surface-dark); color: var(--color-text-inverse); padding-top: 4rem; }
+.footer-inner { display: grid; grid-template-columns: 1.5fr 1fr; gap: 3rem; padding-bottom: 3rem; border-bottom: 1px solid rgba(245,240,232,0.1); }
+.footer-tagline { font-size: var(--text-sm); color: rgba(245,240,232,0.5); margin-top: 0.75rem; line-height: 1.6; }
+.logo-footer svg, .logo-footer .logo-text { color: rgba(245,240,232,0.9); }
+.logo-footer .logo-text em { color: rgba(245,240,232,0.4); }
+.footer-nav { display: flex; gap: 3rem; }
+.footer-col { display: flex; flex-direction: column; gap: 0.6rem; }
+.footer-col h4 { font-family: var(--font-body); font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(245,240,232,0.4); margin-bottom: 0.4rem; }
+.footer-col a { font-size: var(--text-sm); color: rgba(245,240,232,0.6); transition: color var(--transition); }
+.footer-col a:hover { color: rgba(245,240,232,0.9); }
+.footer-bottom { padding-block: 1.5rem; }
+.footer-bottom p { font-size: var(--text-xs); color: rgba(245,240,232,0.4); line-height: 1.6; }
+.footer-legal { margin-top: 0.5rem; font-style: italic; }
+@media (max-width: 640px) { .footer-inner { grid-template-columns: 1fr; gap: 2rem; } .footer-nav { gap: 2rem; } }
+
+.fade-up { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.fade-up.visible { opacity: 1; transform: translateY(0); }
+
+/* ============================================================
+   HEADING COLOR ENFORCEMENT
+   Re-asserts the designed heading colors with !important so the
+   hosting platform's global stylesheet (e.g. Duda) cannot override
+   them and force headings to black. Values, theme-awareness, layout,
+   and responsive behavior are all preserved exactly — this block
+   only locks in the colors already defined above. Placed last so it
+   wins on source order against injected platform rules.
+   ============================================================ */
+
+/* Section eyebrow labels — antique gold */
+.section-label { color: var(--color-accent) !important; }
+
+/* Section headlines — navy on light surfaces (default) */
+.section-headline { color: var(--color-text) !important; }
+
+/* Headings on light surfaces — navy */
+.ai-explanation h3,
+.geo-card h4,
+.model-name,
+.feature-card h3,
+.what-text .lead-text { color: var(--color-text) !important; }
+
+/* Genre column labels — muted */
+.genre-column h3 { color: var(--color-text-muted) !important; }
+.genre-column li { color: var(--color-text) !important; }
+
+/* Hero headline — cream with gold emphasis (on dark surface) */
+.hero-headline { color: #f5f0e8 !important; }
+.hero-headline em { color: var(--color-accent) !important; }
+
+/* Headings on dark surfaces — cream */
+.section-process .section-headline,
+.process-step h3,
+.ai-quote-block blockquote { color: #f5f0e8 !important; }
+
+/* Footer column headings */
+.footer-col h4 { color: rgba(245,240,232,0.4) !important; }
+</style>
+</head>
+<body>
+
+  <!-- NAV — matches axitos.ai live structure exactly -->
+  <header class="site-header" id="top">
+    <div class="container nav-inner">
+      <a href="#top" class="logo" aria-label="Axitos Publishing House home">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="32" height="32" rx="4" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M10 27L18 9L26 27" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12.8 21h10.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="28" cy="10" r="2.5" fill="var(--color-accent)"/>
+        </svg>
+        <span class="logo-text">Axitos<em>Publishing House</em></span>
+      </a>
+
+      <nav class="nav-links" aria-label="Main navigation">
+        <a href="https://www.axitos.ai/">Home</a>
+        <a href="https://www.axitos.ai/koinita">Koinita</a>
+        <a href="https://www.axitos.ai/insights">Insights</a>
+        <a href="https://www.axitos.ai/store">Store</a>
+        <div class="nav-more" id="navMore">
+          <button class="nav-more-btn" id="navMoreBtn" aria-expanded="false" aria-haspopup="true">
+            More
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="nav-dropdown" id="navDropdown" role="menu">
+            <a href="https://www.axitos.ai/pricing">Pricing</a>
+            <a href="https://www.axitos.ai/about">About Us</a>
+            <a href="https://www.axitos.ai/publishing-process">How It Works</a>
+            <a href="https://www.axitos.ai/author-resources">Author Resources</a>
+            <a href="https://www.axitos.ai/faqs-for-authors">FAQs for Authors</a>
+            <a href="https://www.axitos.ai/contact">Contact</a>
+            <a href="https://www.axitos.ai/press">Press</a>
+            <a href="https://www.axitos.ai/privacy-policy">Privacy Policy</a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="btn btn-primary nav-cta" onclick="document.getElementById('query-form').scrollIntoView({behavior:'smooth'})">Submit Query</button>
+        <button data-theme-toggle aria-label="Switch to dark mode" class="theme-toggle">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
+
+      <button class="mobile-menu-btn" aria-label="Open menu" id="mobileMenuBtn">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="https://www.axitos.ai/">Home</a>
+      <a href="https://www.axitos.ai/koinita">Koinita</a>
+      <a href="https://www.axitos.ai/insights">Insights</a>
+      <a href="https://www.axitos.ai/store">Store</a>
+      <a href="https://www.axitos.ai/pricing">Pricing</a>
+      <a href="https://www.axitos.ai/about">About Us</a>
+      <a href="https://www.axitos.ai/publishing-process">How It Works</a>
+      <a href="https://www.axitos.ai/author-resources">Author Resources</a>
+      <a href="https://www.axitos.ai/faqs-for-authors">FAQs for Authors</a>
+      <a href="https://www.axitos.ai/contact">Contact</a>
+      <a href="https://www.axitos.ai/press">Press</a>
+      <button class="btn btn-primary" style="margin-top:0.5rem;" onclick="document.getElementById('query-form').scrollIntoView({behavior:'smooth'}); closeMobileMenu()">Submit Query</button>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- HERO -->
+    <section class="hero" aria-labelledby="hero-headline">
+      <div class="hero-bg-pattern" aria-hidden="true"></div>
+      <div class="container hero-inner">
+        <div class="hero-badge">Traditional Book Publishing · No Upfront Author Fees · Aurora, IL</div>
+        <h1 id="hero-headline" class="hero-headline">
+          Your Book Deserves<br/>
+          <em>a Publisher</em><br/>
+          Built for the AI Era.
+        </h1>
+        <p class="hero-sub">
+          Axitos Publishing House is an independent traditional book publisher. We acquire your manuscript, invest in its full production and global distribution, and pay you royalties — at zero cost to you. Then we do what no other publisher does: we build your authority inside the AI search engines that are reshaping how readers discover books and ideas.
+        </p>
+        <div class="hero-cta-group">
+          <button class="btn btn-primary btn-large" onclick="document.getElementById('query-form').scrollIntoView({behavior:'smooth'})">
+            Submit a Query — It's Free
+          </button>
+          <a href="https://www.axitos.ai/publishing-process" class="btn btn-ghost btn-large">See How It Works</a>
+        </div>
+        <p class="hero-note">Currently accepting our inaugural cohort of high-impact manuscripts. No fees. No vanity press. Real publishing.</p>
+
+        <div class="hero-stats" aria-label="Key publishing facts">
+          <div class="stat">
+            <span class="stat-number">45,000+</span>
+            <span class="stat-label">Retailers &amp; Libraries via Ingram</span>
+          </div>
+          <div class="stat-divider" aria-hidden="true"></div>
+          <div class="stat">
+            <span class="stat-number">$0</span>
+            <span class="stat-label">Upfront Cost to Authors</span>
+          </div>
+          <div class="stat-divider" aria-hidden="true"></div>
+          <div class="stat">
+            <span class="stat-number">30%</span>
+            <span class="stat-label">Net Royalties — Traditional Track</span>
+          </div>
+          <div class="stat-divider" aria-hidden="true"></div>
+          <div class="stat">
+            <span class="stat-number">9×</span>
+            <span class="stat-label">Conversion Advantage: AI-Referred Visitors vs. Google Organic</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRUST BAR -->
+    <section class="trust-bar" aria-label="Distribution partners">
+      <div class="container trust-inner">
+        <span class="trust-label">Distributed through:</span>
+        <div class="trust-logos">
+          <span class="trust-item">Amazon</span>
+          <span class="trust-dot" aria-hidden="true">·</span>
+          <span class="trust-item">Ingram Content Group</span>
+          <span class="trust-dot" aria-hidden="true">·</span>
+          <span class="trust-item">Barnes &amp; Noble</span>
+          <span class="trust-dot" aria-hidden="true">·</span>
+          <span class="trust-item">and 45,000+ retailers, libraries &amp; academic institutions worldwide</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- WHAT IS AXITOS -->
+    <section class="section section-what" id="what" aria-labelledby="what-heading">
+      <div class="container">
+        <div class="section-label">What We Are</div>
+        <h2 id="what-heading" class="section-headline">Traditional Publishing.<br/>Built for the AI Era.</h2>
+        <div class="what-grid">
+          <div class="what-text">
+            <p class="lead-text">
+              Axitos Publishing House is an independent book publisher that operates on the traditional model. We bear the full cost of bringing your book to market — editing, cover design, production, and global distribution. You pay nothing. We earn when you earn.
+            </p>
+            <p>
+              What separates Axitos from every other publisher is what happens after your book is released. While traditional publishers stop at print and shelf, Axitos encodes <strong>AI visibility</strong> into every phase of the publishing pipeline — so your ideas surface when professionals, researchers, and executives ask AI tools questions in your field.
+            </p>
+            <p>
+              Axitos is a new kind of traditional publisher that has added the most important missing layer in modern book publishing: <strong>authority inside AI search.</strong>
+            </p>
+
+            <!-- Human-authored callout — prominent -->
+            <div class="human-authored-callout" role="note" aria-label="Important editorial policy">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <p><strong>Axitos does not acquire AI-generated manuscripts.</strong> All submitted work must be original, human-authored, and pass our editorial quality review. This commitment protects our authors' credibility and Axitos's standing as a trusted source within AI citation systems.</p>
+            </div>
+          </div>
+
+          <div class="what-features">
+            <div class="feature-card">
+              <div class="feature-icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              </div>
+              <div>
+                <h3>True Traditional Model</h3>
+                <p>No fees to authors. We invest in your book. You retain copyright and collect royalties on every sale.</p>
+              </div>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+              </div>
+              <div>
+                <h3>Print on Demand</h3>
+                <p>No minimum print runs, no warehouse risk, always in stock — your book is available globally from day one.</p>
+              </div>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </div>
+              <div>
+                <h3>AI Visibility Marketing</h3>
+                <p>GEO and AEO built into every book — from manuscript structure to post-publication content strategy and AI citation registration.</p>
+              </div>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <div>
+                <h3>Your Copyright. Always.</h3>
+                <p>Your intellectual property stays yours. We license the right to publish and distribute — nothing more.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="section section-process" id="how-it-works" aria-labelledby="process-heading">
+      <div class="container">
+        <div class="section-label">The Process</div>
+        <h2 id="process-heading" class="section-headline">From Manuscript to Authority</h2>
+        <p class="section-sub">Every Axitos book moves through six stages — each designed to build your readership and your authority in AI search at the same time.</p>
+        <div class="process-steps">
+          <div class="process-step">
+            <div class="step-number" aria-hidden="true">01</div>
+            <h3>Query Submission</h3>
+            <p>Submit your manuscript query through our online form. Our editorial team reviews for quality, fit, and market potential — typically within two to three weeks.</p>
+          </div>
+          <div class="process-step">
+            <div class="step-number" aria-hidden="true">02</div>
+            <h3>Editorial Development</h3>
+            <p>Accepted manuscripts receive professional developmental editing, copyediting, and proofreading. We structure your content to serve both readers and AI answer engines simultaneously.</p>
+          </div>
+          <div class="process-step">
+            <div class="step-number" aria-hidden="true">03</div>
+            <h3>Cover Design &amp; Production</h3>
+            <p>Our design team produces a commercially competitive cover. Interior layout is production-ready for print, ebook, hardcover, and audiobook formats.</p>
+          </div>
+          <div class="process-step">
+            <div class="step-number" aria-hidden="true">04</div>
+            <h3>Global Distribution</h3>
+            <p>Your book is distributed through Amazon and Ingram to Barnes &amp; Noble and 45,000+ retailers, libraries, and academic institutions worldwide — available on every major platform from day one.</p>
+          </div>
+          <div class="process-step">
+            <div class="step-number" aria-hidden="true">05</div>
+            <h3>AI Visibility Launch</h3>
+            <p>We deploy structured metadata, GEO-optimized author pages, AEO content signals, and AI citation registration — positioning your book to be found and referenced by AI answer engines in your topic area.</p>
+          </div>
+          <div class="process-step">
+            <div class="step-number" aria-hidden="true">06</div>
+            <h3>Ongoing Authority Building</h3>
+            <p>As AI models evolve, we update your structured data and content signals. Your authority compounds. Your book remains discoverable, relevant, and cited over time.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AI VISIBILITY -->
+    <section class="section section-ai" id="ai-visibility" aria-labelledby="ai-heading">
+      <div class="container">
+        <div class="section-label">The Axitos Distinctive</div>
+        <h2 id="ai-heading" class="section-headline">AI Is Now a Discovery Channel.<br/>Most Books Are Invisible to It.</h2>
+
+        <div class="ai-intro-grid">
+          <div class="ai-data-block">
+            <div class="ai-stat-large">9×</div>
+            <p class="ai-stat-caption">ChatGPT-referred visitors convert at ~15–16% vs. 1–2% for Google organic — roughly a 9× advantage — <a href="https://www.seerinteractive.com/insights/case-study-6-learnings-about-how-traffic-from-chatgpt-converts" target="_blank" rel="noopener">Seer Interactive, June 2025</a>.</p>
+          </div>
+          <div class="ai-data-block">
+            <div class="ai-stat-large">1,200%</div>
+            <p class="ai-stat-caption">Growth in AI-referred traffic to U.S. retail websites year-over-year between July 2024 and February 2025 — <a href="https://blog.adobe.com/en/publish/2025/03/17/adobe-analytics-traffic-to-us-retail-websites-from-generative-ai-sources-jumps-1200-percent" target="_blank" rel="noopener">Adobe Analytics, March 2025</a>.</p>
+          </div>
+          <div class="ai-data-block">
+            <div class="ai-stat-large">23%</div>
+            <p class="ai-stat-caption">Lower bounce rate for AI-referred visitors vs. other channels; they also viewed 12% more pages per session — <a href="https://blog.adobe.com/en/publish/2025/03/17/adobe-analytics-traffic-to-us-retail-websites-from-generative-ai-sources-jumps-1200-percent" target="_blank" rel="noopener">Adobe Analytics, March 2025</a>.</p>
+          </div>
+        </div>
+
+        <div class="ai-explanation">
+          <h3>What This Means for Your Book</h3>
+          <p>When someone asks ChatGPT, Perplexity, or Google AI Overviews a question in your area of expertise — leadership, health, business, theology, science — they receive an AI-generated answer. That answer cites sources. The sources cited are not necessarily the most famous. They are the most <em>structured, signal-rich, and AI-readable</em>.</p>
+          <p>Axitos is among the first book publishers to build Generative Engine Optimization (GEO) and Answer Engine Optimization (AEO) into its core publishing workflow — not as a post-launch add-on, but as a foundational layer woven into manuscript development, metadata, distribution, and content strategy from day one.</p>
+        </div>
+
+        <div class="geo-cards">
+          <div class="geo-card">
+            <h4>GEO — Generative Engine Optimization</h4>
+            <p>We structure your manuscript, author pages, and book metadata so AI answer engines can parse, understand, and cite your work accurately. This includes schema markup, semantic structuring, and content formatted to directly answer questions your readers are already asking AI tools.</p>
+          </div>
+          <div class="geo-card">
+            <h4>AEO — Answer Engine Optimization</h4>
+            <p>We build your author authority profile across the web — so when ChatGPT, Perplexity, or Google AI Overviews need a source in your topic area, your book and your name are part of the indexed landscape they draw from.</p>
+          </div>
+          <div class="geo-card">
+            <h4>AI Citation Registration</h4>
+            <p>Axitos registers your published book with an established licensing clearinghouse — protecting your intellectual property and positioning you to benefit as AI citation royalties develop into a substantive income stream. This premium infrastructure service is provided free to every Axitos author.</p>
+          </div>
+          <div class="geo-card">
+            <h4>IP Protection Built In</h4>
+            <p>Our publishing workflow signals to AI models that your full manuscript is not available for unrestricted training. You benefit from AI visibility without surrendering your intellectual property. <em>Note: no mechanism prevents all unauthorized third-party use; we use every available technical and contractual tool to protect your work.</em></p>
+          </div>
+        </div>
+
+        <div class="ai-quote-block">
+          <blockquote>"AI-referred visitors had a 23% lower bounce rate and viewed 12% more pages than visitors from other channels."</blockquote>
+          <cite>— <a href="https://blog.adobe.com/en/publish/2025/03/17/adobe-analytics-traffic-to-us-retail-websites-from-generative-ai-sources-jumps-1200-percent" target="_blank" rel="noopener">Adobe Analytics, March 2025</a></cite>
+        </div>
+      </div>
+    </section>
+
+    <!-- PUBLISHING MODELS -->
+    <section class="section section-models" id="models" aria-labelledby="models-heading">
+      <div class="container">
+        <div class="section-label">Publishing Models</div>
+        <h2 id="models-heading" class="section-headline">Two Paths. One Standard.</h2>
+        <p class="section-sub">Both models deliver the same editorial quality, global distribution, and AI visibility infrastructure. The difference is in how much of the journey Axitos manages on your behalf.</p>
+
+        <div class="models-grid">
+          <!-- Traditional Model -->
+          <div class="model-card model-primary">
+            <div class="model-badge">Our Primary Offering</div>
+            <h3 class="model-name">Traditional Publishing Partnership</h3>
+            <div class="model-price">No Upfront Cost · 30% Net Royalties</div>
+            <p class="model-desc">Axitos acquires your manuscript, invests in its full production and distribution, and earns alongside you through royalties on sales. This is a genuine partnership: you bring your expertise, your platform, and your promotional energy. We bring everything else — and we work alongside you every step of the way.</p>
+            <ul class="model-features" role="list">
+              <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Professional developmental editing &amp; copyediting</li>
+              <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Commercial cover design &amp; interior layout</li>
+              <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Print on Demand production (no warehouse risk)</li>
+              <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Global distribution via Amazon &amp; Ingram — 45,000+ outlets</li>
+              <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Paperback, ebook, hardcover, and audiobook formats</li>
+              <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>GEO + AEO AI visibility marketing (built in)</li>
+              <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>AI citation clearinghouse registration (free)</li>
+              <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Author copies at 50% discount</li>
+              <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>30% royalties on net receipts</li>
+              <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>You retain full copyright</li>
+            </ul>
+            <div class="model-fit">
+              <strong>Best fit:</strong> Authors with an established audience, platform, or professional network — speakers, executives, academics, and community leaders ready to actively champion their book.
+            </div>
+            <button class="btn btn-primary btn-full" onclick="document.getElementById('query-form').scrollIntoView({behavior:'smooth'})">Submit a Query</button>
+          </div>
+
+          <!-- Premium Partnership -->
+          <div class="model-card model-secondary" id="partnership">
+            <div class="model-badge model-badge-alt">By Selection · Very Limited</div>
+            <h3 class="model-name">Premium Publishing Partnership</h3>
+            <div class="model-price">Single Investment · 50% Net Royalties</div>
+            <p class="model-desc">For a select number of thought leaders who need a heavily supported publishing experience. Axitos handles the full weight of the publishing and AI marketing process — while you remain the voice and authority behind your work. This is still a partnership: you read and approve edits, lend your name and network, and provide the materials we need. We do the heavy lifting so you can stay focused on your work and your audience.</p>
+            <ul class="model-features" role="list">
+              <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Everything in the Traditional Partnership</li>
+              <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Axitos manages the full publishing &amp; production process</li>
+              <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Maximum AI visibility &amp; authority building</li>
+              <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Advanced AI optimization &amp; content marketing strategy</li>
+              <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Dedicated publishing director assigned to your project</li>
+              <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Priority placement in Axitos AI authority network</li>
+              <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>50% royalties on net receipts</li>
+            </ul>
+            <div class="model-fit">
+              <strong>Best fit:</strong> C-suite executives, keynote speakers, prominent academics, and recognized thought leaders who want Axitos to carry most of the publishing and AI marketing workload while they focus on their work and audience.
+            </div>
+            <button class="btn btn-outline btn-full" onclick="document.getElementById('query-form').scrollIntoView({behavior:'smooth'})">Inquire About Premium Partnership</button>
+          </div>
+        </div>
+
+        <p class="models-note">Axitos does not acquire AI-generated manuscripts. All submitted work must be original, human-authored, and pass our editorial quality review.</p>
+      </div>
+    </section>
+
+    <!-- WHO WE PUBLISH -->
+    <section class="section section-genres" aria-labelledby="genres-heading">
+      <div class="container">
+        <div class="section-label">What We Publish</div>
+        <h2 id="genres-heading" class="section-headline">Nonfiction. Fiction.<br/>Every Voice That Belongs in Print.</h2>
+        <div class="genres-grid">
+          <div class="genre-column">
+            <h3>Nonfiction</h3>
+            <ul role="list">
+              <li>Business &amp; Leadership</li>
+              <li>Self-Help &amp; Personal Development</li>
+              <li>Memoir &amp; Biography</li>
+              <li>Health &amp; Wellness</li>
+              <li>Theology &amp; Faith</li>
+              <li>Academic &amp; Professional</li>
+            </ul>
+          </div>
+          <div class="genre-column">
+            <h3>Fiction</h3>
+            <ul role="list">
+              <li>Romance</li>
+              <li>Thriller &amp; Suspense</li>
+              <li>Fantasy</li>
+              <li>Science Fiction</li>
+              <li>Literary Fiction</li>
+            </ul>
+          </div>
+          <div class="genre-feature">
+            <p>Axitos publishes books with clear market viability and an identifiable readership — whether that audience is in boardrooms, book clubs, or both. Our editorial team evaluates each manuscript for quality, originality, and reach.</p>
+            <button class="btn btn-primary" onclick="document.getElementById('query-form').scrollIntoView({behavior:'smooth'})">Submit Your Manuscript Query</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section section-faq" id="faq" aria-labelledby="faq-heading">
+      <div class="container container-narrow">
+        <div class="section-label">Common Questions</div>
+        <h2 id="faq-heading" class="section-headline">Honest Answers.<br/>No Fine Print.</h2>
+        <div class="faq-list" role="list">
+
+          <details class="faq-item" role="listitem">
+            <summary>Is Axitos a traditional publisher — or self-publishing?</summary>
+            <div class="faq-body">
+              <p>Axitos is a traditional publisher. We acquire manuscripts we believe in, fund their production and distribution, and earn through royalties. You pay nothing upfront. The critical distinction from vanity or hybrid publishing: we take on the financial risk because we believe in your book. If we don't acquire it, we don't publish it.</p>
+            </div>
+          </details>
+
+          <details class="faq-item" role="listitem">
+            <summary>What does "no upfront fees" actually mean?</summary>
+            <div class="faq-body">
+              <p>It means exactly that. Editing, cover design, layout, production, distribution setup, and our AI visibility marketing are all funded by Axitos. There is no submission fee, no publishing fee, and no hidden charge at any stage. Axitos earns when your book sells — and not before.</p>
+            </div>
+          </details>
+
+          <details class="faq-item" role="listitem">
+            <summary>What is Print on Demand, and is it a disadvantage?</summary>
+            <div class="faq-body">
+              <p>Print on Demand means books are printed as orders arrive rather than in large advance runs. For authors this is an advantage: your book is never out of stock, there is no overprint risk, and it remains available indefinitely. POD is the standard fulfillment infrastructure used by Ingram, which routes your book to Amazon, Barnes &amp; Noble, and over 45,000 retailers globally. Quality is comparable to offset printing for most trade book formats.</p>
+            </div>
+          </details>
+
+          <details class="faq-item" role="listitem">
+            <summary>What is AI visibility marketing, and does it actually work?</summary>
+            <div class="faq-body">
+              <p>AI visibility marketing is the practice of structuring your book, author profile, and metadata so that AI answer engines — ChatGPT, Perplexity, Google AI Overviews — can find, understand, and reference your work. Industry data shows visitors referred from ChatGPT convert at approximately 15–16%, compared to 1–2% for Google organic search — roughly a 9× advantage (<a href="https://www.seerinteractive.com/insights/case-study-6-learnings-about-how-traffic-from-chatgpt-converts" target="_blank" rel="noopener">Seer Interactive, June 2025</a>). AI-referred traffic to retail websites grew 1,200% year-over-year by early 2025 (<a href="https://blog.adobe.com/en/publish/2025/03/17/adobe-analytics-traffic-to-us-retail-websites-from-generative-ai-sources-jumps-1200-percent" target="_blank" rel="noopener">Adobe Analytics, March 2025</a>). Axitos positions your book to benefit from this shift from day one.</p>
+            </div>
+          </details>
+
+          <details class="faq-item" role="listitem">
+            <summary>Do I keep my copyright?</summary>
+            <div class="faq-body">
+              <p>Yes. Your intellectual property is yours. You grant Axitos a license to publish, distribute, and market your book. You retain full copyright ownership throughout. License terms are established in your publishing agreement and can be negotiated before signing.</p>
+            </div>
+          </details>
+
+          <details class="faq-item" role="listitem">
+            <summary>What royalty rate can I expect?</summary>
+            <div class="faq-body">
+              <p>Authors on the Traditional Publishing Partnership earn 30% royalties on net receipts from book sales. Authors on the Premium Publishing Partnership earn 50% royalties on net receipts. Net receipts means after the retailer's share — standard practice across the publishing industry. Traditional Partnership authors also receive author copies at a 50% discount to support their promotional efforts.</p>
+            </div>
+          </details>
+
+          <details class="faq-item" role="listitem">
+            <summary>Can I submit an AI-written manuscript?</summary>
+            <div class="faq-body">
+              <p>No. Axitos does not publish AI-generated manuscripts. Authors may use AI tools as a drafting or editing aid, but the creative work must be substantively and originally human. All submissions pass an AI-content review as part of editorial evaluation. This protects the integrity of your book and Axitos's standing as a credible source within AI citation systems.</p>
+            </div>
+          </details>
+
+          <details class="faq-item" role="listitem">
+            <summary>How does the Premium Publishing Partnership differ from the Traditional Partnership?</summary>
+            <div class="faq-body">
+              <p>In the Traditional Publishing Partnership, authors actively promote their book through their existing platform and network — that contribution is a core part of the agreement. Authors on this track earn 30% net royalties, and receive author copies at a 50% discount to fuel their promotional efforts.</p>
+              <p>In the Premium Publishing Partnership, Axitos takes on the majority of the publishing and marketing workload — particularly around AI visibility and content marketing — while authors still put their name behind their work, review and approve edits, and provide the materials and access we need to represent them well. Think of it as Axitos doing the heavy lifting in the engine room while you remain the public face and authority of your book. Premium Partners earn 50% net royalties. This model involves a single upfront investment and is offered to a very limited number of authors per year. Indicate your interest in the query form below and our team will follow up directly.</p>
+            </div>
+          </details>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- QUERY FORM -->
+    <section class="section section-form" id="query-form" aria-labelledby="form-heading">
+      <div class="container container-narrow">
+        <div class="form-header">
+          <div class="section-label">Ready to Publish</div>
+          <h2 id="form-heading" class="section-headline">Submit Your Query.<br/>We Respond Within 14 Business Days.</h2>
+          <p class="form-sub">Tell us about your manuscript. There is no fee to query. If your work is a fit, we will reach out to discuss next steps. We are currently accepting queries for our <strong>inaugural acquisitions cohort</strong>.</p>
+        </div>
+
+        <form class="query-form" id="queryForm" novalidate aria-label="Manuscript query submission form">
+          <div class="form-row form-row-2">
+            <div class="form-group">
+              <label for="firstName">First Name <span aria-hidden="true">*</span></label>
+              <input type="text" id="firstName" name="firstName" required autocomplete="given-name" placeholder="Your first name" />
+              <span class="field-error" id="firstNameError" role="alert" aria-live="polite"></span>
+            </div>
+            <div class="form-group">
+              <label for="lastName">Last Name <span aria-hidden="true">*</span></label>
+              <input type="text" id="lastName" name="lastName" required autocomplete="family-name" placeholder="Your last name" />
+              <span class="field-error" id="lastNameError" role="alert" aria-live="polite"></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="email">Email Address <span aria-hidden="true">*</span></label>
+            <input type="email" id="email" name="email" required autocomplete="email" placeholder="you@example.com" />
+            <span class="field-error" id="emailError" role="alert" aria-live="polite"></span>
+          </div>
+          <div class="form-group">
+            <label for="bookTitle">Working Title of Your Book <span aria-hidden="true">*</span></label>
+            <input type="text" id="bookTitle" name="bookTitle" required placeholder="Working title (can be tentative)" />
+            <span class="field-error" id="bookTitleError" role="alert" aria-live="polite"></span>
+          </div>
+          <div class="form-row form-row-2">
+            <div class="form-group">
+              <label for="genre">Genre / Category <span aria-hidden="true">*</span></label>
+              <select id="genre" name="genre" required>
+                <option value="" disabled selected>Select a genre</option>
+                <optgroup label="Nonfiction">
+                  <option value="business-leadership">Business &amp; Leadership</option>
+                  <option value="self-help">Self-Help &amp; Personal Development</option>
+                  <option value="memoir">Memoir &amp; Biography</option>
+                  <option value="health-wellness">Health &amp; Wellness</option>
+                  <option value="theology">Theology &amp; Faith</option>
+                  <option value="academic-professional">Academic &amp; Professional</option>
+                </optgroup>
+                <optgroup label="Fiction">
+                  <option value="romance">Romance</option>
+                  <option value="thriller">Thriller &amp; Suspense</option>
+                  <option value="fantasy">Fantasy</option>
+                  <option value="sci-fi">Science Fiction</option>
+                  <option value="literary">Literary Fiction</option>
+                </optgroup>
+                <option value="other">Other</option>
+              </select>
+              <span class="field-error" id="genreError" role="alert" aria-live="polite"></span>
+            </div>
+            <div class="form-group">
+              <label for="model">Publishing Track <span aria-hidden="true">*</span></label>
+              <select id="model" name="model" required>
+                <option value="" disabled selected>Select a track</option>
+                <option value="traditional">Traditional Publishing Partnership (No Upfront Fees)</option>
+                <option value="partnership">Premium Publishing Partnership</option>
+                <option value="unsure">Not Sure — Please Guide Me</option>
+              </select>
+              <span class="field-error" id="modelError" role="alert" aria-live="polite"></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="wordCount">Approximate Word Count</label>
+            <input type="text" id="wordCount" name="wordCount" placeholder="e.g., 65,000 words" />
+          </div>
+          <div class="form-group">
+            <label for="synopsis">Brief Synopsis <span aria-hidden="true">*</span><span class="label-hint"> — 100 to 300 words</span></label>
+            <textarea id="synopsis" name="synopsis" rows="5" required placeholder="Tell us what your book is about, who it's for, and why it matters now. Be direct and compelling — this is your pitch." maxlength="2000"></textarea>
+            <span class="field-error" id="synopsisError" role="alert" aria-live="polite"></span>
+            <span class="char-count" id="charCount" aria-live="polite">0 / 2,000</span>
+          </div>
+          <div class="form-group">
+            <label for="platform">Your Author Platform</label>
+            <textarea id="platform" name="platform" rows="3" placeholder="Describe your existing audience, professional standing, or platform — blog, podcast, LinkedIn following, speaking engagements, credentials, etc." maxlength="500"></textarea>
+          </div>
+          <div class="form-group form-group-checkbox">
+            <label class="checkbox-label">
+              <input type="checkbox" name="humanAuthored" required id="humanAuthored" />
+              <span>I confirm this manuscript is original, human-authored work and is not AI-generated. <span aria-hidden="true">*</span></span>
+            </label>
+            <span class="field-error" id="humanAuthoredError" role="alert" aria-live="polite"></span>
+          </div>
+          <div class="form-submit-area">
+            <button type="submit" class="btn btn-primary btn-large btn-full" id="submitBtn">Submit My Query</button>
+            <p class="form-disclaimer">Submission is free. No fees, no obligations. We review every query personally and respond within 14 business days. Submitting a query does not guarantee acquisition.</p>
+          </div>
+          <div class="form-success" id="formSuccess" role="alert" aria-live="polite" hidden>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="20 6 9 17 4 12"/></svg>
+            <h3>Query Received</h3>
+            <p>Thank you. Our editorial team will review your submission and respond within 14 business days. Please check your email for a confirmation.</p>
+          </div>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer" aria-label="Site footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <a href="#top" class="logo logo-footer" aria-label="Axitos Publishing House home">
+          <svg width="28" height="28" viewBox="0 0 36 36" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="2" width="32" height="32" rx="4" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M10 27L18 9L26 27" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12.8 21h10.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="28" cy="10" r="2.5" fill="var(--color-accent)"/>
+          </svg>
+          <span class="logo-text">Axitos<em>Publishing House</em></span>
+        </a>
+        <p class="footer-tagline">Traditional publishing with AI visibility built in. Aurora, Illinois.</p>
+      </div>
+      <nav class="footer-nav" aria-label="Footer navigation">
+        <div class="footer-col">
+          <h4>Publishing</h4>
+          <a href="https://www.axitos.ai/publishing-process">How It Works</a>
+          <a href="#models">Publishing Models</a>
+          <a href="https://www.axitos.ai/pricing">Pricing</a>
+          <a href="#query-form">Submit a Query</a>
+        </div>
+        <div class="footer-col">
+          <h4>Learn</h4>
+          <a href="#ai-visibility">AI Visibility</a>
+          <a href="https://www.axitos.ai/faqs-for-authors">FAQs for Authors</a>
+          <a href="https://www.axitos.ai/insights">Insights Blog</a>
+          <a href="https://www.axitos.ai/author-resources">Author Resources</a>
+          <a href="https://www.axitos.ai/koinita">Koinita</a>
+          <a href="https://www.axitos.ai/contact">Contact</a>
+        </div>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <div class="container">
+        <p>© 2026 Axitos.ai. All rights reserved. Aurora, Illinois.</p>
+        <p class="footer-legal">Axitos.ai operates within a traditional book publishing framework under the Axitos Publishing House imprint and should not be classified as a hybrid publisher. Royalty rates and conversion metrics referenced are derived from independent third-party research and may vary depending on market conditions, format, and context. Data related to AI-driven referral traffic is based on retail sector studies and is intended to illustrate directional trends in discovery, rather than to guarantee performance outcomes for any individual title. Axitos also offers a Premium Publishing Partnership program, which is structurally and operationally distinct from its traditional publishing model and managed separately within the Axitos family of services.</p>
+      </div>
+    </div>
+  </footer>
+
+<script>
+/* === THEME TOGGLE === */
+(function () {
+  const toggle = document.querySelector('[data-theme-toggle]');
+  const root = document.documentElement;
+  let current = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  root.setAttribute('data-theme', current);
+  updateToggleIcon();
+  if (toggle) {
+    toggle.addEventListener('click', () => {
+      current = current === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', current);
+      updateToggleIcon();
+    });
+  }
+  function updateToggleIcon() {
+    if (!toggle) return;
+    if (current === 'dark') {
+      toggle.setAttribute('aria-label', 'Switch to light mode');
+      toggle.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>';
+    } else {
+      toggle.setAttribute('aria-label', 'Switch to dark mode');
+      toggle.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+    }
+  }
+})();
+
+/* === MORE DROPDOWN === */
+const navMore = document.getElementById('navMore');
+const navMoreBtn = document.getElementById('navMoreBtn');
+if (navMore && navMoreBtn) {
+  navMoreBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = navMore.classList.contains('open');
+    navMore.classList.toggle('open');
+    navMoreBtn.setAttribute('aria-expanded', String(!isOpen));
+  });
+  document.addEventListener('click', () => {
+    navMore.classList.remove('open');
+    navMoreBtn.setAttribute('aria-expanded', 'false');
+  });
+}
+
+/* === MOBILE MENU === */
+const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+const mobileMenu = document.getElementById('mobileMenu');
+if (mobileMenuBtn && mobileMenu) {
+  mobileMenuBtn.addEventListener('click', () => {
+    const isOpen = mobileMenu.classList.contains('open');
+    mobileMenu.classList.toggle('open');
+    mobileMenuBtn.setAttribute('aria-expanded', String(!isOpen));
+  });
+}
+function closeMobileMenu() {
+  if (mobileMenu) { mobileMenu.classList.remove('open'); if (mobileMenuBtn) mobileMenuBtn.setAttribute('aria-expanded', 'false'); }
+}
+window.closeMobileMenu = closeMobileMenu;
+document.addEventListener('click', (e) => {
+  if (mobileMenu && mobileMenu.classList.contains('open')) {
+    if (!mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target)) closeMobileMenu();
+  }
+});
+
+/* === STICKY HEADER === */
+const header = document.querySelector('.site-header');
+if (header) {
+  const observer = new IntersectionObserver(([entry]) => { header.style.boxShadow = entry.isIntersecting ? 'none' : 'var(--shadow-sm)'; }, { threshold: 0, rootMargin: '-1px 0px 0px 0px' });
+  const sentinel = document.createElement('div');
+  sentinel.style.cssText = 'height:1px;position:absolute;top:0;width:100%;pointer-events:none;';
+  document.body.prepend(sentinel);
+  observer.observe(sentinel);
+}
+
+/* === SCROLL ANIMATIONS === */
+const animatedEls = document.querySelectorAll('.feature-card, .process-step, .ai-data-block, .geo-card, .model-card, .genre-column, .faq-item, .hero-stats');
+animatedEls.forEach(el => el.classList.add('fade-up'));
+const fadeObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) { setTimeout(() => { entry.target.classList.add('visible'); }, (i % 4) * 80); fadeObserver.unobserve(entry.target); }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+animatedEls.forEach(el => fadeObserver.observe(el));
+
+/* === CHAR COUNT === */
+const synopsisField = document.getElementById('synopsis');
+const charCount = document.getElementById('charCount');
+if (synopsisField && charCount) {
+  synopsisField.addEventListener('input', () => {
+    const count = synopsisField.value.length;
+    charCount.textContent = count.toLocaleString() + ' / 2,000';
+    charCount.style.color = count > 1800 ? 'var(--color-accent)' : 'var(--color-text-faint)';
+  });
+}
+
+/* === FORM VALIDATION === */
+const queryForm = document.getElementById('queryForm');
+const submitBtn = document.getElementById('submitBtn');
+const formSuccess = document.getElementById('formSuccess');
+function validateField(id, errorId, message) {
+  const field = document.getElementById(id); const errorEl = document.getElementById(errorId);
+  if (!field) return true;
+  const val = field.value ? field.value.trim() : '';
+  if (!val) { field.classList.add('error'); if (errorEl) errorEl.textContent = message; return false; }
+  field.classList.remove('error'); if (errorEl) errorEl.textContent = ''; return true;
+}
+function validateEmail(id, errorId) {
+  const field = document.getElementById(id); const errorEl = document.getElementById(errorId);
+  if (!field) return true;
+  const val = field.value.trim();
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+  if (!val || !emailOk) { field.classList.add('error'); if (errorEl) errorEl.textContent = 'Please enter a valid email address.'; return false; }
+  field.classList.remove('error'); if (errorEl) errorEl.textContent = ''; return true;
+}
+function validateCheckbox(id, errorId, message) {
+  const field = document.getElementById(id); const errorEl = document.getElementById(errorId);
+  if (!field) return true;
+  if (!field.checked) { if (errorEl) errorEl.textContent = message; return false; }
+  if (errorEl) errorEl.textContent = ''; return true;
+}
+['firstName','lastName','bookTitle','synopsis'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('blur', () => { validateField(id, id+'Error', 'This field is required.'); });
+});
+const emailField = document.getElementById('email');
+if (emailField) emailField.addEventListener('blur', () => validateEmail('email','emailError'));
+if (queryForm) {
+  queryForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const v1 = validateField('firstName','firstNameError','Please enter your first name.');
+    const v2 = validateField('lastName','lastNameError','Please enter your last name.');
+    const v3 = validateEmail('email','emailError');
+    const v4 = validateField('bookTitle','bookTitleError','Please enter your working title.');
+    const v5 = validateField('genre','genreError','Please select a genre.');
+    const v6 = validateField('model','modelError','Please select a publishing track.');
+    const v7 = validateField('synopsis','synopsisError','Please enter a brief synopsis (100–300 words recommended).');
+    const v8 = validateCheckbox('humanAuthored','humanAuthoredError','Please confirm your manuscript is human-authored.');
+    if (!v1||!v2||!v3||!v4||!v5||!v6||!v7||!v8) {
+      const firstError = queryForm.querySelector('.error, input:invalid');
+      if (firstError) firstError.scrollIntoView({behavior:'smooth',block:'center'});
+      return;
+    }
+    submitBtn.disabled = true; submitBtn.textContent = 'Submitting…';
+    await new Promise(resolve => setTimeout(resolve, 1400));
+    queryForm.style.display = 'none'; formSuccess.hidden = false;
+    formSuccess.scrollIntoView({behavior:'smooth',block:'center'});
+  });
+}
+</script>
+</body>
+</html>
