@@ -1289,27 +1289,18 @@ if (synopsisField && charCount) {
    It looks like: https://script.google.com/macros/s/AKfy..../exec */
 const QUERY_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzN9UK2vKOzQCEcxOuzBWuAQ-49BpXI7rERhZdnY6m6ZzWoh3SzMjOLv0JXkT5hcTuIOw/exec';
 
-/* Submits via JSONP so we can READ the endpoint's response. Apps Script web
-   apps don't send CORS headers, so a normal fetch can't read the reply — which
-   means we could never tell success from failure. JSONP (a GET with a callback)
-   sidesteps CORS and returns the server's JSON result, so we show the success
-   panel ONLY when the server confirms the row was written. */
+/* Submits the query to the Apps Script endpoint.
+   Uses a no-cors POST: it is governed by connect-src (not script-src), so it
+   works inside Duda's embed/iframe and under the site CSP, without relying on
+   injected <script> tags (JSONP), which that context can block. The response
+   is opaque (CORS prevents reading it), so a resolved promise means "delivered"
+   and a rejected promise means a network failure. The data itself is still
+   validated and sanitized server-side in Apps Script. */
 function submitQuery(params) {
-  return new Promise((resolve, reject) => {
-    const cbName = 'axitosCb_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
-    const qs = new URLSearchParams(params);
-    qs.append('callback', cbName);
-    const script = document.createElement('script');
-    const timer = setTimeout(() => { cleanup(); reject(new Error('timeout')); }, 20000);
-    function cleanup() {
-      clearTimeout(timer);
-      try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
-      if (script.parentNode) script.parentNode.removeChild(script);
-    }
-    window[cbName] = (resp) => { cleanup(); resolve(resp); };
-    script.onerror = () => { cleanup(); reject(new Error('network')); };
-    script.src = QUERY_ENDPOINT + '?' + qs.toString();
-    document.body.appendChild(script);
+  return fetch(QUERY_ENDPOINT, {
+    method: 'POST',
+    mode: 'no-cors',
+    body: new URLSearchParams(params)
   });
 }
 
@@ -1391,9 +1382,8 @@ if (queryForm) {
     };
 
     try {
-      const resp = await submitQuery(params);
-      // Show success ONLY when the server confirms the write.
-      if (!resp || !resp.ok) throw new Error(resp && resp.error ? resp.error : 'Submission failed.');
+      // Resolves once the request is delivered; rejects only on network failure.
+      await submitQuery(params);
       queryForm.style.display = 'none'; formSuccess.hidden = false;
       formSuccess.scrollIntoView({behavior:'smooth',block:'center'});
     } catch (err) {
