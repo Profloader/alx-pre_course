@@ -1,14 +1,6 @@
-<!-- Koinita Book Club — Duda-compatible widget
-     Paste this into Duda → Custom code (Body) for the koinita page.
-     No <html>/<head>/<body> wrappers — Duda provides those.        -->
-
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Spline+Sans+Mono:wght@500;600&display=swap');
-
-/* ============ Koinita design tokens ============
-   Concept: a members' reading room. Warm paper, deep ink, the Koinita amber
-   carried over from Axitos, and a "spine" green that marks everything author-side
-   so readers and authors are legible at a glance. Signature: the library card. */:root {
+:root {
   --paper:#FAF6EE;
   --paper-2:#F3EADB;
   --card:#FFFFFF;
@@ -92,11 +84,12 @@
 }
 #kn-root a { color: inherit !important; text-decoration: none !important; }
 #kn-root button { font-family: inherit !important; cursor: pointer !important; }
-#kn-root p { margin: 0 !important; }
-#kn-root ul, #kn-root ol { padding: 0 !important; margin: 0 !important; list-style: none !important; }
-#kn-root img { max-width: 100% !important; display: block; }
-/* Safe-area padding for iPhone home bar */
-#kn-root .app { padding-bottom: max(80px, calc(env(safe-area-inset-bottom, 0px) + 80px)); }
+/* Safe area for iPhone notch/home bar */
+#kn-root .app { padding-bottom: max(80px, calc(env(safe-area-inset-bottom) + 80px)); }
+
+/* Prevent Duda from overriding text in the app */
+#kn-root p { margin:0; }
+#kn-root ul, #kn-root ol { padding:0; margin:0; list-style:none; }
 
 </style>
 
