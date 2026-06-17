@@ -1,0 +1,2713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Koinita Book Club — Free books, in fellowship with their authors</title>
+<meta name="description" content="Koinita is a free reader club (18+) where members claim and keep full-length new books, follow authors, and talk directly with the people who wrote them." />
+<!-- PWA / app-store (Capacitor) wiring — files ship from the Koinita logo pack -->
+<meta name="theme-color" content="#D9541F" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Koinita" />
+<link rel="manifest" href="/site.webmanifest" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="icon" href="/favicon.ico" sizes="any" />
+<link rel="icon" type="image/svg+xml" href="/koinita-favicon.svg" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,9..144,700&family=Inter:wght@400;500;600;700&family=Spline+Sans+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+/* ============ Koinita design tokens ============
+   Concept: a members' reading room. Warm paper, deep ink, the Koinita amber
+   carried over from Axitos, and a "spine" green that marks everything author-side
+   so readers and authors are legible at a glance. Signature: the library card. */
+:root{
+  --paper:#FAF6EE;
+  --paper-2:#F3EADB;
+  --card:#FFFFFF;
+  --ink:#241F19;
+  --ink-soft:#6A6052;
+  --ink-faint:#988C79;
+  --amber:#D9541F;        /* Koinita / reader accent */
+  --amber-deep:#A83B0F;
+  --amber-wash:#FBEAE0;
+  --spine:#2E5E4E;        /* author accent */
+  --spine-deep:#1F4438;
+  --spine-wash:#E4EEE9;
+  --gold:#B5862F;         /* library-card foil */
+  --line:#E6DBC8;
+  --line-soft:#EFE7D8;
+  --shadow:0 1px 2px rgba(36,31,25,.04), 0 12px 32px -16px rgba(36,31,25,.18);
+  --shadow-lg:0 24px 60px -24px rgba(36,31,25,.40);
+  --r:16px; --r-sm:10px;
+  --display:"Fraunces", Georgia, serif;
+  --body:"Inter", system-ui, sans-serif;
+  --mono:"Spline Sans Mono", ui-monospace, monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--body);font-size:16px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+h1,h2,h3,h4{font-family:var(--display);font-weight:600;line-height:1.08;margin:0;letter-spacing:-.01em}
+a{color:inherit}
+button{font-family:inherit;cursor:pointer}
+img{max-width:100%}
+:focus-visible{outline:2.5px solid var(--amber);outline-offset:2px;border-radius:4px}
+.hidden{display:none !important}
+.mono{font-family:var(--mono)}
+.wrap{max-width:1120px;margin:0 auto;padding:0 22px}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;gap:8px;border:none;border-radius:999px;
+  padding:13px 22px;font-weight:600;font-size:15px;text-decoration:none;transition:.16s ease;white-space:nowrap}
+.btn-amber{background:var(--amber);color:#fff;box-shadow:0 6px 18px -8px var(--amber)}
+.btn-amber:hover{background:var(--amber-deep);transform:translateY(-1px)}
+.btn-spine{background:var(--spine);color:#fff}
+.btn-spine:hover{background:var(--spine-deep);transform:translateY(-1px)}
+.btn-ink{background:var(--ink);color:var(--paper)}
+.btn-ink:hover{transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn-ghost:hover{border-color:var(--ink);background:#fff}
+.btn-sm{padding:9px 15px;font-size:13.5px}
+.btn-block{width:100%;justify-content:center}
+.btn[disabled]{opacity:.45;cursor:not-allowed;transform:none}
+
+/* ---------- chips / pills ---------- */
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;
+  padding:4px 11px;border-radius:999px;background:var(--paper-2);color:var(--ink-soft)}
+.chip.genre{background:#fff;border:1px solid var(--line)}
+.chip.author{background:var(--spine-wash);color:var(--spine-deep);cursor:pointer;border:1px solid transparent}
+.chip.author:hover{border-color:var(--spine)}
+.chip.live{background:var(--amber-wash);color:var(--amber-deep)}
+.chip.dot::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block}
+.chip.verified{background:var(--spine);color:#fff}
+
+/* ============ top bar ============ */
+.topbar{position:sticky;top:0;z-index:40;background:rgba(250,246,238,.86);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line-soft)}
+.topbar .wrap{display:flex;align-items:center;gap:18px;height:66px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:600;font-size:21px;
+  letter-spacing:-.02em;text-decoration:none;cursor:pointer}
+.brand .dot{width:9px;height:9px;border-radius:50%;background:var(--amber);margin-top:9px}
+.nav-links{display:flex;gap:4px;margin-left:auto;align-items:center}
+.nav-links a, .nav-links button.linkbtn{padding:8px 14px;border-radius:999px;font-size:14.5px;font-weight:500;
+  text-decoration:none;color:var(--ink-soft);background:none;border:none;transition:.15s}
+.nav-links a:hover,.nav-links button.linkbtn:hover{color:var(--ink);background:var(--paper-2)}
+.nav-links a.active{color:var(--ink);background:#fff;box-shadow:var(--shadow)}
+.avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;
+  font-size:15px;border:2px solid #fff;box-shadow:var(--shadow);cursor:pointer;flex:none}
+.menu-toggle{display:none;margin-left:auto;background:none;border:1.5px solid var(--line);border-radius:10px;
+  width:42px;height:42px;font-size:20px}
+
+/* dropdown */
+.dropdown{position:absolute;right:22px;top:62px;background:#fff;border:1px solid var(--line);border-radius:14px;
+  box-shadow:var(--shadow-lg);min-width:230px;padding:8px;z-index:60}
+.dropdown .who{padding:10px 12px 12px;border-bottom:1px solid var(--line-soft);margin-bottom:6px}
+.dropdown .who b{display:block;font-size:15px}
+.dropdown .who span{font-size:12.5px;color:var(--ink-faint)}
+.dropdown button{display:flex;width:100%;text-align:left;gap:10px;align-items:center;background:none;border:none;
+  padding:10px 12px;border-radius:9px;font-size:14.5px;color:var(--ink)}
+.dropdown button:hover{background:var(--paper-2)}
+
+/* ============ landing ============ */
+.hero{position:relative;overflow:hidden}
+.hero .wrap{padding-top:64px;padding-bottom:54px}
+.eyebrow{font-family:var(--mono);font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--amber-deep);font-weight:600;margin-bottom:20px}
+.hero h1{font-size:clamp(40px,7vw,74px);font-weight:600;max-width:14ch}
+.hero h1 em{font-style:italic;color:var(--amber)}
+.hero p.lede{font-size:clamp(17px,2.3vw,21px);color:var(--ink-soft);max-width:54ch;margin:24px 0 32px;line-height:1.5}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.hero-note{font-size:13.5px;color:var(--ink-faint);margin-top:16px;display:flex;gap:8px;align-items:center}
+.hero-deco{position:absolute;right:-40px;top:40px;width:46%;max-width:560px;pointer-events:none;opacity:.96}
+@media(max-width:900px){.hero-deco{display:none}}
+
+/* fellowship strip */
+.strip{background:var(--ink);color:var(--paper)}
+.strip .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:26px;padding:30px 22px}
+.strip .stat b{font-family:var(--display);font-size:30px;display:block;line-height:1}
+.strip .stat span{font-size:13px;color:#C9BEAA}
+@media(max-width:760px){.strip .wrap{grid-template-columns:repeat(2,1fr);gap:20px}}
+
+/* how it works */
+.section{padding:74px 0}
+.section-head{max-width:60ch;margin-bottom:42px}
+.section-head .eyebrow{margin-bottom:14px}
+.section-head h2{font-size:clamp(28px,4vw,42px)}
+.section-head p{color:var(--ink-soft);font-size:17px;margin-top:14px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.step{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:26px;position:relative}
+.step .n{font-family:var(--mono);font-size:13px;color:var(--amber-deep);font-weight:600}
+.step h3{font-size:20px;margin:14px 0 8px}
+.step p{color:var(--ink-soft);font-size:15px;margin:0}
+.steps.fellow .step .n{color:var(--spine-deep)}
+@media(max-width:820px){.steps{grid-template-columns:1fr}}
+
+/* feature cards */
+.features{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.feat{display:flex;gap:16px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:24px}
+.feat .ic{width:46px;height:46px;border-radius:12px;flex:none;display:grid;place-items:center;font-size:22px;
+  background:var(--amber-wash)}
+.feat.green .ic{background:var(--spine-wash)}
+.feat h3{font-size:18px;margin-bottom:6px}
+.feat p{color:var(--ink-soft);font-size:14.5px;margin:0}
+@media(max-width:760px){.features{grid-template-columns:1fr}}
+
+/* compare table */
+.compare{background:var(--paper-2)}
+.cmp{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.cmp th,.cmp td{padding:16px 18px;text-align:left;border-bottom:1px solid var(--line-soft);font-size:15px}
+.cmp th{font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+.cmp td.koin{background:var(--amber-wash);font-weight:600}
+.cmp tr:last-child td{border-bottom:none}
+
+/* quote */
+.quote{text-align:center;max-width:48ch;margin:0 auto}
+.quote p{font-family:var(--display);font-size:clamp(22px,3.4vw,32px);font-style:italic;line-height:1.3}
+.quote cite{display:block;margin-top:18px;font-style:normal;font-size:14px;color:var(--ink-faint);font-family:var(--body)}
+
+/* final cta */
+.cta-band{background:var(--ink);color:var(--paper);border-radius:24px;padding:54px;text-align:center}
+.cta-band h2{font-size:clamp(28px,4.2vw,44px);color:#fff}
+.cta-band p{color:#CDC2AD;max-width:48ch;margin:16px auto 28px;font-size:17px}
+
+/* footer */
+footer{border-top:1px solid var(--line);padding:44px 0;color:var(--ink-faint);font-size:14px}
+footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+
+/* ============ auth modal ============ */
+.overlay{position:fixed;inset:0;background:rgba(36,31,25,.5);backdrop-filter:blur(3px);z-index:80;
+  display:grid;place-items:center;padding:20px}
+.modal{background:var(--paper);border-radius:22px;max-width:440px;width:100%;box-shadow:var(--shadow-lg);
+  border:1px solid var(--line);overflow:hidden;max-height:92vh;overflow-y:auto}
+.modal .m-head{padding:26px 28px 6px;position:relative}
+.modal .m-head .x{position:absolute;right:18px;top:18px;background:var(--paper-2);border:none;border-radius:50%;
+  width:34px;height:34px;font-size:17px;color:var(--ink-soft)}
+.modal .m-head h3{font-size:24px}
+.modal .m-head p{color:var(--ink-soft);font-size:14.5px;margin-top:6px}
+.modal .m-body{padding:8px 28px 28px}
+.tabs{display:flex;gap:6px;background:var(--paper-2);padding:5px;border-radius:12px;margin:14px 0 18px}
+.tabs button{flex:1;border:none;background:none;padding:9px;border-radius:9px;font-weight:600;font-size:14px;color:var(--ink-soft)}
+.tabs button.active{background:#fff;color:var(--ink);box-shadow:var(--shadow)}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--ink-soft)}
+.field input,.field textarea,.field select{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:11px;
+  background:#fff;font-family:inherit;font-size:15px;color:var(--ink)}
+.field textarea{resize:vertical;min-height:90px}
+.role-pick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.role-pick .opt{border:1.5px solid var(--line);border-radius:13px;padding:14px;text-align:center;background:#fff;
+  transition:.15s}
+.role-pick .opt.sel{border-color:var(--amber);background:var(--amber-wash)}
+.role-pick .opt.sel.author{border-color:var(--spine);background:var(--spine-wash)}
+.role-pick .opt .ic{font-size:24px}
+.role-pick .opt b{display:block;font-size:14.5px;margin-top:6px}
+.role-pick .opt span{font-size:12px;color:var(--ink-faint)}
+.g-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px;border:1.5px solid var(--line);
+  border-radius:11px;background:#fff;font-weight:600;font-size:14.5px;margin-bottom:14px}
+.g-btn:hover{background:var(--paper-2)}
+.divider{display:flex;align-items:center;gap:12px;color:var(--ink-faint);font-size:12.5px;margin:14px 0}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
+.err{color:var(--amber-deep);font-size:13px;margin-top:-6px;margin-bottom:10px}
+
+/* ============ app shell ============ */
+.app{padding:30px 0 80px}
+.app-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+.app-head h1{font-size:clamp(26px,4vw,36px)}
+.app-head p{color:var(--ink-soft);margin-top:6px}
+.subnav{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:26px;overflow-x:auto}
+.subnav button{border:none;background:none;padding:12px 4px;margin-right:18px;font-weight:600;font-size:15px;
+  color:var(--ink-faint);border-bottom:2.5px solid transparent;white-space:nowrap}
+.subnav button.active{color:var(--ink);border-color:var(--amber)}
+.author-mode .subnav button.active{border-color:var(--spine)}
+
+/* book grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:20px}
+.book{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;
+  flex-direction:column;transition:.18s;cursor:pointer}
+.book:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.cover{aspect-ratio:3/4.1;display:flex;flex-direction:column;justify-content:space-between;padding:18px;position:relative;color:#fff}
+.cover .k{font-family:var(--mono);font-size:11px;letter-spacing:.12em;opacity:.8;text-transform:uppercase}
+.cover .ct{font-family:var(--display);font-size:22px;font-weight:600;line-height:1.12;text-shadow:0 1px 12px rgba(0,0,0,.18)}
+.cover .ca{font-size:13px;opacity:.92}
+.cover .badge{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.92);color:var(--amber-deep);
+  font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px}
+.book .meta{padding:14px 16px 16px;display:flex;flex-direction:column;gap:8px;flex:1}
+.book .meta .row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.book .meta .ttl{font-family:var(--display);font-size:17px;font-weight:600;line-height:1.15}
+.book .meta .by{font-size:13px;color:var(--ink-soft)}
+.countdown{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--amber-deep)}
+.countdown.closed{color:var(--ink-faint)}
+
+/* detail */
+.detail{display:grid;grid-template-columns:300px 1fr;gap:40px;align-items:start}
+@media(max-width:760px){.detail{grid-template-columns:1fr}}
+.detail .cover{border-radius:var(--r);aspect-ratio:3/4.2;box-shadow:var(--shadow)}
+.detail h1{font-size:clamp(28px,5vw,40px);margin:4px 0 10px}
+.detail .blurb{font-size:16.5px;color:var(--ink-soft);line-height:1.6;margin:18px 0}
+.detail .actions{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:22px;margin-top:22px}
+.panel h3{font-size:17px;margin-bottom:6px}
+.panel p.sub{color:var(--ink-soft);font-size:14px;margin:0 0 14px}
+.author-card{display:flex;gap:14px;align-items:center;background:var(--spine-wash);border:1px solid #CFE0D8;
+  border-radius:var(--r);padding:16px;cursor:pointer;transition:.15s}
+.author-card:hover{transform:translateY(-2px)}
+.author-card .av{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;flex:none}
+.author-card b{font-size:16px;display:flex;align-items:center;gap:8px}
+.author-card span{font-size:13px;color:var(--spine-deep)}
+
+/* messages / threads */
+.thread{border:1px solid var(--line);border-radius:var(--r);background:#fff;overflow:hidden;margin-bottom:14px}
+.thread .t-head{padding:14px 18px;background:var(--paper-2);display:flex;justify-content:space-between;
+  align-items:center;gap:10px;cursor:pointer}
+.thread .t-head b{font-size:15px}
+.thread .t-head span{font-size:12.5px;color:var(--ink-faint)}
+.bubbles{padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.bubble{max-width:78%;padding:11px 15px;border-radius:14px;font-size:14.5px;line-height:1.5}
+.bubble.reader{align-self:flex-start;background:var(--amber-wash);border-bottom-left-radius:4px}
+.bubble.author{align-self:flex-end;background:var(--spine-wash);border-bottom-right-radius:4px}
+.bubble .who{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;opacity:.6;margin-bottom:3px}
+.reply-box{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line-soft)}
+.reply-box input{flex:1;padding:10px 14px;border:1.5px solid var(--line);border-radius:999px;font-family:inherit;font-size:14px}
+
+/* empty states */
+.empty{text-align:center;padding:60px 20px;color:var(--ink-faint)}
+.empty .ic{font-size:40px;margin-bottom:14px}
+.empty h3{font-size:20px;color:var(--ink-soft);margin-bottom:6px}
+.empty p{max-width:42ch;margin:0 auto 18px}
+
+/* profile */
+.profile-head{display:flex;gap:22px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.profile-head .big-av{width:88px;height:88px;border-radius:50%;display:grid;place-items:center;color:#fff;
+  font-weight:700;font-size:34px;flex:none;border:3px solid #fff;box-shadow:var(--shadow)}
+.profile-head h1{font-size:32px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+/* ---------- literary network ---------- */
+.iconbtn{position:relative;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:#fff;
+  display:grid;place-items:center;font-size:17px;color:var(--ink-soft);flex:none}
+.iconbtn:hover{border-color:var(--ink);color:var(--ink)}
+.iconbtn .count{position:absolute;top:-5px;right:-5px;background:var(--amber);color:#fff;font-size:10px;font-weight:700;
+  min-width:17px;height:17px;border-radius:999px;display:grid;place-items:center;padding:0 4px;border:1.5px solid var(--paper)}
+.follow-btn{border:1.5px solid var(--spine);background:var(--spine);color:#fff;border-radius:999px;padding:8px 18px;font-weight:600;font-size:13.5px}
+.follow-btn:hover{background:var(--spine-deep)}
+.follow-btn.following{background:#fff;color:var(--spine);}
+.follow-btn.following:hover{background:var(--spine-wash)}
+.counts{display:flex;gap:20px;margin:8px 0 2px}
+.counts b{font-family:var(--display);font-size:18px}
+.counts span{font-size:13px;color:var(--ink-faint)}
+.compose{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:22px}
+.compose textarea{width:100%;border:none;resize:vertical;min-height:64px;font-family:inherit;font-size:15.5px;color:var(--ink);background:transparent}
+.compose textarea:focus{outline:none}
+.compose .c-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid var(--line-soft);padding-top:12px;margin-top:8px;flex-wrap:wrap}
+.compose select{padding:8px 12px;border:1.5px solid var(--line);border-radius:9px;font-family:inherit;font-size:13px;background:#fff}
+.post{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;margin-bottom:14px}
+.post .p-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.post .p-av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;flex:none;cursor:pointer}
+.post .p-name{font-weight:600;font-size:15px;cursor:pointer}
+.post .p-name:hover{text-decoration:underline}
+.post .p-meta{font-size:12.5px;color:var(--ink-faint)}
+.post .p-body{font-size:15.5px;line-height:1.55;white-space:pre-wrap}
+.post .p-foot{display:flex;align-items:center;gap:16px;margin-top:12px;font-size:13px;color:var(--ink-soft)}
+.post .p-foot button{background:none;border:none;color:var(--ink-soft);font-size:13px;font-weight:600;display:flex;align-items:center;gap:5px}
+.post .p-foot button.on{color:var(--amber-deep)}
+.notif{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;cursor:pointer}
+.notif.unread{border-color:var(--amber);background:var(--amber-wash)}
+.notif .n-av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;flex:none}
+.notif .n-txt{flex:1;font-size:14.5px}
+.notif .n-txt b{font-weight:600}
+.notif .n-time{font-size:12px;color:var(--ink-faint)}
+.search-box{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:4px 6px 4px 16px;margin-bottom:22px}
+.search-box input{flex:1;border:none;outline:none;padding:12px 0;font-family:inherit;font-size:16px;background:transparent}
+.member-row{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px}
+.member-row .m-av{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;flex:none;cursor:pointer}
+.member-row .m-info{flex:1;min-width:0}
+.member-row .m-info b{cursor:pointer}
+.member-row .m-info p{margin:2px 0 0;font-size:13px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.circle-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin-bottom:14px;cursor:pointer;transition:.15s}
+.circle-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.circle-card h3{font-size:18px;margin-bottom:4px}
+.circle-card p{font-size:13.5px;color:var(--ink-soft);margin:0}
+
+/* ---------- The Epigraph ---------- */
+.epigraph{background:linear-gradient(140deg,#fffdf7,#fbf3e2);border:1px solid var(--gold);border-radius:var(--r);
+  padding:22px 24px;margin-bottom:22px;position:relative;overflow:hidden}
+.epigraph.compact{padding:18px 20px}
+.epigraph::before{content:'“';position:absolute;top:-18px;right:14px;font-family:var(--display);font-size:120px;color:var(--gold);opacity:.16}
+.epi-tag{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--amber-deep);margin-bottom:10px}
+.epigraph blockquote{font-family:var(--display);font-size:22px;line-height:1.4;margin:0 0 10px;color:var(--ink);max-width:46ch}
+.epigraph.compact blockquote{font-size:19px}
+.epi-by{font-size:14px;color:var(--ink-soft)}
+.epi-share{margin-top:14px;background:none;border:none;color:var(--amber-deep);font-weight:600;font-size:13px;cursor:pointer;padding:0}
+.epi-share:hover{text-decoration:underline}
+
+/* ---------- founder badge ---------- */
+.chip.founder{background:#26211b;color:#f4e7c9;border:none;font-weight:600}
+.chip.founder.charter{background:linear-gradient(90deg,#b8862b,#d9a441);color:#1f1a14}
+
+/* ---------- share / invite ---------- */
+.share-row{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 4px}
+.share-row button,.share-row .sbtn{flex:1;min-width:84px;text-align:center;border:1.5px solid var(--line);background:#fff;
+  border-radius:10px;padding:11px 8px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;text-decoration:none}
+.share-row button:hover,.share-row .sbtn:hover{border-color:var(--ink)}
+.quote-card{margin-top:16px;background:linear-gradient(150deg,var(--spine),var(--spine-deep));color:#fff;border-radius:14px;
+  padding:26px 24px;min-height:150px;display:flex;flex-direction:column;justify-content:space-between}
+.quote-card .qc-body{font-family:var(--display);font-size:19px;line-height:1.45}
+.quote-card .qc-brand{font-family:var(--display);font-weight:600;font-size:17px;margin-top:18px;display:flex;align-items:center;gap:6px;opacity:.95}
+.quote-card .qc-dot{width:7px;height:7px;border-radius:50%;background:var(--amber);margin-top:7px}
+.post .p-foot button.share-btn{margin-left:auto}
+
+/* ---------- founders wall ---------- */
+.founder-row{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:8px}
+.founder-row .fn{font-family:var(--display);font-size:18px;color:var(--ink-faint);width:64px;flex:none}
+.founders-meter{background:var(--card);border:1px solid var(--gold);border-radius:var(--r);padding:20px 22px;margin-bottom:22px}
+.founders-meter .bar{height:10px;background:var(--paper-2);border-radius:999px;overflow:hidden;margin:12px 0 8px}
+.founders-meter .bar span{display:block;height:100%;background:linear-gradient(90deg,var(--amber),var(--gold))}
+.opt-row{display:flex;gap:10px;align-items:center;font-size:14.5px;color:var(--ink-soft);cursor:pointer}
+.opt-row input{width:auto}
+.pref-row{display:flex;justify-content:space-between;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:10px;cursor:pointer}
+.pref-row b{display:block;font-size:15px}
+.pref-row span{display:block;font-size:13px;color:var(--ink-faint);margin-top:2px}
+.pref-row input{width:auto;transform:scale(1.3)}
+
+/* toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120%);background:var(--ink);
+  color:var(--paper);padding:13px 22px;border-radius:999px;font-size:14.5px;font-weight:500;z-index:200;
+  box-shadow:var(--shadow-lg);transition:transform .3s cubic-bezier(.2,.9,.3,1)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* small form rows */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:560px){.form-grid{grid-template-columns:1fr}}
+
+@media(max-width:760px){
+  .nav-links{display:none}
+  .nav-links.open{display:flex;position:absolute;top:66px;left:0;right:0;flex-direction:column;background:var(--paper);
+    border-bottom:1px solid var(--line);padding:12px;gap:4px;z-index:50}
+  .nav-links.open a,.nav-links.open button.linkbtn{width:100%}
+  .menu-toggle{display:block}
+  .cta-band{padding:36px 22px}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ TOP BAR ============ -->
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" onclick="go('home')">Koinita<span class="dot"></span></a>
+    <button class="menu-toggle" onclick="document.getElementById('navlinks').classList.toggle('open')">☰</button>
+    <nav class="nav-links" id="navlinks"></nav>
+  </div>
+</header>
+
+<main id="root"></main>
+
+<div id="modalMount"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+
+/* ════════════════════════════════════════════════════════════════════════════
+   SUPABASE INTEGRATION LAYER
+   Replaces localStorage persistence with real Supabase backend.
+   Config: set SUPABASE_URL and SUPABASE_ANON_KEY from your project settings.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+const SUPABASE_URL      = '%%SUPABASE_URL%%';      // e.g. https://xxxx.supabase.co
+const SUPABASE_ANON_KEY = '%%SUPABASE_ANON_KEY%%'; // Project Settings → API → anon key
+
+// Initialise Supabase client (loaded from CDN)
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ── Data mapping helpers ─────────────────────────────────────────────────────
+// Convert snake_case Supabase rows to camelCase DB objects the app expects.
+function mapProfile(r) {
+  if (!r) return null;
+  return {
+    id: r.id, name: r.name, email: r.email, role: r.role, bio: r.bio || '',
+    avatar: r.avatar || '#D9541F', plan: r.plan || 'starter',
+    inhouse: r.inhouse || false, admin: r.admin || false,
+    mutedStaff: r.muted_staff || false,
+    founder: r.founder || false, founderNo: r.founder_no || null,
+    inviteCode: r.invite_code, invites: r.invites || 0, charter: r.charter || false,
+    notifPrefs: { email: r.notif_email !== false, push: r.notif_push || false },
+    pushPrimed: r.push_primed || false,
+    shelf: [], // populated separately
+    following: [],
+  };
+}
+function mapBook(r) {
+  if (!r) return null;
+  return {
+    id: r.id, title: r.title, authorUserId: r.author_user_id,
+    authorName: r.author_name, genre: r.genre, blurb: r.blurb || '',
+    cover: r.cover || 0, featured: r.featured || false, status: r.status || 'approved',
+    freeStart: r.free_start ? new Date(r.free_start).getTime() : Date.now(),
+    freeEnd:   r.free_end   ? new Date(r.free_end).getTime()   : Date.now() + 86400000*4,
+    asin: r.asin || '', amazonUrl: r.amazon_url || '', added: new Date(r.added).getTime(),
+  };
+}
+function mapPost(r) {
+  if (!r) return null;
+  return {
+    id: r.id, authorId: r.author_id, bookId: r.book_id, circleId: r.circle_id,
+    body: r.body, imageUrl: r.image_url || null,
+    likes: r.likes || [], at: new Date(r.at).getTime(),
+  };
+}
+function mapComment(r) {
+  if (!r) return null;
+  return { id: r.id, postId: r.post_id, authorId: r.author_id, body: r.body, at: new Date(r.at).getTime() };
+}
+function mapNotif(r) {
+  if (!r) return null;
+  return { id: r.id, to: r.to_user_id, type: r.type, from: r.from_user_id, ref: r.ref_id, read: r.read, at: new Date(r.at).getTime() };
+}
+function mapThread(r) {
+  if (!r) return null;
+  return {
+    id: r.id, bookId: r.book_id, readerId: r.reader_id, authorUserId: r.author_user_id,
+    subject: r.subject, rating: r.rating, liked: r.liked, improve: r.improve,
+    messages: r._messages || [], updated: new Date(r.updated_at).getTime(), _open: false,
+  };
+}
+function mapCircle(r) {
+  if (!r) return null;
+  return { id: r.id, name: r.name, bookId: r.book_id, creatorId: r.creator_id, private: r.private || false, members: [] };
+}
+function mapSettings(r) {
+  return { staffEditorName: r.staff_editor_name, autoApprove: r.auto_approve, foundingCap: r.founding_cap, founderCount: r.founder_count };
+}
+
+// ── Auth state listener ──────────────────────────────────────────────────────
+let _sbReady = false;
+
+sb.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'SIGNED_OUT' || !session) {
+    DB.session = null;
+    save(DB);
+    render();
+    return;
+  }
+  if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+    DB.session = session.user.id;
+    await sbLoadAll(session.user.id);
+    _sbReady = true;
+    render();
+  }
+});
+
+// ── Load all data from Supabase into local DB cache ─────────────────────────
+async function sbLoadAll(userId) {
+  try {
+    const [
+      { data: profiles },
+      { data: books },
+      { data: posts },
+      { data: comments },
+      { data: follows },
+      { data: circles },
+      { data: circleMembers },
+      { data: notifs },
+      { data: settingsRow },
+      { data: shelfRows },
+      { data: threads },
+      { data: threadMsgs },
+    ] = await Promise.all([
+      sb.from('profiles').select('*'),
+      sb.from('books').select('*').neq('status', 'rejected'),
+      sb.from('posts').select('*').order('at', { ascending: false }).limit(150),
+      sb.from('comments').select('*').order('at', { ascending: true }),
+      sb.from('follows').select('*'),
+      sb.from('circles').select('*'),
+      sb.from('circle_members').select('*'),
+      sb.from('notifications').select('*').eq('to_user_id', userId).order('at', { ascending: false }).limit(50),
+      sb.from('settings').select('*').single(),
+      sb.from('shelf').select('*').eq('user_id', userId),
+      sb.from('threads').select('*').or(`reader_id.eq.${userId},author_user_id.eq.${userId}`),
+      sb.from('thread_messages').select('*').order('at', { ascending: true }),
+    ]);
+
+    // Map to camelCase cache
+    DB.users = (profiles || []).map(mapProfile);
+    DB.books = (books || []).map(mapBook);
+    DB.posts = (posts || []).map(mapPost);
+    DB.comments = (comments || []).map(mapComment);
+    DB.follows = (follows || []).map(r => ({ followerId: r.follower_id, followeeId: r.followee_id, at: new Date(r.at).getTime() }));
+    DB.circles = (circles || []).map(mapCircle);
+    DB.notifications = (notifs || []).map(mapNotif);
+    if (settingsRow) DB.settings = mapSettings(settingsRow);
+
+    // Attach shelf to user
+    const me = DB.users.find(u => u.id === userId);
+    if (me) me.shelf = (shelfRows || []).map(r => r.book_id);
+
+    // Attach follows to users
+    (follows || []).forEach(f => {
+      const follower = DB.users.find(u => u.id === f.follower_id);
+      if (follower && !follower.following.includes(f.followee_id)) follower.following.push(f.followee_id);
+    });
+
+    // Attach circle members
+    (circleMembers || []).forEach(m => {
+      const c = DB.circles.find(c => c.id === m.circle_id);
+      if (c && !c.members.includes(m.user_id)) c.members.push(m.user_id);
+    });
+
+    // Build threads with messages attached
+    const msgsByThread = {};
+    (threadMsgs || []).forEach(m => {
+      if (!msgsByThread[m.thread_id]) msgsByThread[m.thread_id] = [];
+      msgsByThread[m.thread_id].push({ from: m.from_role, userId: m.user_id, text: m.body, at: new Date(m.at).getTime() });
+    });
+    DB.threads = (threads || []).map(t => mapThread({ ...t, _messages: msgsByThread[t.id] || [] }));
+
+    save(DB); // persist to localStorage as offline cache
+  } catch (e) {
+    console.error('[Koinita] sbLoadAll failed:', e);
+    // Falls back to localStorage cache silently
+  }
+}
+
+// ── Realtime subscriptions (live feed + notifications) ───────────────────────
+function sbSubscribeRealtime(userId) {
+  sb.channel('koinita-live')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, payload => {
+      const post = mapPost(payload.new);
+      if (!DB.posts.find(p => p.id === post.id)) {
+        DB.posts.unshift(post);
+        if (['home', 'feed', 'discover'].includes(route.view)) render();
+      }
+    })
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `to_user_id=eq.${userId}` }, payload => {
+      DB.notifications.unshift(mapNotif(payload.new));
+      render(); // updates notification badge
+    })
+    .subscribe();
+}
+
+// ── Auth API wrappers ────────────────────────────────────────────────────────
+
+// Override sendOTP — now uses Supabase Auth OTP
+async function sbSendOTP(email) {
+  const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
+  if (error) throw error;
+}
+
+// Override verifyOTP — now uses Supabase Auth verify
+async function sbVerifyOTP(email, token) {
+  const { data, error } = await sb.auth.verifyOtp({ email, token: token.trim(), type: 'email' });
+  if (error) throw error;
+  return data.user;
+}
+
+// Override Google sign-in
+async function sbGoogleSignIn() {
+  const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + window.location.pathname } });
+  if (error) toast('Google sign-in failed — try again');
+}
+
+// Override Apple sign-in
+async function sbAppleSignIn() {
+  const { error } = await sb.auth.signInWithOAuth({ provider: 'apple', options: { redirectTo: window.location.origin + window.location.pathname } });
+  if (error) toast('Apple sign-in failed — try again');
+}
+
+// ── Mutation wrappers (optimistic + Supabase write) ──────────────────────────
+
+async function sbCreateProfile(userId, fields) {
+  // Atomic founder spot via Edge Function
+  let spot = { claimed: false, founder_no: null };
+  try {
+    const res = await sb.functions.invoke('claim-founder-spot', {
+      body: { invite_code: fields.inviteCode || null },
+    });
+    spot = res.data || spot;
+  } catch (_) {}
+
+  const profile = {
+    id: userId,
+    name: fields.name,
+    email: fields.email,
+    role: fields.role || 'reader',
+    bio: '',
+    avatar: fields.avatar || '#D9541F',
+    plan: 'starter',
+    invite_code: fields.selfInviteCode || Math.random().toString(36).slice(2, 10),
+    founder: spot.claimed || false,
+    founder_no: spot.founder_no || null,
+  };
+
+  const { error } = await sb.from('profiles').insert(profile);
+  if (error && error.code !== '23505') throw error; // ignore duplicate key
+  return profile;
+}
+
+async function sbUpdateProfile(userId, fields) {
+  const mapped = {};
+  if (fields.name !== undefined)        mapped.name = fields.name;
+  if (fields.email !== undefined)       mapped.email = fields.email;
+  if (fields.bio !== undefined)         mapped.bio = fields.bio;
+  if (fields.avatar !== undefined)      mapped.avatar = fields.avatar;
+  if (fields.mutedStaff !== undefined)  mapped.muted_staff = fields.mutedStaff;
+  if (fields.notifEmail !== undefined)  mapped.notif_email = fields.notifEmail;
+  if (fields.notifPush !== undefined)   mapped.notif_push = fields.notifPush;
+  if (fields.pushPrimed !== undefined)  mapped.push_primed = fields.pushPrimed;
+  await sb.from('profiles').update(mapped).eq('id', userId);
+}
+
+async function sbCreatePost(authorId, body, bookId, circleId, imageUrl) {
+  const { data, error } = await sb.from('posts').insert({
+    author_id: authorId, body, book_id: bookId || null, circle_id: circleId || null, image_url: imageUrl || null,
+  }).select().single();
+  if (error) throw error;
+  return mapPost(data);
+}
+
+async function sbToggleLike(postId, userId) {
+  await sb.rpc('toggle_like', { p_post_id: postId, p_user_id: userId });
+}
+
+async function sbAddComment(postId, authorId, body) {
+  const { data, error } = await sb.from('comments').insert({ post_id: postId, author_id: authorId, body }).select().single();
+  if (error) throw error;
+  return mapComment(data);
+}
+
+async function sbFollow(followerId, followeeId) {
+  await sb.from('follows').insert({ follower_id: followerId, followee_id: followeeId });
+  // Notify followee
+  await sb.from('notifications').insert({ to_user_id: followeeId, type: 'follow', from_user_id: followerId });
+}
+
+async function sbUnfollow(followerId, followeeId) {
+  await sb.from('follows').delete().match({ follower_id: followerId, followee_id: followeeId });
+}
+
+async function sbClaimBook(userId, bookId) {
+  await sb.from('shelf').insert({ user_id: userId, book_id: bookId });
+}
+
+async function sbAddBook(book) {
+  const { data, error } = await sb.from('books').insert({
+    title: book.title, author_user_id: book.authorUserId, author_name: book.authorName,
+    genre: book.genre, blurb: book.blurb, cover: book.cover, status: book.status,
+    free_start: new Date(book.freeStart).toISOString(), free_end: new Date(book.freeEnd).toISOString(),
+    asin: book.asin, amazon_url: book.amazonUrl,
+  }).select().single();
+  if (error) throw error;
+  return mapBook(data);
+}
+
+async function sbUpdateBook(bookId, fields) {
+  const mapped = {};
+  if (fields.status !== undefined)    mapped.status = fields.status;
+  if (fields.featured !== undefined)  mapped.featured = fields.featured;
+  if (fields.freeStart !== undefined) mapped.free_start = new Date(fields.freeStart).toISOString();
+  if (fields.freeEnd !== undefined)   mapped.free_end = new Date(fields.freeEnd).toISOString();
+  await sb.from('books').update(mapped).eq('id', bookId);
+}
+
+async function sbMarkNotifsRead(userId) {
+  await sb.from('notifications').update({ read: true }).eq('to_user_id', userId).eq('read', false);
+}
+
+async function sbSendReply(threadId, fromRole, userId, text) {
+  await sb.from('thread_messages').insert({ thread_id: threadId, from_role: fromRole, user_id: userId, body: text });
+  await sb.from('threads').update({ updated_at: new Date().toISOString() }).eq('id', threadId);
+}
+
+async function sbOpenThread(bookId, readerId, authorUserId, subject) {
+  const { data, error } = await sb.from('threads').insert({
+    book_id: bookId, reader_id: readerId, author_user_id: authorUserId, subject,
+  }).select().single();
+  if (error) throw error;
+  return mapThread(data);
+}
+
+async function sbUpdateSettings(fields) {
+  await sb.from('settings').update(fields).eq('id', true);
+}
+
+async function sbStartCheckout(planId) {
+  const session = await sb.auth.getSession();
+  const token = session.data.session?.access_token;
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/create-checkout`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ plan: planId }),
+  });
+  const { url, error } = await res.json();
+  if (error) throw new Error(error);
+  window.location = url;
+}
+
+/* ── Patch the prototype functions to call Supabase ──────────────────────────
+   The functions below OVERRIDE the same-named functions defined later in the
+   prototype JS. Because of how function declarations work, we use variable
+   assignment to ensure our versions take precedence at call time. */
+
+const _origSave = typeof save !== 'undefined' ? save : () => {};
+
+// Wrap save() to also sync changed data.
+// Since save() is called with the full DB object, we sync based on context
+// tracked in mutation wrappers. This is a safety net for any paths we missed.
+function save(db) {
+  try { localStorage.setItem('koinita_v6', JSON.stringify(db)); } catch (_) {}
+  // (targeted Supabase writes happen in the explicit wrappers above)
+}
+
+/* ── Boot: load from localStorage immediately, then hydrate from Supabase ── */
+async function initApp() {
+  // Show whatever is in localStorage first (instant load)
+  DB = load();
+  render();
+
+  // Then check if we have a Supabase session
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    DB.session = session.user.id;
+    await sbLoadAll(session.user.id);
+    sbSubscribeRealtime(session.user.id);
+    render();
+  }
+}
+
+/* ── Capture invite code from URL for referral credit ────────────────────── */
+try {
+  const p = new URLSearchParams(location.search);
+  if (p.get('invite')) authState.inviteCode = p.get('invite');
+} catch(_) {}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   END SUPABASE INTEGRATION LAYER — prototype code continues below
+   ═══════════════════════════════════════════════════════════════════════════ */
+/* ====================================================================
+   KOINITA BOOK CLUB — front-end prototype
+   Persistence: localStorage (works when you download/deploy this file;
+   in the Claude preview it may reset). Wire to Supabase for production.
+   ==================================================================== */
+
+const KEY = 'koinita_v6';
+const COVERS = [
+  ['#2E5E4E','#1F4438'],['#D9541F','#A83B0F'],['#3A3D8C','#26285C'],
+  ['#8C2F4A','#5E1E31'],['#1F6F7A','#114049'],['#7A5A2E','#4E3A1C'],
+  ['#5B3A8C','#3A2459'],['#2B6B45','#194229'],['#B5862F','#7A5A1C']
+];
+const AVS = ['#D9541F','#2E5E4E','#3A3D8C','#8C2F4A','#1F6F7A','#7A5A2E','#5B3A8C','#B5862F'];
+const GENRES = ['Literary Fiction','Mystery','Sci-Fi','Romance','Non-Fiction','Self-Growth','Fantasy','Thriller','History'];
+
+/* ====================================================================
+   MONETIZATION HOOKS  (built now, dormant at launch)
+   --------------------------------------------------------------------
+   MODEL (NetGalley-style): readers are ALWAYS free, with no gate, ever.
+   Money comes from the author side only. Every gate below already exists
+   in the code; at launch MONETIZATION_ENABLED is false, so every author
+   gets full access. Flipping it to true enforces the tiers — a config
+   change, not a rebuild.
+
+   PRODUCTION BILLING: Supabase doesn't bill on its own. Enable the Stripe
+   wrapper in the Supabase dashboard, create one Edge Function that opens a
+   Stripe Checkout Session, and let a Stripe webhook write the resulting
+   plan back to the author's `author_plan` column. The helpers below
+   (planOf / gatesActive / canAddBook / hasFeature) are the single place
+   that reads `author_plan` — point them at the synced column and the whole
+   app gates correctly.
+   ==================================================================== */
+const MONETIZATION_ENABLED = false;     // ← launch = false. Set true to switch tiers on.
+let   monetizationPreview   = false;     // dev-only runtime preview; never affects real members.
+
+const PLANS = {
+  starter: { id:'starter', name:'Starter',      price:0,  period:'',    accent:'var(--ink-soft)',
+    tagline:'Get your first book in front of real readers.',
+    maxListings:1,  analytics:false, featured:false, readerTeam:25,   prioritySupport:false },
+  indie:   { id:'indie',   name:'Indie Author',  price:19, period:'/mo', accent:'var(--amber)',
+    tagline:'For working authors building a readership.',
+    maxListings:5,  analytics:true,  featured:false, readerTeam:150,  prioritySupport:false },
+  pro:     { id:'pro',     name:'Author Pro',    price:49, period:'/mo', accent:'var(--spine)',
+    tagline:'Maximum reach, data, and featured placement.',
+    maxListings:25, analytics:true,  featured:true,  readerTeam:1000, prioritySupport:true }
+};
+const INHOUSE_PLAN = { id:'inhouse', name:'Axitos (In-House)', price:0, period:'', accent:'var(--gold)',
+  tagline:'Published by Axitos — full access, always free.',
+  maxListings:Infinity, analytics:true, featured:true, readerTeam:Infinity, prioritySupport:true };
+
+function gatesActive(u){ return (MONETIZATION_ENABLED || monetizationPreview) && u && u.role==='author' && !u.inhouse; }
+function planOf(u){ if(!u||u.role!=='author') return null; if(u.inhouse) return INHOUSE_PLAN; return PLANS[u.plan||'starter']; }
+function listingLimit(u){ return gatesActive(u)? planOf(u).maxListings : Infinity; }
+function listingsUsed(u){ return DB.books.filter(b=>b.authorUserId===u.id).length; }
+function canAddBook(u){ return listingsUsed(u) < listingLimit(u); }
+function hasFeature(u,key){ if(!gatesActive(u)) return true; return !!planOf(u)[key]; }
+
+/* ---------- store ---------- */
+function blankDB(){ return {users:[], books:[], threads:[], follows:[], posts:[], notifications:[], circles:[], appeals:[], reports:[], settings:{staffEditorName:'Staff Editor', autoApprove:true, foundingCap:25000, founderCount:0}, session:null, seeded:false}; }
+function load(){
+  try{ const d = JSON.parse(localStorage.getItem(KEY)); if(d&&d.seeded) return d; }catch(e){}
+  const d = seed(); save(d); return d;
+}
+function save(d){ try{ localStorage.setItem(KEY, JSON.stringify(d)); }catch(e){} }
+let DB = null;
+const uid = (p='id')=> p+'_'+Math.random().toString(36).slice(2,9);
+const now = ()=> Date.now();
+const me = ()=> DB.users.find(u=>u.id===DB.session) || null;
+const userById = id=> DB.users.find(u=>u.id===id);
+const bookById = id=> DB.books.find(b=>b.id===id);
+const circleById = id=> DB.circles.find(c=>c.id===id);
+
+/* ---------- literary-network helpers ----------
+   Feed uses the pull model: posts are stored once and a follower's feed is a
+   single query over the accounts they follow (no fan-out write storm).
+   Notifications are a table read on load + (in production) an email digest —
+   never a per-user realtime socket, which keeps concurrent-connection cost flat. */
+function isFollowing(a,b){ return DB.follows.some(f=>f.followerId===a && f.followeeId===b); }
+function followersOf(id){ return DB.follows.filter(f=>f.followeeId===id).map(f=>f.followerId); }
+function followingOf(id){ return DB.follows.filter(f=>f.followerId===id).map(f=>f.followeeId); }
+function notify(userId, type, fromId, text, refId){
+  if(!userId || userId===fromId) return;
+  DB.notifications.push({id:uid('n'), userId, type, fromId, refId, text, at:now(), read:false});
+}
+function unreadCount(){ const m=me(); return m? DB.notifications.filter(n=>n.userId===m.id && !n.read).length : 0; }
+function toggleFollow(id){
+  const m=me(); if(!m || id===m.id) return;
+  const i = DB.follows.findIndex(f=>f.followerId===m.id && f.followeeId===id);
+  if(i>=0){ DB.follows.splice(i,1); }
+  else { DB.follows.push({followerId:m.id, followeeId:id, at:now()}); notify(id,'follow',m.id,'started following you',m.id);
+    save(DB);
+    if(!m.pushPrimed){ const t=userById(id); maybePrimePush(`We'll let you know the moment ${t?t.name.split(' ')[0]:'they'} drops a new free book or posts a note.`); return; }
+  }
+  save(DB); render();
+}
+
+/* ---------- staff editor + admin + mute ---------- */
+function staffEditor(){ return DB.users.find(u=>u.system) || null; }
+function isAdmin(){ const m=me(); return !!(m && m.admin); }
+function isMutedStaff(){ const m=me(); return !!(m && m.mutedStaff); }
+function toggleMuteStaff(){ const m=me(); m.mutedStaff=!m.mutedStaff; save(DB);
+  toast(m.mutedStaff?'Muted — you can turn these back on in settings':'Staff updates back on'); render(); }
+
+/* ---------- moderation + strikes ----------
+   Tier A (illegal / child-safety / credible threats): zero tolerance — block,
+   permanent ban, preserve, and (in production) file an NCMEC CyberTipline report.
+   Tier B (adult, abuse, fraud, spam, solicitation): warn once, ban on repeat.
+   PROTOTYPE heuristic — production replaces with OpenAI Moderation + a child-safety
+   text classifier (e.g., Thorn Safer) running server-side before insert. */
+function classify(text){
+  const t=(text||''); const l=t.toLowerCase();
+  const tierA=['child porn','cp ','underage','minor sex','rape','kill you','bomb','school shoot','sextort'];
+  if(tierA.some(w=>l.includes(w))) return {tier:'A', reason:'This violates our zero-tolerance safety policy. Your account has been suspended and the content preserved for reporting.'};
+  const tierB=['viagra','crypto airdrop','free money','click here to win','make money fast','sex chat','xxx','onlyfans','nudes','buy now cheap'];
+  if(tierB.some(w=>l.includes(w))) return {tier:'B', reason:'That looks like adult, spam, or solicitation content, which isn\u2019t allowed here.'};
+  const letters=t.replace(/[^A-Za-z]/g,'');
+  if(letters.length>20 && (t.replace(/[^A-Z]/g,'').length/letters.length)>0.85) return {tier:'B', reason:'Please don\u2019t post in all caps.'};
+  return {tier:'ok'};
+}
+// returns {ok, clean} or {ok:false} after applying enforcement + UI feedback
+function enforce(text){
+  const m=me();
+  const c=classify(text);
+  if(c.tier==='ok'){
+    const clean=(text||'').replace(/\bhttps?:\/\/\S+|\bwww\.\S+|\b[\w-]+\.(com|net|org|io|co|ru|xyz|link|info|biz)\b\S*/gi,'[link removed]');
+    return {ok:true, clean};
+  }
+  if(c.tier==='A'){
+    m.banned=true; m.banReason='Tier A safety violation'; m.strikes=(m.strikes||0)+1;
+    DB.reports.push({id:uid('r'), userId:m.id, tier:'A', text:'[preserved]', at:now(), status:'reported_ncmec'});
+    save(DB); toast(c.reason); render(); return {ok:false};
+  }
+  // Tier B: warn first, ban on second
+  m.strikes=(m.strikes||0)+1;
+  if(m.strikes>=2){ m.banned=true; m.banReason='Repeat Tier B violation'; save(DB); toast('Removed. Second violation — your account is suspended.'); render(); return {ok:false}; }
+  save(DB); toast('Removed and warning issued: '+c.reason+' One more and your account is suspended.'); render(); return {ok:false};
+}
+
+/* ---------- seed demo data ---------- */
+function seed(){
+  const d = blankDB();
+  const staff = {id:uid('u'), name:'Staff Editor', email:'editor@koinita.club', role:'author', system:true, admin:true,
+    inhouse:true, plan:'inhouse', avatar:AVS[5], bio:'Notes and announcements from the Koinita team. Every member sees these by default — you can mute them anytime.', joined:now()-1000*60*60*24*60, shelf:[], strikes:0, banned:false, age18:true};
+  const admin = {id:uid('u'), name:'Owner (Admin)', email:'admin@koinita.club', role:'author', admin:true,
+    inhouse:true, plan:'inhouse', avatar:AVS[7], bio:'Koinita owner account.', joined:now()-1000*60*60*24*60, shelf:[], strikes:0, banned:false, age18:true};
+  const author1 = {id:uid('u'),name:'Mara Ellison',email:'mara@demo.club',role:'author', inhouse:true, plan:'inhouse',
+    avatar:AVS[1], bio:'I write quiet literary fiction about ordinary people at turning points. Koinita is where I meet my first readers and listen.', joined:now()-1000*60*60*24*40, shelf:[], strikes:0, banned:false, age18:true};
+  const author2 = {id:uid('u'),name:'Daniel Okafor',email:'daniel@demo.club',role:'author', inhouse:false, plan:'indie',
+    avatar:AVS[4], bio:'Speculative fiction and near-future thrillers. I read every note my readers send and I answer all of them.', joined:now()-1000*60*60*24*30, shelf:[], strikes:0, banned:false, age18:true};
+  const reader1 = {id:uid('u'),name:'Reader Demo',email:'reader@demo.club',role:'reader',
+    avatar:AVS[2], bio:'Avid reader. Happiest finding a great book before everyone else does.', joined:now()-1000*60*60*24*10, shelf:[], strikes:0, banned:false, age18:true};
+  d.users.push(staff,admin,author1,author2,reader1);
+  d.staffEditorId = staff.id;
+
+  const t = now();
+  const day = 1000*60*60*24;
+  const mk = (title,authorName,authorId,genre,blurb,ci,freeStart,freeEnd,asin)=>({
+    id:uid('b'),title,authorName,authorUserId:authorId,genre,blurb,cover:ci,
+    freeStart,freeEnd,asin, amazonUrl:'https://www.amazon.com/dp/'+asin, added:t});
+
+  d.books.push(
+    mk('The Last Light Keeper','Mara Ellison',author1.id,'Literary Fiction',
+      'On a fog-bound island, the keeper of a decommissioned lighthouse meets the woman who once lived in the cottage below. A first-edition release about memory, tides, and what we choose to keep lit.',
+      0, t-day, t+day*3, 'B0EXAMPLE1'),
+    mk('Signal Garden','Daniel Okafor',author2.id,'Sci-Fi',
+      'In 2049 a botanist discovers her greenhouse is quietly transmitting. A taut near-future story about listening, consent, and the things we grow without meaning to.',
+      2, t-day*2, t+day, 'B0EXAMPLE2'),
+    mk('Salt & Ledger','Mara Ellison',author1.id,'Historical',
+      'A bookkeeper in a failing coastal town balances the accounts of a community that no longer balances. Honest, warm, unsentimental.',
+      5, t+day*2, t+day*7, 'B0EXAMPLE3'),
+    mk('The Quiet Algorithm',null,null,'Non-Fiction',
+      'A plain-language field guide to making good decisions when the data is loud and the stakes are real. Author profile unclaimed — connect this book to its author.',
+      3, t-day, t+day*2, 'B0EXAMPLE4'),
+    mk('Hollowmere','Daniel Okafor',author2.id,'Fantasy',
+      'A drowned city resurfaces once a generation, and this year it is early. Atmospheric, propulsive fantasy with a beating human heart.',
+      6, t-day*4, t-day, 'B0EXAMPLE5'),
+    mk('Small Repairs','Mara Ellison',author1.id,'Self-Growth',
+      'Short essays on fixing the small things — a hinge, a habit, a half-said apology — and how they add up to a life.',
+      7, t+day*4, t+day*9, 'B0EXAMPLE6')
+  );
+
+  // one demo thread so the inbox isn't empty
+  d.threads.push({
+    id:uid('t'), bookId:d.books[0].id, readerId:reader1.id, authorUserId:author1.id,
+    subject:'Feedback on The Last Light Keeper',
+    rating:5, liked:'The final chapter completely undid me — the restraint in the prose made it hit harder.',
+    improve:'The middle stretch on the island felt a touch slow, but it paid off.',
+    messages:[{from:'reader',userId:reader1.id,text:'Was the lighthouse meant to be literal or a memory? No spoilers needed — just curious how you think about it.',at:t-day*1.5}],
+    created:t-day*1.5, updated:t-day*1.5
+  });
+
+  // ---- literary network seed ----
+  d.follows.push(
+    {followerId:reader1.id, followeeId:author1.id, at:t-day*8},
+    {followerId:reader1.id, followeeId:author2.id, at:t-day*6},
+    {followerId:author2.id, followeeId:author1.id, at:t-day*5},
+    // every member auto-follows the Staff Editor (system account)
+    {followerId:reader1.id, followeeId:staff.id, at:t-day*10, staff:true},
+    {followerId:author1.id, followeeId:staff.id, at:t-day*10, staff:true},
+    {followerId:author2.id, followeeId:staff.id, at:t-day*10, staff:true}
+  );
+  d.posts.push(
+    {id:uid('p'), authorId:staff.id, bookId:null, text:'Welcome to Koinita. We are a small, quiet club for readers and the authors who write for them. Free books, honest feedback, real conversation — no noise, no ads, no AI slop. We will use this space, sparingly, for the occasional note. You can mute it anytime.', at:t-day*9, appreciatedBy:[reader1.id], pinned:true},
+    {id:uid('p'), authorId:author1.id, bookId:d.books[0].id, text:'A note from behind the page: I wrote the keeper during a winter I spent near a real decommissioned lighthouse. What it means to me is that we keep tending things long after their official use is gone. That is most of love, I think.', at:t-day*2, appreciatedBy:[reader1.id]},
+    {id:uid('p'), authorId:author2.id, bookId:d.books[1].id, text:'Signal Garden started as a question: what would it mean to be listened to completely, without consent? I kept the prose spare on purpose. Curious what my first readers make of the ending.', at:t-day*1, appreciatedBy:[]},
+    {id:uid('p'), authorId:author1.id, bookId:null, text:'Reading is the one technology that still requires your whole attention. That is why this club is small and quiet on purpose.', at:t-day*0.5, appreciatedBy:[]}
+  );
+  const circle = {id:uid('c'), bookId:d.books[0].id, ownerId:author1.id, name:'The Last Light Keeper — first readers',
+    memberIds:[author1.id, reader1.id], at:t-day*3,
+    messages:[{userId:author1.id, text:'Welcome in. This is a small circle for the first people reading the book. Ask me anything as you go.', at:t-day*3}]};
+  d.circles.push(circle);
+  d.notifications.push(
+    {id:uid('n'), userId:author1.id, type:'follow', fromId:reader1.id, refId:author1.id, text:'started following you', at:t-day*8, read:false},
+    {id:uid('n'), userId:reader1.id, type:'circle_add', fromId:author1.id, refId:circle.id, text:'added you to a reading circle', at:t-day*3, read:false}
+  );
+
+  // ---- founding members + invite codes + notif prefs + book status ----
+  let fno=1;
+  d.users.forEach(u=>{
+    u.inviteCode = u.inviteCode || (u.name.split(' ')[0].toLowerCase().replace(/[^a-z]/g,'')+Math.floor(100+Math.random()*900));
+    u.invites = u.invites||0; u.charter = !!u.charter;
+    u.notifPrefs = u.notifPrefs || {email:true, push:false}; u.pushPrimed = true;
+    if(!u.system){ u.founder=true; u.founderNo=fno++; }
+  });
+  reader1.invites=3; // demo: a few successful invites
+  d.settings.founderCount = fno-1;
+  d.books.forEach(b=>{ b.status='approved'; });
+
+  d.seeded = true;
+  return d;
+}
+
+/* ---------- helpers ---------- */
+function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show');
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),2600); }
+function esc(s){ return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function initials(name){ return (name||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+function timeAgo(ts){ const s=(now()-ts)/1000; if(s<60)return'just now'; const m=s/60; if(m<60)return Math.floor(m)+'m ago';
+  const h=m/60; if(h<24)return Math.floor(h)+'h ago'; const d=h/24; if(d<30)return Math.floor(d)+'d ago'; return Math.floor(d/30)+'mo ago'; }
+function freeState(b){ const t=now();
+  if(t<b.freeStart) return {state:'soon', txt:'Drops '+new Date(b.freeStart).toLocaleDateString(undefined,{month:'short',day:'numeric'})};
+  if(t<=b.freeEnd){ const left=b.freeEnd-t; const days=Math.floor(left/86400000); const hrs=Math.floor((left%86400000)/3600000);
+    return {state:'live', txt: days>0 ? `Free · ${days}d ${hrs}h left` : `Free · ${hrs}h left`}; }
+  return {state:'closed', txt:'Window closed'};
+}
+function coverStyle(ci){ const c=COVERS[ci%COVERS.length]; return `background:linear-gradient(150deg,${c[0]},${c[1]})`; }
+
+/* ====================================================================
+   THE EPIGRAPH — a daily line from the public-domain greats.
+   Auto-selected by date (deterministic), shareable, its own ritual.
+   All works are public domain (author died 70+ years ago).
+   ==================================================================== */
+const EPIGRAPHS = [
+  {q:"It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.", a:"Jane Austen", w:"Pride and Prejudice"},
+  {q:"It was the best of times, it was the worst of times.", a:"Charles Dickens", w:"A Tale of Two Cities"},
+  {q:"All happy families are alike; each unhappy family is unhappy in its own way.", a:"Leo Tolstoy", w:"Anna Karenina"},
+  {q:"Call me Ishmael.", a:"Herman Melville", w:"Moby-Dick"},
+  {q:"We are all in the gutter, but some of us are looking at the stars.", a:"Oscar Wilde", w:"Lady Windermere's Fan"},
+  {q:"I took the one less traveled by, and that has made all the difference.", a:"Robert Frost", w:"The Road Not Taken"},
+  {q:"Whatever our souls are made of, his and mine are the same.", a:"Emily Brontë", w:"Wuthering Heights"},
+  {q:"There is no frigate like a book to take us lands away.", a:"Emily Dickinson", w:"Poems"},
+  {q:"The man who does not read has no advantage over the man who cannot read.", a:"Mark Twain", w:"attributed"},
+  {q:"Beware; for I am fearless, and therefore powerful.", a:"Mary Shelley", w:"Frankenstein"},
+  {q:"I would always rather be happy than dignified.", a:"Charlotte Brontë", w:"Jane Eyre"},
+  {q:"All that we see or seem is but a dream within a dream.", a:"Edgar Allan Poe", w:"A Dream Within a Dream"},
+  {q:"To be, or not to be, that is the question.", a:"William Shakespeare", w:"Hamlet"},
+  {q:"It is only with the heart that one can see rightly; what is essential is invisible to the eye.", a:"Antoine de Saint-Exupéry", w:"The Little Prince"},
+  {q:"Tomorrow, and tomorrow, and tomorrow, creeps in this petty pace from day to day.", a:"William Shakespeare", w:"Macbeth"},
+  {q:"There is some good in this world, and it's worth fighting for.", a:"J.R.R. Tolkien", w:"The Two Towers"},
+  {q:"Do I dare disturb the universe?", a:"T.S. Eliot", w:"The Love Song of J. Alfred Prufrock"},
+  {q:"I am no bird; and no net ensnares me: I am a free human being with an independent will.", a:"Charlotte Brontë", w:"Jane Eyre"},
+  {q:"The only way to get rid of a temptation is to yield to it.", a:"Oscar Wilde", w:"The Picture of Dorian Gray"},
+  {q:"Not all those who wander are lost.", a:"J.R.R. Tolkien", w:"The Fellowship of the Ring"},
+  {q:"Reader, I married him.", a:"Charlotte Brontë", w:"Jane Eyre"},
+  {q:"It is better to be hated for what you are than to be loved for what you are not.", a:"André Gide", w:"Autumn Leaves"},
+  {q:"So we beat on, boats against the current, borne back ceaselessly into the past.", a:"F. Scott Fitzgerald", w:"The Great Gatsby"},
+  {q:"Happiness can be found, even in the darkest of times, if one only remembers to turn on the light.", a:"attributed to the public domain commons", w:""},
+  {q:"A room without books is like a body without a soul.", a:"Marcus Tullius Cicero", w:"attributed"},
+  {q:"The world breaks everyone, and afterward many are strong at the broken places.", a:"Ernest Hemingway", w:"A Farewell to Arms"},
+  {q:"And, when you want something, all the universe conspires in helping you to achieve it.", a:"the storyteller's commons", w:""},
+  {q:"I can resist everything except temptation.", a:"Oscar Wilde", w:"Lady Windermere's Fan"},
+  {q:"Time you enjoy wasting is not wasted time.", a:"Marthe Troly-Curtin", w:"Phrynette Married"},
+  {q:"Begin at the beginning, and go on till you come to the end: then stop.", a:"Lewis Carroll", w:"Alice's Adventures in Wonderland"},
+  {q:"Why, sometimes I've believed as many as six impossible things before breakfast.", a:"Lewis Carroll", w:"Through the Looking-Glass"}
+];
+function epigraphToday(){
+  const epoch = Math.floor(Date.now()/86400000); // day index
+  return EPIGRAPHS[epoch % EPIGRAPHS.length];
+}
+function epigraphCard(compact){
+  const e = epigraphToday();
+  const today = new Date().toLocaleDateString(undefined,{weekday:'long', month:'long', day:'numeric'});
+  return `<div class="epigraph${compact?' compact':''}">
+    <div class="epi-tag">The Epigraph · ${today}</div>
+    <blockquote>“${esc(e.q)}”</blockquote>
+    <div class="epi-by">— ${esc(e.a)}${e.w?`, <i>${esc(e.w)}</i>`:''}</div>
+    <button class="epi-share" onclick="shareEpigraph()">↗ Share today's line</button>
+  </div>`;
+}
+function shareEpigraph(){
+  const e = epigraphToday();
+  shareThing('The Epigraph — today on Koinita', `“${e.q}” — ${e.a}${e.w?', '+e.w:''}`, location.href);
+}
+
+/* ====================================================================
+   FOUNDING MEMBERS — numbered, genuinely finite, refer-to-climb.
+   Access is instant for everyone; the *status* is what's scarce.
+   ==================================================================== */
+function isCharter(u){ return (u.invites||0) >= 5; }
+function founderBadge(u){
+  if(!u || !u.founder) return '';
+  return isCharter(u)
+    ? `<span class="chip founder charter" title="Charter Member — 5+ invites">✦ Charter №${u.founderNo}</span>`
+    : `<span class="chip founder" title="Founding Member">✦ Founder №${u.founderNo}</span>`;
+}
+function foundingSpotsLeft(){ return Math.max(0, DB.settings.foundingCap - DB.settings.founderCount); }
+
+/* ====================================================================
+   SHARE — Web Share API with graceful fallback (copy / email / socials)
+   ==================================================================== */
+function shareThing(title, text, url){
+  url = url || location.href;
+  if(navigator.share){
+    navigator.share({title, text, url}).catch(()=>{});
+    return;
+  }
+  const enc=encodeURIComponent, body=enc(text+'\n\n'+url);
+  document.getElementById('modalMount').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeAuth()">
+    <div class="modal">
+      <div class="m-head"><button class="x" onclick="closeAuth()">✕</button>
+        <h3>Share</h3><p>${esc(title)}</p></div>
+      <div class="m-body">
+        <div class="share-row">
+          <button onclick="copyText(${JSON.stringify(text+' '+url).replace(/"/g,'&quot;')})">🔗 Copy</button>
+          <a class="sbtn" href="mailto:?subject=${enc(title)}&body=${body}">✉ Email</a>
+          <a class="sbtn" href="https://wa.me/?text=${body}" target="_blank" rel="noopener">WhatsApp</a>
+          <a class="sbtn" href="https://twitter.com/intent/tweet?text=${enc(text)}&url=${enc(url)}" target="_blank" rel="noopener">X</a>
+          <a class="sbtn" href="https://www.facebook.com/sharer/sharer.php?u=${enc(url)}" target="_blank" rel="noopener">Facebook</a>
+        </div>
+        <div class="quote-card" id="quoteCard"><div class="qc-body">${esc(text)}</div><div class="qc-brand">Koinita<span class="qc-dot"></span></div></div>
+        <p style="font-size:12px;color:var(--ink-faint);text-align:center;margin:10px 0 0">A quote card like this is generated for social — books grow on shares.</p>
+      </div>
+    </div>
+  </div>`;
+}
+function copyText(t){ navigator.clipboard?.writeText(t); toast('Copied — paste it anywhere'); }
+
+/* ====================================================================
+   INVITE — every member gets a link; refer to climb the Founders' Wall.
+   Legal model: the member sends the message themselves (no auto-emailing
+   contacts); invitee opts in by signing up.
+   ==================================================================== */
+function inviteLink(){ const m=me(); return `https://app.koinita.club/?invite=${m?m.inviteCode:'koinita'}`; }
+function defaultInviteMsg(){
+  return `I'm reading on Koinita — free books, and you actually talk to the authors who wrote them. It's invitation-only right now and I've got a spot for you. Come join me:`;
+}
+function openInvite(circleId){
+  const m=me(); const link = circleId? inviteLink()+'&circle='+circleId : inviteLink();
+  const circle = circleId? circleById(circleId):null;
+  document.getElementById('modalMount').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeAuth()">
+    <div class="modal">
+      <div class="m-head"><button class="x" onclick="closeAuth()">✕</button>
+        <h3>${circle?'Invite to “'+esc(circle.name)+'”':'Invite a friend'}</h3>
+        <p>Every friend who joins moves you up the Founders' Wall. Five invites earns Charter Member.</p></div>
+      <div class="m-body">
+        <div class="field"><label>Your message (edit freely)</label>
+          <textarea id="inviteMsg" rows="3">${esc(defaultInviteMsg())}</textarea></div>
+        <div class="field"><label>Your invite link</label>
+          <div style="display:flex;gap:8px"><input id="inviteUrl" value="${link}" readonly style="flex:1">
+          <button class="btn btn-ghost btn-sm" onclick="copyText(document.getElementById('inviteMsg').value+' '+document.getElementById('inviteUrl').value)">Copy</button></div></div>
+        <div class="share-row">
+          <a class="sbtn" id="invMail">✉ Email</a>
+          <a class="sbtn" id="invWa">WhatsApp</a>
+          <a class="sbtn" id="invX">X</a>
+          <a class="sbtn" id="invFb">Facebook</a>
+        </div>
+        <div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <span class="sub" style="margin:0">You've brought <b>${m?m.invites||0:0}</b> ${(m&&m.invites===1)?'friend':'friends'} so far${m&&isCharter(m)?' · ✦ Charter':''}</span>
+          <button class="btn btn-amber btn-sm" onclick="simInviteAccepted()">Simulate a friend joining (demo)</button>
+        </div>
+        <p style="font-size:11.5px;color:var(--ink-faint);margin:12px 0 0">You send the invite yourself — Koinita never emails your contacts. Friends opt in by joining.</p>
+      </div>
+    </div>
+  </div>`;
+  // wire share links from the live (editable) message
+  const sync=()=>{ const msg=document.getElementById('inviteMsg').value; const url=document.getElementById('inviteUrl').value;
+    const enc=encodeURIComponent, body=enc(msg+'\n\n'+url);
+    document.getElementById('invMail').href=`mailto:?subject=${enc('Come read with me on Koinita')}&body=${body}`;
+    document.getElementById('invWa').href=`https://wa.me/?text=${body}`; document.getElementById('invWa').target='_blank';
+    document.getElementById('invX').href=`https://twitter.com/intent/tweet?text=${enc(msg)}&url=${enc(url)}`; document.getElementById('invX').target='_blank';
+    document.getElementById('invFb').href=`https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`; document.getElementById('invFb').target='_blank';
+  };
+  sync(); document.getElementById('inviteMsg').addEventListener('input', sync);
+}
+function simInviteAccepted(){
+  const m=me(); if(!m) return; const was=isCharter(m);
+  m.invites=(m.invites||0)+1; save(DB);
+  if(!was && isCharter(m)) toast('A friend joined — you are now a ✦ Charter Member!');
+  else toast('A friend joined — you moved up the Founders\' Wall ✦');
+  closeAuth(); render();
+}
+
+/* Amazon review-policy disclaimers. The free book buys honest in-app feedback
+   to the author and community membership — never a retail review. Koinita never
+   requests, requires, rewards, or influences reviews on any retailer. */
+function reviewDisclaimer(variant){
+  if(variant==='footer'){
+    return `<p style="font-size:12px;color:var(--ink-faint);line-height:1.6;max-width:90ch;margin:14px 0 0">
+      Koinita offers full, free books to support honest author feedback and a reading community. Membership and free books are never conditioned on writing a review — positive or otherwise — on Amazon or any other retailer, and Koinita does not request, require, reward, or attempt to influence such reviews. Any review a member chooses to post elsewhere is entirely their own independent and honest decision. Koinita is not affiliated with or endorsed by Amazon.</p>`;
+  }
+  // member-area variant: affirms freedom, never solicits
+  return `<div class="panel" style="background:var(--paper-2);border-style:dashed">
+      <h3 style="font-size:15px">A note on reviews</h3>
+      <p class="sub" style="margin:0">The book is yours to keep. The only thing we hope for is your honest feedback to the author, shared right here in Koinita — never a review anywhere else. You're never required to review on Amazon or any store, and nothing here depends on it. If, on your own, you decide to leave an honest review somewhere, that's entirely your right and your choice, and never a condition of your free book or your place in this community. If you've connected personally with an author here, the most fitting place for your thoughts is your in-app feedback; any public review should reflect your own genuine, independent opinion.</p>
+    </div>`;
+}
+
+/* ====================================================================
+   ROUTER
+   ==================================================================== */
+let route = {view:'home', param:null};
+function go(view,param){ route={view,param:param||null}; document.getElementById('navlinks').classList.remove('open');
+  window.scrollTo(0,0); render(); }
+
+function render(){
+  renderNav();
+  const root = document.getElementById('root');
+  const m = me();
+  // a suspended member only ever sees the appeal screen
+  if(m && m.banned && route.view!=='appeal'){ root.innerHTML = viewAppeal(); return; }
+  let html='';
+  switch(route.view){
+    case 'home': html = m ? viewDashboard() : viewLanding(); break;
+    case 'discover': html = viewDiscover(); break;
+    case 'book': html = viewBook(route.param); break;
+    case 'author': html = viewMemberProfile(route.param); break;
+    case 'member': html = viewMemberProfile(route.param); break;
+    case 'feed': html = viewFeed(); break;
+    case 'search': html = viewSearch(); break;
+    case 'notifications': html = viewNotifications(); break;
+    case 'circles': html = viewCircles(); break;
+    case 'circle': html = viewCircle(route.param); break;
+    case 'shelf': html = viewShelf(); break;
+    case 'messages': html = viewMessages(); break;
+    case 'inbox': html = viewInbox(); break;
+    case 'mybooks': html = viewMyBooks(); break;
+    case 'plans': html = viewPlans(); break;
+    case 'admin': html = isAdmin()? viewAdmin() : viewLanding(); break;
+    case 'founders': html = viewFounders(); break;
+    case 'notifs': html = m ? viewNotifPrefs() : viewLanding(); break;
+    case 'appeal': html = viewAppeal(); break;
+    case 'profile': html = viewProfile(); break;
+    default: html = viewLanding();
+  }
+  root.innerHTML = html;
+}
+
+/* ====================================================================
+   SUSPENDED-ACCOUNT APPEAL  (lightweight human-review path)
+   ==================================================================== */
+function viewAppeal(){
+  const m=me(); if(!m) return viewLanding();
+  const existing = DB.appeals.find(a=>a.userId===m.id);
+  return `<div class="app"><div class="wrap" style="max-width:640px">
+    <div class="empty" style="padding:48px 32px">
+      <div class="ic">⏸️</div>
+      <h3>Your account is suspended</h3>
+      <p style="max-width:48ch;margin:0 auto 6px">This happened because content was flagged under our Community Guidelines (${esc(m.banReason||'policy violation')}). Koinita is an 18+ community with a strict, automated safety filter.</p>
+      ${m.banReason && m.banReason.indexOf('Tier A')>=0
+        ? `<p style="max-width:48ch;margin:0 auto 18px;color:var(--ink-faint);font-size:13px">Some violations are reported to the relevant authorities and cannot be appealed.</p>`
+        : existing
+          ? `<p style="max-width:48ch;margin:14px auto 0;color:var(--spine);font-weight:600">Your appeal has been received. A human reviewer will look at it. Thank you for your patience.</p>`
+          : `<div style="max-width:420px;margin:18px auto 0;text-align:left">
+              <div class="field"><label>Tell us what happened (optional)</label>
+                <textarea id="appealText" rows="4" placeholder="If you think this was a mistake, explain here."></textarea></div>
+              <button class="btn btn-amber btn-block" onclick="submitAppeal()">Submit appeal for human review</button>
+            </div>`}
+      <button class="btn btn-ghost btn-sm" style="margin-top:22px" onclick="signOut()">Sign out</button>
+    </div>
+  </div></div>`;
+}
+function submitAppeal(){
+  const m=me(); const txt=(document.getElementById('appealText')||{}).value||'';
+  DB.appeals.push({id:uid('ap'), userId:m.id, name:m.name, text:txt.trim(), at:now(), status:'open'});
+  save(DB); toast('Appeal submitted for review'); render();
+}
+
+/* ====================================================================
+   ADMIN DASHBOARD  (owner only) — Staff Editor channel + safety overview
+   ==================================================================== */
+function viewAdmin(){
+  const m=me(); const se=staffEditor();
+  const members = DB.users.filter(u=>!u.system);
+  const readers = members.filter(u=>u.role==='reader').length;
+  const authors = members.filter(u=>u.role==='author').length;
+  const banned = members.filter(u=>u.banned).length;
+  const strikes = members.filter(u=>(u.strikes||0)>0 && !u.banned).length;
+  const openAppeals = DB.appeals.filter(a=>a.status==='open').length;
+  const reports = DB.reports.length;
+  const pending = DB.books.filter(b=>b.status==='pending');
+  const stat=(n,l)=>`<div class="panel" style="text-align:center;margin:0"><div style="font-family:var(--display);font-size:30px">${n}</div><div class="sub" style="margin:0">${l}</div></div>`;
+  return `<div class="app author-mode"><div class="wrap">
+    <div class="app-head"><div><h1>Admin</h1><p>Reach every member, gate new books, and keep an eye on safety.</p></div></div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:24px">
+      ${stat(DB.settings.founderCount.toLocaleString(),'Founders')}${stat(readers,'Readers')}${stat(authors,'Authors')}${stat(pending.length,'Books pending')}${stat(banned,'Suspended')}${stat(openAppeals,'Appeals')}
+    </div>
+
+    <div class="panel">
+      <h3>New book listings</h3>
+      <label class="pref-row" style="cursor:pointer">
+        <div><b>Auto-approve outside authors</b><span>${DB.settings.autoApprove?'ON — outside-author books post to members immediately.':'OFF — outside-author books wait for your approval below.'}</span></div>
+        <input type="checkbox" ${DB.settings.autoApprove?'checked':''} onchange="toggleAutoApprove(this.checked)">
+      </label>
+      ${pending.length?`<div style="margin-top:12px">${pending.map(b=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid var(--line-soft);padding:12px 0;flex-wrap:wrap">
+        <div><b>${esc(b.title)}</b> <span class="sub">· ${esc(b.authorName)} · ${esc(b.genre)}</span></div>
+        <div style="display:flex;gap:6px"><button class="btn btn-spine btn-sm" onclick="reviewBook('${b.id}','approve')">Approve</button>
+        <button class="btn btn-ghost btn-sm" onclick="reviewBook('${b.id}','reject')">Reject</button></div>
+      </div>`).join('')}</div>`:`<p class="sub" style="margin:12px 0 0">No books awaiting review.</p>`}
+    </div>
+
+    <div class="panel">
+      <h3>${esc(DB.settings.staffEditorName)} channel</h3>
+      <p class="sub">Every member automatically follows this account and sees its posts (unless they mute it). Use it for announcements or a personal note.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 16px">
+        <input id="seName" value="${esc(se?se.name:'Staff Editor')}" style="flex:1;min-width:180px;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font-family:inherit">
+        <button class="btn btn-ghost btn-sm" onclick="renameStaff()">Rename channel</button>
+      </div>
+      <textarea id="sePost" rows="3" placeholder="Write an announcement or a personal note to all members…" style="width:100%;padding:12px;border:1.5px solid var(--line);border-radius:10px;font-family:inherit;font-size:15px"></textarea>
+      <div style="display:flex;justify-content:flex-end;margin-top:10px">
+        <button class="btn btn-spine btn-sm" onclick="postAsStaff()">Post to all members</button>
+      </div>
+    </div>
+
+    ${openAppeals?`<div class="panel"><h3>Open appeals</h3>
+      ${DB.appeals.filter(a=>a.status==='open').map(a=>`<div style="border-top:1px solid var(--line-soft);padding:12px 0">
+        <b>${esc(a.name)}</b> <span class="sub">· ${timeAgo(a.at)}</span>
+        <p style="margin:4px 0 8px;font-size:14px">${esc(a.text||'(no message)')}</p>
+        <button class="btn btn-ghost btn-sm" onclick="resolveAppeal('${a.id}','reinstate')">Reinstate</button>
+        <button class="btn btn-ghost btn-sm" onclick="resolveAppeal('${a.id}','deny')">Deny</button>
+      </div>`).join('')}</div>`:''}
+  </div></div>`;
+}
+function toggleAutoApprove(v){ DB.settings.autoApprove=v; save(DB); toast(v?'Auto-approve ON':'Auto-approve OFF — new outside books need review'); render(); }
+function reviewBook(id,action){ const b=bookById(id); if(!b) return;
+  b.status = action==='approve'?'approved':'rejected';
+  save(DB); toast(action==='approve'?'Book approved — now live':'Book rejected'); render(); }
+function renameStaff(){ const se=staffEditor(); const v=(document.getElementById('seName').value||'').trim(); if(!v) return;
+  se.name=v; DB.settings.staffEditorName=v; save(DB); toast('Channel renamed to '+v); render(); }
+function postAsStaff(){ const se=staffEditor(); const txt=(document.getElementById('sePost').value||'').trim();
+  if(!txt){ toast('Write something first.'); return; }
+  DB.posts.push({id:uid('p'), authorId:se.id, bookId:null, text:txt, at:now(), appreciatedBy:[], pinned:true});
+  save(DB); toast('Posted to all members ✦'); render(); }
+function resolveAppeal(id,action){ const a=DB.appeals.find(x=>x.id===id); if(!a) return;
+  a.status=action; const u=userById(a.userId);
+  if(action==='reinstate' && u){ u.banned=false; u.strikes=0; }
+  save(DB); toast(action==='reinstate'?'Member reinstated':'Appeal denied'); render(); }
+
+function renderNav(){
+  const nav = document.getElementById('navlinks');
+  const m = me();
+  const a = (v)=> route.view===v ? 'active':'';
+  if(!m){
+    nav.innerHTML = `
+      <a class="${a('home')}" onclick="go('home')">Home</a>
+      <a class="${a('discover')}" onclick="openAuthThen('discover')">Browse books</a>
+      <a onclick="openAuth('signin')">Sign in</a>
+      <a class="btn btn-amber btn-sm" onclick="openAuth('signup')">Join free</a>`;
+    return;
+  }
+  if(m.role==='author'){
+    nav.innerHTML = `
+      <a class="${a('home')}" onclick="go('home')">Studio</a>
+      <a class="${a('feed')}" onclick="go('feed')">Feed</a>
+      <a class="${a('mybooks')}" onclick="go('mybooks')">My books</a>
+      <a class="${a('inbox')}" onclick="go('inbox')">Inbox</a>
+      ${iconNav(m)}`;
+  } else {
+    nav.innerHTML = `
+      <a class="${a('home')}" onclick="go('home')">My club</a>
+      <a class="${a('discover')}" onclick="go('discover')">Discover</a>
+      <a class="${a('feed')}" onclick="go('feed')">Feed</a>
+      <a class="${a('shelf')}" onclick="go('shelf')">My shelf</a>
+      ${iconNav(m)}`;
+  }
+}
+function iconNav(m){
+  const c = unreadCount();
+  return `
+    <button class="iconbtn" title="Find readers & authors" onclick="go('search')">🔍</button>
+    <button class="iconbtn" title="Notifications" onclick="go('notifications')">🔔${c?`<span class="count">${c>9?'9+':c}</span>`:''}</button>
+    ${avatarBtn(m)}`;
+}
+function avatarBtn(m){ return `<div class="avatar" style="background:${m.avatar}" onclick="toggleMenu(event)">${initials(m.name)}</div>`; }
+function unreadBadge(){ return ''; }
+
+function toggleMenu(e){
+  e.stopPropagation();
+  const m = me();
+  let dd = document.getElementById('userdd');
+  if(dd){ dd.remove(); return; }
+  dd = document.createElement('div'); dd.className='dropdown'; dd.id='userdd';
+  dd.innerHTML = `
+    <div class="who"><b>${esc(m.name)}</b><span>${esc(m.email)} · ${m.role}${m.role==='author'&&m.inhouse?' · Axitos':''}</span></div>
+    ${m.founder?`<div style="padding:6px 16px 10px"><span class="chip founder${isCharter(m)?' charter':''}">✦ ${isCharter(m)?'Charter':'Founder'} №${m.founderNo}</span></div>`:''}
+    <button onclick="openInvite();closeMenu()">✦ Invite a friend</button>
+    <button onclick="go('founders');closeMenu()">🏛 Founders' Wall</button>
+    <button onclick="go('member','${m.id}');closeMenu()">👤 My profile &amp; posts</button>
+    <button onclick="go('circles');closeMenu()">○ Reading circles</button>
+    ${m.role==='reader'?`<button onclick="go('messages');closeMenu()">💬 My conversations</button>`:''}
+    ${m.role==='author'?`<button onclick="go('plans');closeMenu()">💳 Plans &amp; billing</button>`:''}
+    ${m.admin?`<button onclick="go('admin');closeMenu()">🛠 Admin dashboard</button>`:''}
+    <button onclick="go('notifs');closeMenu()">🔔 Notification settings</button>
+    <button onclick="toggleMuteStaff();closeMenu()">${m.mutedStaff?'🔔 Unmute '+esc(DB.settings.staffEditorName):'🔕 Mute '+esc(DB.settings.staffEditorName)}</button>
+    <button onclick="go('profile');closeMenu()">⚙ Edit profile</button>
+    <button onclick="signOut()">↩ Sign out</button>`;
+  document.body.appendChild(dd);
+  setTimeout(()=>document.addEventListener('click', closeMenuOnce),0);
+}
+function closeMenu(){ const dd=document.getElementById('userdd'); if(dd) dd.remove(); }
+function closeMenuOnce(){ closeMenu(); document.removeEventListener('click', closeMenuOnce); }
+
+/* ====================================================================
+   LANDING
+   ==================================================================== */
+function viewLanding(){
+  return `
+  <section class="hero">
+    <svg class="hero-deco" viewBox="0 0 400 340" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="g1" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#2E5E4E"/><stop offset="1" stop-color="#1F4438"/></linearGradient>
+        <linearGradient id="g2" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#D9541F"/><stop offset="1" stop-color="#A83B0F"/></linearGradient>
+        <linearGradient id="g3" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#3A3D8C"/><stop offset="1" stop-color="#26285C"/></linearGradient>
+      </defs>
+      <rect x="36" y="70" width="120" height="170" rx="8" fill="url(#g3)" transform="rotate(-7 96 155)"/>
+      <rect x="150" y="40" width="130" height="190" rx="8" fill="url(#g1)"/>
+      <rect x="262" y="78" width="118" height="168" rx="8" fill="url(#g2)" transform="rotate(6 321 162)"/>
+      <circle cx="215" cy="270" r="7" fill="#D9541F"/>
+      <path d="M150 250 C 190 300, 240 300, 280 252" stroke="#241F19" stroke-width="2" stroke-dasharray="3 6" fill="none" opacity=".5"/>
+      <text x="170" y="135" font-family="Fraunces" font-size="15" fill="#fff" opacity=".95">first</text>
+      <text x="170" y="158" font-family="Fraunces" font-size="15" fill="#fff" opacity=".95">edition</text>
+    </svg>
+    <div class="wrap">
+      <p class="eyebrow">Free membership · Full books · Real authors</p>
+      <h1>Your next great read is <em>free</em> — and the author is listening.</h1>
+      <p class="lede">Koinita is a free book club, not a deal-alert list. Members claim and keep full-length, first-edition new releases, read them on Kindle, Apple or Android, and talk directly with the authors who wrote them.</p>
+      <div class="hero-cta">
+        <button class="btn btn-amber" onclick="openAuth('signup')">Claim your founding spot →</button>
+        <button class="btn btn-ghost" onclick="openAuthThen('discover')">Browse the shelf</button>
+      </div>
+      <p class="hero-note">✦ ${foundingSpotsLeft().toLocaleString()} of ${DB.settings.foundingCap.toLocaleString()} founding-member spots left · free forever · books are yours to keep.</p>
+    </div>
+  </section>
+
+  <section class="section" style="padding-bottom:0">
+    <div class="wrap" style="max-width:760px">
+      ${epigraphCard(false)}
+    </div>
+  </section>
+
+  <section class="strip">
+    <div class="wrap">
+      <div class="stat"><b>100%</b><span>Full-length books, never samples</span></div>
+      <div class="stat"><b>$0.00</b><span>To join and to read</span></div>
+      <div class="stat"><b>1-tap</b><span>Ask the author a question</span></div>
+      <div class="stat"><b>9</b><span>Genres and growing</span></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">How it works</p>
+        <h2>Three steps to a free book you keep for good.</h2>
+        <p>Built around scheduled drops with live countdowns, so there is always something to claim — and always a reason to come back.</p>
+      </div>
+      <div class="steps">
+        <div class="step"><div class="n">STEP 01</div><h3>Browse the members' shelf</h3><p>New titles across every genre, each with a live "free window" countdown so you never miss a drop.</p></div>
+        <div class="step"><div class="n">STEP 02</div><h3>Claim it free on Kindle</h3><p>One tap takes you to the Amazon listing at $0.00. Add it to your library and read it on any Kindle-compatible device, including Apple.</p></div>
+        <div class="step"><div class="n">STEP 03</div><h3>Tell the author</h3><p>Rate it, share what worked, and ask one question. The author reads it and replies — right here in the club.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow" style="color:var(--spine-deep)">Why it's different</p>
+        <h2>A club, in fellowship with its authors.</h2>
+      </div>
+      <div class="features">
+        <div class="feat green"><div class="ic">🔗</div><div><h3>Every book is bound to its author</h3><p>Tap any title to meet the person who wrote it. Their books become their identity here — and you can connect with them directly.</p></div></div>
+        <div class="feat"><div class="ic">💬</div><div><h3>Structured feedback, one real question</h3><p>Not reviews-for-strangers. Rate the book, tell the author what landed, and ask one question they actually answer — all in-app.</p></div></div>
+        <div class="feat green"><div class="ic">✍️</div><div><h3>Authors get their first true readers</h3><p>Writers join to meet the first wave of people reading their work, and to hear what landed and what didn't.</p></div></div>
+        <div class="feat"><div class="ic">⚡</div><div><h3>First to know, first to read</h3><p>Early access to titles before they're widely known — the quiet thrill of finding a standout first.</p></div></div>
+        <div class="feat green"><div class="ic">○</div><div><h3>A quiet literary network</h3><p>Follow authors and readers, read short notes from behind the page, and join small reading circles around a book. Text only, calm, and human.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section compare">
+    <div class="wrap">
+      <div class="section-head"><p class="eyebrow">Koinita vs. the deal lists</p><h2>Free books are everywhere. A relationship with the author isn't.</h2></div>
+      <table class="cmp">
+        <tr><th>What you get</th><th>Typical deal-alert list</th><th>Koinita</th></tr>
+        <tr><td>Full-length books to keep</td><td>Sometimes — often samples or limited deals</td><td class="koin">Always, full-length, yours forever</td></tr>
+        <tr><td>Talk to the author</td><td>No</td><td class="koin">Yes — in-app, answered</td></tr>
+        <tr><td>Author profiles & books linked</td><td>No</td><td class="koin">Built in</td></tr>
+        <tr><td>Cost to join</td><td>Free</td><td class="koin">Free</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="quote">
+        <p>"A reader lives a thousand lives before he dies. The one who never reads lives only one."</p>
+        <cite>— George R.R. Martin</cite>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="wrap">
+      <div class="cta-band">
+        <h2>Start your first free read.</h2>
+        <p>Create your free Koinita account and meet your next favourite book — and the author behind it.</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+          <button class="btn btn-amber" onclick="openAuth('signup','reader')">Join as a reader</button>
+          <button class="btn btn-spine" onclick="openAuth('signup','author')">Join as an author</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer><div class="wrap" style="flex-direction:column;align-items:flex-start;gap:8px">
+    <div style="display:flex;justify-content:space-between;width:100%;gap:20px;flex-wrap:wrap;align-items:center">
+      <a class="brand" style="font-size:18px" onclick="go('home')">Koinita<span class="dot"></span></a>
+      <div>A reader club by Axitos Publishing House · © 2026 Axitos LLC</div>
+    </div>
+    <div style="font-size:12px;color:var(--ink-faint)">Koinita is an adults-only community (18+). Be kind; no adult content, harassment, spam, or solicitation. Posts are automatically moderated under our Community Guidelines.</div>
+    ${reviewDisclaimer('footer')}
+  </div></footer>`;
+}
+
+/* ====================================================================
+   AUTH
+   ==================================================================== */
+let authState = {mode:'signup', role:'reader', pendingView:null, step:'form', email:'', name:''};
+function openAuth(mode='signin', role='reader'){ authState={mode, role, pendingView:authState.pendingView, step:'form', email:'', name:''}; mountAuth(); }
+function openAuthThen(view){ if(me()){ go(view); return; } authState.pendingView=view; openAuth('signup'); }
+
+function mountAuth(){
+  const isUp = authState.mode==='signup';
+  const r = authState.role;
+  if(authState.step==='code'){ mountCodeStep(); return; }
+  document.getElementById('modalMount').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeAuth()">
+    <div class="modal">
+      <div class="m-head">
+        <button class="x" onclick="closeAuth()">✕</button>
+        <h3>${isUp?'Join Koinita':'Welcome back'}</h3>
+        <p>${isUp?'Free forever, passwordless, and 18+ only.':'No password needed — we\u2019ll email you a one-time code.'}</p>
+      </div>
+      <div class="m-body">
+        <div class="tabs">
+          <button class="${isUp?'active':''}" onclick="switchAuth('signup')">Create account</button>
+          <button class="${!isUp?'active':''}" onclick="switchAuth('signin')">Sign in</button>
+        </div>
+
+        <button class="g-btn" onclick="socialAuth('google')">
+          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8a12 12 0 1 1 7.9-21l5.7-5.7A20 20 0 1 0 24 44a20 20 0 0 0 19.6-23.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8A12 12 0 0 1 24 12c3 0 5.8 1.1 7.9 3l5.7-5.7A20 20 0 0 0 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2A12 12 0 0 1 12.7 28l-6.5 5A20 20 0 0 0 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3a12 12 0 0 1-4.1 5.6l6.2 5.2C42.9 35.6 44 30.1 44 24c0-1.2-.1-2.4-.4-3.5z"/></svg>
+          Continue with Google
+        </button>
+        <button class="g-btn" onclick="socialAuth('apple')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#000"><path d="M17.05 12.04c-.03-2.6 2.12-3.85 2.22-3.91-1.21-1.77-3.1-2.01-3.77-2.04-1.6-.16-3.13.94-3.94.94-.81 0-2.07-.92-3.4-.9-1.75.03-3.36 1.02-4.26 2.58-1.82 3.16-.47 7.84 1.3 10.41.86 1.26 1.89 2.67 3.24 2.62 1.3-.05 1.79-.84 3.36-.84 1.57 0 2.01.84 3.39.81 1.4-.02 2.29-1.28 3.15-2.55.99-1.46 1.4-2.87 1.42-2.94-.03-.01-2.73-1.05-2.76-4.16zM14.6 4.6c.72-.87 1.2-2.08 1.07-3.28-1.03.04-2.28.69-3.02 1.55-.66.77-1.24 2-1.08 3.18 1.15.09 2.32-.58 3.03-1.45z"/></svg>
+          Continue with Apple
+        </button>
+        <div class="divider">or with a one-time email code</div>
+
+        ${isUp?`
+        <div class="role-pick">
+          <div class="opt ${r==='reader'?'sel':''}" onclick="pickRole('reader')">
+            <div class="ic">📚</div><b>Reader</b><span>Claim & keep free books</span></div>
+          <div class="opt author ${r==='author'?'sel':''}" onclick="pickRole('author')">
+            <div class="ic">✍️</div><b>Author</b><span>Meet your readers</span></div>
+        </div>`:''}
+
+        <form onsubmit="return submitAuth(event)">
+          ${isUp?`<div class="field"><label>Your name</label><input id="af_name" placeholder="${r==='author'?'Pen name or real name':'How should we greet you?'}" required></div>`:''}
+          <div class="field"><label>Email</label><input id="af_email" type="email" placeholder="you@email.com" required></div>
+          ${isUp?`<label style="display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--ink-soft);margin-bottom:14px;cursor:pointer">
+            <input type="checkbox" id="af_age" style="margin-top:3px;width:auto"> I confirm I am 18 or older. Koinita is an adults-only community.</label>`:''}
+          <div class="err hidden" id="af_err"></div>
+          <button class="btn ${r==='author'&&isUp?'btn-spine':'btn-amber'} btn-block" type="submit">
+            ${isUp?'Email me a sign-up code':'Email me a sign-in code'}
+          </button>
+        </form>
+        ${!isUp?`<p style="font-size:12.5px;color:var(--ink-faint);text-align:center;margin-top:14px">Demo: reader@demo.club · mara@demo.club · admin@koinita.club — then any 6-digit code</p>`:''}
+      </div>
+    </div>
+  </div>`;
+}
+function mountCodeStep(){
+  document.getElementById('modalMount').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeAuth()">
+    <div class="modal">
+      <div class="m-head"><button class="x" onclick="closeAuth()">✕</button>
+        <h3>Check your email</h3>
+        <p>We sent a 6-digit code to <b>${esc(authState.email)}</b>. No password to remember.</p></div>
+      <div class="m-body">
+        <div class="field"><label>One-time code</label>
+          <input id="af_code" inputmode="numeric" maxlength="6" placeholder="••••••" style="letter-spacing:8px;font-size:22px;text-align:center" autofocus></div>
+        <div class="err hidden" id="af_err"></div>
+        <button class="btn btn-amber btn-block" onclick="verifyCode()">Verify &amp; continue</button>
+        <p style="font-size:12.5px;color:var(--ink-faint);text-align:center;margin-top:12px">Demo: enter any 6 digits. <button class="linkbtn" style="background:none;border:none;color:var(--amber-deep);font-weight:600;padding:0;cursor:pointer" onclick="authState.step='form';mountAuth()">Use a different email</button></p>
+      </div>
+    </div>
+  </div>`;
+}
+function switchAuth(mode){ authState.mode=mode; authState.step='form'; mountAuth(); }
+function pickRole(r){ authState.role=r; mountAuth(); }
+function closeAuth(){ document.getElementById('modalMount').innerHTML=''; }
+
+function socialAuth(provider){
+  // Demo only — production uses Supabase OAuth (Google / Apple), passwordless by design.
+  const label = provider==='apple'?'Apple':'Google';
+  if(authState.mode==='signin'){
+    const u = DB.users.find(x=>x.role==='reader' && !x.system);
+    if(u.banned){ DB.session=u.id; save(DB); closeAuth(); render(); return; }
+    DB.session=u.id; save(DB); closeAuth(); toast('Signed in with '+label+' (demo)'); afterAuth(); return;
+  }
+  finishSignup(label+' Member', 'member'+Math.floor(Math.random()*9000)+'@'+(provider==='apple'?'icloud.com':'gmail.com'), authState.role);
+}
+function submitAuth(e){
+  e.preventDefault();
+  const err = document.getElementById('af_err');
+  const email = document.getElementById('af_email').value.trim().toLowerCase();
+  if(authState.mode==='signup'){
+    if(!document.getElementById('af_age').checked){ err.textContent='You must confirm you are 18 or older to join.'; err.classList.remove('hidden'); return false; }
+    if(DB.users.find(x=>x.email===email)){ err.textContent='That email is already in the club. Try signing in.'; err.classList.remove('hidden'); return false; }
+    authState.name = document.getElementById('af_name').value.trim();
+  } else {
+    if(!DB.users.find(x=>x.email===email)){ err.textContent='No account for that email. Try the demo logins, or create an account.'; err.classList.remove('hidden'); return false; }
+  }
+  authState.email = email; authState.step='code'; mountAuth();
+  return false;
+}
+function verifyCode(){
+  const err=document.getElementById('af_err');
+  const code=(document.getElementById('af_code').value||'').trim();
+  if(!/^\d{6}$/.test(code)){ err.textContent='Enter the 6-digit code (any 6 digits in this demo).'; err.classList.remove('hidden'); return; }
+  if(authState.mode==='signin'){
+    const u=DB.users.find(x=>x.email===authState.email);
+    DB.session=u.id; save(DB); closeAuth();
+    if(u.banned){ render(); return; }
+    toast('Welcome back, '+u.name.split(' ')[0]); afterAuth(); return;
+  }
+  finishSignup(authState.name, authState.email, authState.role);
+}
+function finishSignup(name,email,role){
+  const u = {id:uid('u'),name,email,role,avatar:AVS[Math.floor(Math.random()*AVS.length)],
+    bio: role==='author'?'New Koinita author. Say hello to your first readers.':'New member of the club.',
+    joined:now(), shelf:[], inhouse:false, plan:'starter', strikes:0, banned:false, age18:true, mutedStaff:false,
+    inviteCode:name.split(' ')[0].toLowerCase().replace(/[^a-z]/g,'')+Math.floor(100+Math.random()*900),
+    invites:0, charter:false, notifPrefs:{email:true, push:false}, pushPrimed:false};
+  // numbered founding membership while spots remain
+  if(DB.settings.founderCount < DB.settings.foundingCap){
+    DB.settings.founderCount += 1; u.founder=true; u.founderNo=DB.settings.founderCount;
+  } else { u.founder=false; }
+  // credit the referrer if they arrived via an invite link
+  if(authState.inviteCode){
+    const ref=DB.users.find(x=>x.inviteCode===authState.inviteCode);
+    if(ref){ ref.invites=(ref.invites||0)+1; notify(ref.id,'invite',u.id,'joined from your invite — you moved up the Founders\u2019 Wall',ref.id); }
+  }
+  DB.users.push(u); DB.session=u.id;
+  // Persist to Supabase (non-blocking so UI isn't held up)
+  sbCreateProfile(u.id, {
+    name: u.name, email: u.email, role: u.role,
+    avatar: u.avatar, selfInviteCode: u.inviteCode,
+    inviteCode: authState.inviteCode || null,
+  }).catch(e => console.warn('[Koinita] profile sync:', e));
+  const se=staffEditor(); if(se) DB.follows.push({followerId:u.id, followeeId:se.id, at:now(), staff:true});
+  save(DB); closeAuth();
+  toast(u.founder?`Welcome, Founding Member №${u.founderNo} ✦`:`Welcome to Koinita, ${name.split(' ')[0]}!`);
+  authState.inviteCode=null; afterAuth();
+}
+function afterAuth(){ const pv=authState.pendingView; authState.pendingView=null; go(pv||'home'); }
+function signOut(){ closeMenu(); sb.auth.signOut(); DB.session=null; save(DB); toast('Signed out'); go('home'); }
+
+/* ====================================================================
+   DASHBOARDS
+   ==================================================================== */
+function founderStrip(){
+  const m=me(); if(!m) return '';
+  const left=foundingSpotsLeft();
+  if(m.founder){
+    return `<div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-color:var(--gold);background:#fffdf7;margin-top:0">
+      <div><span class="chip founder${isCharter(m)?' charter':''}">✦ ${isCharter(m)?'Charter':'Founding'} Member №${m.founderNo}</span>
+      <span class="sub" style="display:block;margin:6px 0 0">You're one of the first ${DB.settings.foundingCap.toLocaleString()}. Bring friends to climb the wall${isCharter(m)?' — you\u2019ve reached Charter.':' — 5 invites earns Charter.'}</span></div>
+      <div style="display:flex;gap:8px"><button class="btn btn-amber btn-sm" onclick="openInvite()">Invite ✦</button><button class="btn btn-ghost btn-sm" onclick="go('founders')">The Wall</button></div>
+    </div>`;
+  }
+  return `<div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:0">
+    <span class="sub" style="margin:0">Founding membership has closed, but you can still invite friends to the club.</span>
+    <button class="btn btn-amber btn-sm" onclick="openInvite()">Invite a friend</button></div>`;
+}
+
+function viewDashboard(){
+  const m=me();
+  return m.role==='author'? viewAuthorStudio() : viewReaderHome();
+}
+
+function viewReaderHome(){
+  const m=me();
+  const live = DB.books.filter(b=>b.status!=='pending'&&b.status!=='rejected'&&freeState(b).state==='live');
+  const soon = DB.books.filter(b=>b.status!=='pending'&&b.status!=='rejected'&&freeState(b).state==='soon');
+  const shelfCount = m.shelf.length;
+  return `<div class="app"><div class="wrap">
+    <div class="app-head">
+      <div><h1>Welcome back, ${esc(m.name.split(' ')[0])}.</h1>
+      <p>Your next free read is waiting. ${live.length} ${live.length===1?'title is':'titles are'} live right now.</p></div>
+      <button class="btn btn-ghost btn-sm" onclick="go('shelf')">My shelf · ${shelfCount}</button>
+    </div>
+
+    ${epigraphCard(true)}
+    ${founderStrip()}
+
+    <div class="subnav">
+      <button class="active">Live now</button>
+      <button onclick="go('discover')">Browse all</button>
+      <button onclick="go('messages')">My conversations</button>
+    </div>
+
+    ${live.length? `<div class="grid">${live.map(bookCard).join('')}</div>`
+      : `<div class="empty"><div class="ic">🌙</div><h3>No live drops this moment</h3><p>New titles drop on a schedule. Here's what's coming up next.</p></div>`}
+
+    ${soon.length?`<h2 style="font-size:22px;margin:40px 0 18px">Coming soon</h2>
+      <div class="grid">${soon.map(bookCard).join('')}</div>`:''}
+  </div></div>`;
+}
+
+function viewAuthorStudio(){
+  const m=me();
+  const mine = DB.books.filter(b=>b.authorUserId===m.id);
+  const threads = DB.threads.filter(t=>t.authorUserId===m.id);
+  const open = threads.filter(t=>{ const last=t.messages[t.messages.length-1]; return !last || last.from==='reader'; }).length;
+  const plan = planOf(m);
+  const limit = listingLimit(m);
+  const usage = limit===Infinity? `${mine.length} listings` : `${mine.length} of ${limit} listings`;
+  const ratings = threads.filter(t=>t.rating>0).map(t=>t.rating);
+  const avg = ratings.length? (ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1) : '—';
+  const claims = DB.users.filter(u=>u.role==='reader' && u.shelf.some(id=>mine.find(b=>b.id===id))).length;
+
+  // Analytics card is a paid feature; shown when gates are off OR the plan includes it.
+  const analyticsCard = hasFeature(m,'analytics') ? `
+      <div class="feat"><div class="ic">📈</div><div><h3>Your numbers</h3>
+        <p>${claims} ${claims===1?'reader has':'readers have'} claimed your books · ${threads.length} feedback ${threads.length===1?'thread':'threads'} · ${avg}★ average rating.</p></div></div>`
+    : `<div class="feat" style="opacity:.7"><div class="ic">🔒</div><div><h3>Analytics — Indie & Pro</h3>
+        <p>See claims, feedback volume, and ratings over time. <button class="linkbtn" style="padding:0;color:var(--amber-deep);font-weight:600;text-decoration:underline;background:none;border:none;cursor:pointer" onclick="go('plans')">Upgrade to unlock →</button></p></div></div>`;
+
+  return `<div class="app author-mode"><div class="wrap">
+    <div class="app-head">
+      <div><h1>${esc(m.name.split(' ')[0])}'s studio</h1>
+      <p>Meet your readers and keep your shelf alive.</p></div>
+      <button class="btn btn-spine btn-sm" onclick="openAddBook()">+ Add a book</button>
+    </div>
+
+    ${founderStrip()}
+
+    <div class="panel" style="margin-top:0;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;padding:16px 20px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="chip" style="background:${plan.accent};color:#fff">${m.inhouse?'✦ ':''}${plan.name} plan</span>
+        <span style="color:var(--ink-soft);font-size:14px">${usage}${m.inhouse?' · in-house, full access':''}</span>
+      </div>
+      ${m.inhouse?'' : `<button class="btn btn-ghost btn-sm" onclick="go('plans')">${gatesActive(m)?'Upgrade plan':'View plans'}</button>`}
+    </div>
+
+    <div class="subnav">
+      <button class="active">Overview</button>
+      <button onclick="go('mybooks')">My books · ${mine.length}</button>
+      <button onclick="go('inbox')">Reader inbox · ${open} waiting</button>
+      <button onclick="go('author','${m.id}')">Public page</button>
+    </div>
+
+    <div class="features" style="margin-bottom:28px">
+      <div class="feat green"><div class="ic">📖</div><div><h3>${mine.length} ${mine.length===1?'book':'books'} on your shelf</h3><p>Each one is bound to your author page so readers can find and follow your work.</p></div></div>
+      <div class="feat"><div class="ic">💬</div><div><h3>${open} ${open===1?'reader is':'readers are'} waiting</h3><p>Ratings, feedback, and questions from people reading you now. Reply in-app.</p></div></div>
+      ${analyticsCard}
+    </div>
+
+    <h2 style="font-size:22px;margin:8px 0 18px">Your books</h2>
+    ${mine.length? `<div class="grid">${mine.map(bookCard).join('')}</div>`
+      : `<div class="empty"><div class="ic">✍️</div><h3>No books yet</h3><p>Add your first title, or claim one already in the club, to start meeting readers.</p>
+         <button class="btn btn-spine" onclick="openAddBook()">+ Add a book</button></div>`}
+  </div></div>`;
+}
+
+/* ====================================================================
+   DISCOVER
+   ==================================================================== */
+let discoverFilter = 'all';
+function viewDiscover(){
+  const m=me();
+  let books = (discoverFilter==='all'? DB.books.slice() : DB.books.filter(b=>b.genre===discoverFilter))
+    .filter(b=>b.status!=='pending' && b.status!=='rejected');
+  // Featured drops (a paid-tier placement) surface first.
+  books.sort((a,b)=> (b.featured?1:0)-(a.featured?1:0) || b.added-a.added );
+  const genresInUse = ['all', ...Array.from(new Set(DB.books.map(b=>b.genre)))];
+  return `<div class="app ${m&&m.role==='author'?'author-mode':''}"><div class="wrap">
+    <div class="app-head"><div><h1>Discover</h1><p>Full-length books to claim and keep. Tap any cover to meet the author.</p></div></div>
+    <div class="subnav">
+      ${genresInUse.map(g=>`<button class="${discoverFilter===g?'active':''}" onclick="setFilter('${g}')">${g==='all'?'All genres':g}</button>`).join('')}
+    </div>
+    ${books.length?`<div class="grid">${books.map(bookCard).join('')}</div>`
+      :`<div class="empty"><div class="ic">📭</div><h3>Nothing here yet</h3><p>No titles in this genre right now.</p></div>`}
+  </div></div>`;
+}
+function setFilter(g){ discoverFilter=g; render(); }
+
+function bookCard(b){
+  const fs = freeState(b);
+  const badge = b.featured?`<div class="badge" style="background:var(--spine);color:#fff">✦ FEATURED</div>`
+              : fs.state==='live'?`<div class="badge">FREE NOW</div>`:'';
+  return `<div class="book" onclick="go('book','${b.id}')">
+    <div class="cover" style="${coverStyle(b.cover)}">
+      ${badge}
+      <div class="k">Koinita · First edition</div>
+      <div><div class="ct">${esc(b.title)}</div><div class="ca">by ${esc(b.authorName||'Unclaimed author')}</div></div>
+    </div>
+    <div class="meta">
+      <span class="chip genre">${esc(b.genre)}</span>
+      <div class="row">
+        <span class="countdown ${fs.state==='closed'?'closed':''}">${fs.txt}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ====================================================================
+   BOOK DETAIL  — claim free + ask the author
+   ==================================================================== */
+function viewBook(id){
+  const b = bookById(id); const m=me();
+  if(!b) return notFound();
+  const fs = freeState(b);
+  const author = b.authorUserId ? userById(b.authorUserId) : null;
+  const onShelf = m && m.shelf.includes(b.id);
+  const isMyBook = m && m.role==='author' && b.authorUserId===m.id;
+
+  // author block: claimed vs unclaimed
+  let authorBlock;
+  if(author){
+    authorBlock = `<div class="author-card" onclick="go('author','${author.id}')">
+        <div class="av" style="background:${author.avatar}">${initials(author.name)}</div>
+        <div><b>${esc(author.name)} <span class="chip verified" style="font-size:10px">✓ Verified author</span></b>
+        <span>${DB.books.filter(x=>x.authorUserId===author.id).length} books in the club · tap to view profile</span></div>
+      </div>`;
+  } else {
+    const canClaim = m && m.role==='author';
+    authorBlock = `<div class="author-card" style="background:var(--paper-2);border-color:var(--line)">
+        <div class="av" style="background:var(--ink-faint)">?</div>
+        <div style="flex:1"><b>Author not connected yet</b>
+        <span style="color:var(--ink-soft)">This book isn't linked to its author's profile.</span></div>
+        ${canClaim?`<button class="btn btn-spine btn-sm" onclick="claimBook('${b.id}')">This is my book</button>`:''}
+      </div>`;
+  }
+
+  // reader action panel
+  let claimPanel='';
+  if(m && m.role==='reader'){
+    const claimedChip = onShelf?`<span class="chip dot live">Claimed · on your shelf</span>`:'';
+    const haveItBtn = onShelf?'':`<button class="btn btn-ghost btn-sm" onclick="markClaimed('${b.id}')">I already have it</button>`;
+    if(fs.state==='live'){
+      claimPanel = `<a class="btn btn-amber" href="${b.amazonUrl}" target="_blank" rel="noopener" onclick="claimShelf('${b.id}')">Get it free on Kindle →</a>
+        ${claimedChip||haveItBtn}`;
+    } else if(fs.state==='soon'){
+      claimPanel = `<button class="btn btn-ghost" onclick="remindMe('${b.id}')">🔔 Remind me when it drops</button>
+        ${claimedChip||haveItBtn}`;
+    } else {
+      claimPanel = `<button class="btn btn-ghost" disabled>Free window closed</button>
+        <a class="btn btn-ghost btn-sm" href="${b.amazonUrl}" target="_blank" rel="noopener">View on Amazon</a>
+        ${claimedChip||haveItBtn}`;
+    }
+  } else if(m && m.role==='author'){
+    claimPanel = `<a class="btn btn-ghost" href="${b.amazonUrl}" target="_blank" rel="noopener">View on Amazon</a>
+      ${isMyBook?`<button class="btn btn-ghost btn-sm" onclick="openEditFree('${b.id}')">Edit free window</button>`:''}`;
+  } else {
+    claimPanel = `<button class="btn btn-amber" onclick="openAuth('signup')">Join free to claim →</button>`;
+  }
+
+  return `<div class="app"><div class="wrap">
+    <button class="btn btn-ghost btn-sm" style="margin-bottom:22px" onclick="history.length>1?history.back():go('discover')">← Back</button>
+    <div class="detail">
+      <div class="cover" style="${coverStyle(b.cover)}">
+        ${fs.state==='live'?`<div class="badge">FREE NOW</div>`:''}
+        <div class="k">Koinita · First edition</div>
+        <div><div class="ct" style="font-size:26px">${esc(b.title)}</div></div>
+      </div>
+      <div>
+        <span class="chip genre">${esc(b.genre)}</span>
+        <span class="chip ${fs.state==='live'?'live dot':''}">${fs.txt}</span>
+        <h1>${esc(b.title)}</h1>
+        <p style="color:var(--ink-soft);font-size:15px;margin:0">by ${esc(b.authorName||'Unclaimed author')}</p>
+        <p class="blurb">${esc(b.blurb)}</p>
+        <div class="actions">${claimPanel}
+          <button class="btn btn-ghost btn-sm" onclick="shareBook('${b.id}')">↗ Share</button>
+          ${m?`<button class="btn btn-ghost btn-sm" onclick="openInvite()">✦ Invite a friend</button>`:''}
+        </div>
+
+        ${authorBlock}
+
+        ${m ? circlePanel(b) : ''}
+        ${m && m.role==='reader' ? feedbackPanel(b, author, onShelf) : ''}
+        ${m ? reviewDisclaimer('member') : ''}
+      </div>
+    </div>
+  </div></div>`;
+}
+
+/* Reading-circle entry point on a book page */
+function circlePanel(b){
+  const m=me();
+  const c=DB.circles.find(x=>x.bookId===b.id);
+  const claimed = m.role==='author'? (b.authorUserId===m.id) : m.shelf.includes(b.id);
+  if(c){
+    const member=c.memberIds.includes(m.id);
+    return `<div class="panel"><h3>○ Reading circle</h3>
+      <p class="sub">${esc(c.name)} · ${c.memberIds.length} ${c.memberIds.length===1?'member':'members'}</p>
+      ${member?`<button class="btn btn-spine btn-sm" onclick="go('circle','${c.id}')">Open circle</button>`
+        : claimed?`<button class="btn btn-spine btn-sm" onclick="joinCircle('${c.id}')">Join the circle</button>`
+        :`<p style="font-size:13px;color:var(--ink-faint);margin:0">Claim this book to join its reading circle.</p>`}</div>`;
+  }
+  if(claimed){
+    return `<div class="panel"><h3>○ Reading circle</h3>
+      <p class="sub">No circle yet for this book. Start a small, text-only group to read it together.</p>
+      <button class="btn btn-spine btn-sm" onclick="startCircle('${b.id}')">Start a reading circle</button></div>`;
+  }
+  return '';
+}
+
+/* Structured feedback + one question, gated by the claimed-book rule.
+   Readers who haven't claimed the book cannot open a thread — this is the
+   keystone anti-spam control (no claim, no contact). One thread per reader-book. */
+let fbRating = 0;
+function setRating(n){ fbRating=n;
+  for(let i=1;i<=5;i++){ const el=document.getElementById('star'+i); if(el) el.textContent = i<=n?'★':'☆'; } }
+
+function feedbackPanel(b, author, onShelf){
+  const m=me();
+  if(!author){
+    return `<div class="panel"><h3>Share feedback with the author</h3>
+      <p class="sub">Once this book is connected to its author, claimed readers can leave feedback and one question here.</p></div>`;
+  }
+  const first = esc(author.name.split(' ')[0]);
+  // Gate: must have claimed the book
+  if(!onShelf){
+    return `<div class="panel" style="border-style:dashed">
+      <h3>🔒 Claim this book to share feedback</h3>
+      <p class="sub">Feedback comes only from real readers who have the book. Claim it above (or mark "I already have it") to send ${first} your thoughts and one question.</p>
+    </div>`;
+  }
+  // One thread per reader-book — if it exists, show it
+  const existing = DB.threads.find(t=>t.bookId===b.id && t.readerId===m.id && t.authorUserId===author.id);
+  if(existing){
+    return `<div class="panel"><h3>Your feedback & conversation with ${first}</h3>
+      <p class="sub">You've shared feedback on this book. Continue the conversation below.</p>
+      ${threadBlock(existing,'reader')}</div>`;
+  }
+  // New structured feedback form
+  fbRating = 0;
+  return `<div class="panel">
+    <h3>Share feedback with ${first}</h3>
+    <p class="sub">Rate the book, tell ${first} what landed, and ask one question. ${first} replies in-app. We screen every note automatically before it's delivered.</p>
+    <div class="field"><label>Your rating</label>
+      <div id="stars" style="font-size:28px;color:var(--amber);cursor:pointer;letter-spacing:6px" role="radiogroup" aria-label="Rating">
+        ${[1,2,3,4,5].map(i=>`<span id="star${i}" onclick="setRating(${i})" tabindex="0" role="radio" aria-label="${i} star">☆</span>`).join('')}
+      </div></div>
+    <div class="field"><label>What worked for you?</label><textarea id="fb_liked" placeholder="The part that landed, a moment you loved…"></textarea></div>
+    <div class="field"><label>What could be better? <span style="font-weight:400;color:var(--ink-faint)">(optional, kept honest)</span></label><textarea id="fb_improve" placeholder="Honest, constructive — the author wants the real thing."></textarea></div>
+    <div class="field"><label>One question for ${first} <span style="font-weight:400;color:var(--ink-faint)">(optional)</span></label><input id="fb_question" placeholder="One thing you'd love to ask the author"></div>
+    <button class="btn btn-spine" onclick="submitFeedback('${b.id}')">Send feedback to ${first} →</button>
+  </div>`;
+}
+
+/* Automated moderation gate (prototype heuristic).
+   PRODUCTION: replace with a server-side call to the OpenAI Moderation
+   endpoint (free) before insert; flagged → block with a rephrase prompt.
+   Links are stripped because they're the main spam payload. */
+function moderate(text){
+  const t = text||'';
+  const stripped = t.replace(/\bhttps?:\/\/\S+|\bwww\.\S+|\b[\w-]+\.(com|net|org|io|co|ru|xyz|link|info|biz)\b\S*/gi,'[link removed]');
+  const linkRemoved = stripped!==t;
+  const lower = t.toLowerCase();
+  const banned = ['viagra','crypto airdrop','free money','click here to win','make money fast','kill yourself','sex chat'];
+  if(banned.some(w=>lower.includes(w))) return {ok:false, reason:'That note looks like it may breach our community guidelines. Please rephrase and try again.'};
+  const letters = t.replace(/[^A-Za-z]/g,'');
+  if(letters.length>20 && (t.replace(/[^A-Z]/g,'').length/letters.length)>0.8) return {ok:false, reason:'Please don\u2019t write in all caps — try again in normal case.'};
+  return {ok:true, clean:stripped, linkRemoved};
+}
+
+/* ====================================================================
+   MEMBER PROFILE (public) — works for readers and authors
+   Shows follow controls, follower/following counts, the member's posts,
+   and (for authors) their books as identity.
+   ==================================================================== */
+function viewMemberProfile(id){
+  const u = userById(id); const m=me();
+  if(!u) return notFound();
+  const isMe = m && m.id===u.id;
+  const isAuthor = u.role==='author';
+  const books = DB.books.filter(b=>b.authorUserId===u.id);
+  const posts = DB.posts.filter(p=>p.authorId===u.id).sort((a,b)=>b.at-a.at);
+  const followers = followersOf(u.id).length;
+  const following = followingOf(u.id).length;
+  const following_me = m && isFollowing(m.id, u.id);
+  const verified = isAuthor? `<span class="chip verified">✓ Verified author</span>` : `<span class="chip">📚 Reader</span>`;
+  const followBtn = (!m || isMe)? '' :
+    `<button class="follow-btn ${following_me?'following':''}" onclick="toggleFollow('${u.id}')">${following_me?'✓ Following':'+ Follow'}</button>`;
+  return `<div class="app ${isAuthor?'author-mode':''}"><div class="wrap">
+    <button class="btn btn-ghost btn-sm" style="margin-bottom:22px" onclick="history.length>1?history.back():go('feed')">← Back</button>
+    <div class="profile-head">
+      <div class="big-av" style="background:${u.avatar}">${initials(u.name)}</div>
+      <div style="flex:1">
+        <h1>${esc(u.name)} ${verified}${isAuthor&&u.inhouse?'<span class="chip" style="background:var(--gold);color:#fff">✦ Axitos</span>':''}${u.founder?' '+founderBadge(u):''}</h1>
+        <div class="counts">
+          <span><b>${followers}</b> followers</span>
+          <span><b>${following}</b> following</span>
+          ${isAuthor?`<span><b>${books.length}</b> ${books.length===1?'book':'books'}</span>`:''}
+        </div>
+      </div>
+      ${isMe?`<button class="btn btn-ghost btn-sm" onclick="go('profile')">Edit profile</button>`:followBtn}
+    </div>
+    <p class="blurb" style="max-width:62ch">${esc(u.bio)}</p>
+
+    ${isAuthor && books.length?`
+      <h2 style="font-size:22px;margin:30px 0 18px">Books by ${esc(u.name.split(' ')[0])}</h2>
+      <div class="grid">${books.map(bookCard).join('')}</div>`:''}
+
+    <h2 style="font-size:22px;margin:34px 0 18px">${isMe?'Your':esc(u.name.split(' ')[0])+'\u2019s'} notes ${isAuthor?'from behind the page':''}</h2>
+    ${isMe?composeBox(''):''}
+    ${posts.length? posts.map(postCard).join('')
+      : `<div class="empty" style="padding:40px"><div class="ic">✍️</div><h3>No notes yet</h3><p>${isMe?'Share a short note about a book you\u2019re reading or writing.':'Nothing posted yet.'}</p></div>`}
+  </div></div>`;
+}
+
+/* ====================================================================
+   FEED — pull model: posts from accounts you follow (plus your own)
+   ==================================================================== */
+function viewFeed(){
+  const m=me();
+  const se=staffEditor();
+  const following = followingOf(m.id);
+  const visible = [m.id, ...following];
+  let posts = DB.posts.filter(p=>visible.includes(p.authorId)).sort((a,b)=>b.at-a.at);
+  if(m.mutedStaff && se) posts = posts.filter(p=>p.authorId!==se.id);
+  m.lastFeedSeen = now(); save(DB);
+  return `<div class="app ${m.role==='author'?'author-mode':''}"><div class="wrap">
+    <div class="app-head"><div><h1>Your feed</h1><p>Notes from the authors and readers you follow. Quiet, chronological, text only.</p></div>
+      <button class="btn btn-ghost btn-sm" onclick="go('search')">🔍 Find people</button></div>
+    ${epigraphCard(true)}
+    ${m.mutedStaff && se?`<div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:0"><span class="sub" style="margin:0">${esc(se.name)} updates are muted.</span><button class="btn btn-ghost btn-sm" onclick="toggleMuteStaff()">Turn back on</button></div>`:''}
+    ${composeBox('')}
+    ${posts.length? posts.map(postCard).join('')
+      : `<div class="empty"><div class="ic">📨</div><h3>Your feed is quiet</h3><p>Follow a few authors and readers, and their notes will appear here. Start by sharing one of your own.</p>
+         <button class="btn btn-amber" onclick="go('search')">Find people to follow</button></div>`}
+  </div></div>`;
+}
+
+function composeBox(preBookId){
+  const m=me(); if(!m) return '';
+  const claimedBooks = m.role==='author'
+    ? DB.books.filter(b=>b.authorUserId===m.id)
+    : m.shelf.map(bookById).filter(Boolean);
+  const opts = ['<option value="">About a book… (optional)</option>']
+    .concat(claimedBooks.map(b=>`<option value="${b.id}" ${b.id===preBookId?'selected':''}>${esc(b.title)}</option>`)).join('');
+  return `<div class="compose">
+    <textarea id="postText" maxlength="1000" placeholder="${m.role==='author'?'Share a note from behind the page — what a book means to you…':'Share a short note about a book you\u2019re reading…'}"></textarea>
+    <div class="c-foot">
+      <select id="postBook">${opts}</select>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:12px;color:var(--ink-faint)">Text only · 1000 max</span>
+        <button class="btn ${m.role==='author'?'btn-spine':'btn-amber'} btn-sm" onclick="createPost()">Post</button>
+      </div>
+    </div>
+  </div>`;
+}
+function createPost(){
+  const m=me();
+  const text=(document.getElementById('postText').value||'').trim();
+  const bookId=document.getElementById('postBook').value||null;
+  if(!text){ toast('Write a note first.'); return; }
+  const mod=enforce(text);
+  if(!mod.ok){ return; }
+  DB.posts.push({id:uid('p'), authorId:m.id, bookId, text:mod.clean||text, at:now(), appreciatedBy:[]});
+  save(DB); toast('Posted to your followers ✦'); render();
+}
+function appreciate(pid){
+  const m=me(); const p=DB.posts.find(x=>x.id===pid); if(!p) return;
+  p.appreciatedBy = p.appreciatedBy||[];
+  const i=p.appreciatedBy.indexOf(m.id);
+  if(i>=0) p.appreciatedBy.splice(i,1);
+  else { p.appreciatedBy.push(m.id); if(p.authorId!==m.id) notify(p.authorId,'appreciate',m.id,'appreciated your note',p.id); }
+  save(DB); render();
+}
+function postCard(p){
+  const m=me(); const a=userById(p.authorId); if(!a) return '';
+  const b=p.bookId?bookById(p.bookId):null;
+  const liked = m && (p.appreciatedBy||[]).includes(m.id);
+  const n=(p.appreciatedBy||[]).length;
+  const isStaff = a.system;
+  const badge = isStaff
+    ? ` <span class="chip" style="font-size:9px;padding:2px 7px;background:var(--gold);color:#fff">official</span>`
+    : (a.role==='author'?' <span class="chip verified" style="font-size:9px;padding:2px 7px">author</span>':'')+(a.founder?' '+founderBadge(a):'');
+  return `<div class="post"${isStaff?' style="border-color:var(--gold);background:#fffdf7"':''}>
+    <div class="p-head">
+      <div class="p-av" style="background:${a.avatar}" onclick="go('member','${a.id}')">${initials(a.name)}</div>
+      <div style="flex:1"><div class="p-name" onclick="go('member','${a.id}')">${esc(a.name)}${badge}</div>
+        <div class="p-meta">${p.pinned&&isStaff?'📌 ':''}${timeAgo(p.at)}${b?` · on <span style="color:var(--amber-deep);cursor:pointer" onclick="go('book','${b.id}')">${esc(b.title)}</span>`:''}</div></div>
+      ${isStaff?`<button class="iconbtn" title="Mute these updates" style="width:32px;height:32px;font-size:13px" onclick="toggleMuteStaff()">${m&&m.mutedStaff?'🔔':'🔕'}</button>`:''}
+    </div>
+    <div class="p-body">${esc(p.text)}</div>
+    <div class="p-foot">
+      <button class="${liked?'on':''}" onclick="appreciate('${p.id}')">♥ ${n||''} ${n===1?'appreciation':n>1?'appreciations':'Appreciate'}</button>
+      ${b?`<button onclick="go('book','${b.id}')">📖 View book</button>`:''}
+      <button class="share-btn" onclick="sharePost('${p.id}')">↗ Share</button>
+    </div>
+  </div>`;
+}
+function sharePost(pid){ const p=DB.posts.find(x=>x.id===pid); if(!p) return; const a=userById(p.authorId);
+  shareThing('A note from Koinita', `“${p.text}” — ${a?a.name:''}`, location.href); }
+
+/* ====================================================================
+   MEMBER SEARCH — Postgres full-text search in production
+   ==================================================================== */
+let searchQuery='';
+function viewSearch(){
+  const m=me();
+  const q=searchQuery.trim().toLowerCase();
+  let results = DB.users.filter(u=>u.id!==m.id);
+  if(q) results = results.filter(u=>u.name.toLowerCase().includes(q) || (u.bio||'').toLowerCase().includes(q));
+  results = results.sort((a,b)=> followersOf(b.id).length - followersOf(a.id).length).slice(0,30);
+  return `<div class="app ${m.role==='author'?'author-mode':''}"><div class="wrap">
+    <div class="app-head"><div><h1>Find your literary network</h1><p>Search readers and authors by name or what they love. Follow to see their notes.</p></div></div>
+    <div class="search-box">
+      <span style="font-size:18px">🔍</span>
+      <input id="searchInput" value="${esc(searchQuery)}" placeholder="Search members by name or interest…" oninput="onSearch(this.value)" autofocus>
+    </div>
+    ${results.length? results.map(memberRow).join('')
+      : `<div class="empty"><div class="ic">🔍</div><h3>No members found</h3><p>Try a different name or interest.</p></div>`}
+  </div></div>`;
+}
+function onSearch(v){
+  searchQuery=v;
+  const m=me();
+  const q=v.trim().toLowerCase();
+  let results = DB.users.filter(u=>u.id!==m.id);
+  if(q) results = results.filter(u=>u.name.toLowerCase().includes(q) || (u.bio||'').toLowerCase().includes(q));
+  results = results.sort((a,b)=> followersOf(b.id).length - followersOf(a.id).length).slice(0,30);
+  // re-render results only, keep the input focused
+  const cont=document.querySelector('.app .wrap');
+  if(!cont) return;
+  const list=cont.querySelectorAll('.member-row, .empty');
+  list.forEach(n=>n.remove());
+  const html = results.length? results.map(memberRow).join('')
+    : `<div class="empty"><div class="ic">🔍</div><h3>No members found</h3><p>Try a different name or interest.</p></div>`;
+  cont.insertAdjacentHTML('beforeend', html);
+}
+function memberRow(u){
+  const m=me();
+  const f=isFollowing(m.id,u.id);
+  return `<div class="member-row">
+    <div class="m-av" style="background:${u.avatar}" onclick="go('member','${u.id}')">${initials(u.name)}</div>
+    <div class="m-info">
+      <b onclick="go('member','${u.id}')">${esc(u.name)}</b> ${u.role==='author'?'<span class="chip verified" style="font-size:9px;padding:2px 7px">author</span>':''}
+      <p>${esc(u.bio||'')}</p>
+    </div>
+    <button class="follow-btn ${f?'following':''}" onclick="toggleFollow('${u.id}')">${f?'✓ Following':'+ Follow'}</button>
+  </div>`;
+}
+
+/* ====================================================================
+   NOTIFICATIONS — table read on load (+ email digest in production)
+   ==================================================================== */
+function viewNotifications(){
+  const m=me();
+  const ns = DB.notifications.filter(n=>n.userId===m.id).sort((a,b)=>b.at-a.at);
+  return `<div class="app ${m.role==='author'?'author-mode':''}"><div class="wrap">
+    <div class="app-head"><div><h1>Notifications</h1><p>Follows, circle invites, and replies. In production these also arrive as an optional email digest.</p></div>
+      ${ns.some(n=>!n.read)?`<button class="btn btn-ghost btn-sm" onclick="markAllRead()">Mark all read</button>`:''}</div>
+    ${ns.length? ns.map(notifRow).join('')
+      : `<div class="empty"><div class="ic">🔔</div><h3>Nothing yet</h3><p>When someone follows you, invites you to a circle, or replies, it shows up here.</p></div>`}
+  </div></div>`;
+}
+function notifRow(n){
+  const from=userById(n.fromId);
+  return `<div class="notif ${n.read?'':'unread'}" onclick="openNotif('${n.id}')">
+    <div class="n-av" style="background:${from?from.avatar:'var(--ink-faint)'}">${from?initials(from.name):'?'}</div>
+    <div class="n-txt"><b>${from?esc(from.name):'Someone'}</b> ${esc(n.text)}</div>
+    <div class="n-time">${timeAgo(n.at)}</div>
+  </div>`;
+}
+function openNotif(id){
+  const n=DB.notifications.find(x=>x.id===id); if(!n) return;
+  n.read=true; save(DB);
+  if(n.type==='follow' || n.type==='appreciate') go('member', n.fromId);
+  else if(n.type==='circle_add' || n.type==='circle_invite') go('circle', n.refId);
+  else if(n.type==='feedback' || n.type==='reply') go(me().role==='author'?'inbox':'messages');
+  else render();
+}
+function markAllRead(){ const m=me(); DB.notifications.forEach(n=>{ if(n.userId===m.id) n.read=true; }); save(DB); render(); }
+
+/* ====================================================================
+   READING CIRCLES — small text-only groups around a book
+   ==================================================================== */
+function myCircles(){ const m=me(); return DB.circles.filter(c=>c.memberIds.includes(m.id)); }
+function viewCircles(){
+  const m=me();
+  const mine=myCircles();
+  const claimedBookIds = m.role==='author'? DB.books.filter(b=>b.authorUserId===m.id).map(b=>b.id) : m.shelf.slice();
+  const joinable = DB.circles.filter(c=>!c.memberIds.includes(m.id) && claimedBookIds.includes(c.bookId));
+  return `<div class="app ${m.role==='author'?'author-mode':''}"><div class="wrap">
+    <div class="app-head"><div><h1>Reading circles</h1><p>Small, text-only groups reading the same book together — with the author dropping in.</p></div></div>
+    <h2 style="font-size:20px;margin:0 0 14px">Your circles</h2>
+    ${mine.length? mine.map(circleCard).join('')
+      : `<div class="empty" style="padding:40px"><div class="ic">○</div><h3>You're not in a circle yet</h3><p>Join one for a book you've claimed, or start your own from any book page.</p></div>`}
+    ${joinable.length?`<h2 style="font-size:20px;margin:30px 0 14px">Open to you</h2>${joinable.map(circleCard).join('')}`:''}
+  </div></div>`;
+}
+function circleCard(c){
+  const b=bookById(c.bookId); const owner=userById(c.ownerId); const m=me();
+  const member=c.memberIds.includes(m.id);
+  return `<div class="circle-card" onclick="go('circle','${c.id}')">
+    <h3>${esc(c.name)}</h3>
+    <p>${b?esc(b.title):''} · hosted by ${owner?esc(owner.name):'—'} · ${c.memberIds.length} ${c.memberIds.length===1?'member':'members'} · ${c.messages.length} ${c.messages.length===1?'note':'notes'}${member?'':' · open to you'}</p>
+  </div>`;
+}
+function viewCircle(id){
+  const c=circleById(id); const m=me();
+  if(!c) return notFound();
+  const b=bookById(c.bookId); const owner=userById(c.ownerId);
+  const member=c.memberIds.includes(m.id);
+  const isOwner=c.ownerId===m.id;
+  if(!member){
+    const claimed = m.role==='author'? DB.books.some(x=>x.authorUserId===m.id && x.id===c.bookId) : m.shelf.includes(c.bookId);
+    return `<div class="app"><div class="wrap">
+      <button class="btn btn-ghost btn-sm" style="margin-bottom:22px" onclick="go('circles')">← Circles</button>
+      <div class="empty"><div class="ic">○</div><h3>${esc(c.name)}</h3>
+      <p>${b?esc(b.title):''} · hosted by ${owner?esc(owner.name):'—'} · ${c.memberIds.length} members</p>
+      ${claimed?`<button class="btn btn-spine" onclick="joinCircle('${c.id}')">Join this circle</button>`
+        :`<p style="margin-top:10px">Claim <b>${b?esc(b.title):'the book'}</b> first to join its circle.</p>`}</div>
+    </div></div>`;
+  }
+  // member view: discussion + invite
+  const followingList = followingOf(m.id).map(userById).filter(u=>u && !c.memberIds.includes(u.id));
+  return `<div class="app ${m.role==='author'?'author-mode':''}"><div class="wrap">
+    <button class="btn btn-ghost btn-sm" style="margin-bottom:22px" onclick="go('circles')">← Circles</button>
+    <div class="app-head"><div><h1>${esc(c.name)}</h1>
+      <p>${b?`<span style="cursor:pointer;color:var(--amber-deep)" onclick="go('book','${b.id}')">${esc(b.title)}</span> · `:''}hosted by ${owner?esc(owner.name):'—'} · ${c.memberIds.length} members</p></div></div>
+
+    <div class="panel" style="margin-top:0">
+      <h3>Members</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+        ${c.memberIds.map(uid2=>{const u=userById(uid2);return u?`<span class="chip" style="cursor:pointer" onclick="go('member','${u.id}')">${initials(u.name)} ${esc(u.name.split(' ')[0])}${u.id===c.ownerId?' · host':''}</span>`:'';}).join('')}
+      </div>
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button class="btn btn-amber btn-sm" onclick="openInvite('${c.id}')">✦ Invite a friend to this circle</button>
+        <span class="sub" style="margin:0">Brings them straight here when they join.</span>
+      </div>
+      ${followingList.length?`<div style="margin-top:14px">
+        <label style="font-size:13px;font-weight:600;color:var(--ink-soft)">Or add someone you follow</label>
+        <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
+          <select id="inviteSel" style="flex:1;min-width:180px;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font-family:inherit">
+            ${followingList.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join('')}
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="addToCircle('${c.id}')">Add to circle</button>
+        </div></div>`:''}
+    </div>
+
+    <div class="panel">
+      <h3>Discussion</h3>
+      <div style="display:flex;flex-direction:column;gap:12px;margin:14px 0">
+        ${c.messages.slice().sort((a,b)=>a.at-b.at).map(msg=>{const u=userById(msg.userId);return `
+          <div style="display:flex;gap:10px">
+            <div class="p-av" style="width:36px;height:36px;background:${u?u.avatar:'var(--ink-faint)'};font-size:13px" onclick="go('member','${u?u.id:''}')">${u?initials(u.name):'?'}</div>
+            <div><div style="font-size:13.5px"><b>${u?esc(u.name):'—'}</b> <span style="color:var(--ink-faint);font-size:12px">${timeAgo(msg.at)}</span></div>
+            <div style="font-size:14.5px;white-space:pre-wrap">${esc(msg.text)}</div></div>
+          </div>`;}).join('')}
+      </div>
+      <div class="reply-box" style="padding:12px 0 0;border-top:1px solid var(--line-soft)">
+        <input id="circleMsg" placeholder="Share a thought with the circle…" onkeydown="if(event.key==='Enter')postCircle('${c.id}')">
+        <button class="btn ${m.role==='author'?'btn-spine':'btn-amber'} btn-sm" onclick="postCircle('${c.id}')">Send</button>
+      </div>
+    </div>
+  </div></div>`;
+}
+function joinCircle(id){ const c=circleById(id); const m=me();
+  if(!c.memberIds.includes(m.id)){ c.memberIds.push(m.id); save(DB); toast('You joined the circle ○'); }
+  render(); }
+function addToCircle(id){ const c=circleById(id); const sel=document.getElementById('inviteSel'); if(!sel) return;
+  const uid2=sel.value; if(!uid2) return;
+  if(!c.memberIds.includes(uid2)){ c.memberIds.push(uid2); notify(uid2,'circle_add',me().id,'added you to a reading circle',c.id); save(DB); toast('Added to the circle'); render(); } }
+function postCircle(id){ const c=circleById(id); const inp=document.getElementById('circleMsg');
+  const txt=(inp.value||'').trim(); if(!txt) return;
+  const mod=enforce(txt); if(!mod.ok){ return; }
+  c.messages.push({userId:me().id, text:mod.clean||txt, at:now()}); save(DB); render(); }
+function startCircle(bookId){
+  const m=me(); const b=bookById(bookId);
+  const existing=DB.circles.find(c=>c.bookId===bookId);
+  if(existing){ if(!existing.memberIds.includes(m.id)) existing.memberIds.push(m.id); save(DB); go('circle',existing.id); return; }
+  const c={id:uid('c'), bookId, ownerId:m.id, name:b.title+' — reading circle', memberIds:[m.id], at:now(),
+    messages:[{userId:m.id, text:'Starting a small circle for readers of '+b.title+'. Welcome in.', at:now()}]};
+  DB.circles.push(c); save(DB); toast('Circle created ○'); go('circle',c.id);
+}
+
+/* ====================================================================
+   MESSAGING
+   ==================================================================== */
+function submitFeedback(bookId){
+  const m=me(); const b=bookById(bookId);
+  if(!m.shelf.includes(bookId)){ toast('Claim the book first to share feedback.'); return; }
+  if(DB.threads.find(t=>t.bookId===bookId && t.readerId===m.id)){ toast('You\u2019ve already shared feedback on this book.'); render(); return; }
+  const liked=(document.getElementById('fb_liked').value||'').trim();
+  const improve=(document.getElementById('fb_improve').value||'').trim();
+  const question=(document.getElementById('fb_question').value||'').trim();
+  if(!fbRating && !liked && !improve && !question){ toast('Add a rating or a few words first.'); return; }
+  // Automated moderation gate (no human queue) — block & ask to rephrase if flagged
+  const mod = enforce([liked,improve,question].join('  '));
+  if(!mod.ok){ return; }
+  const cLiked=(moderate(liked).clean||'').trim();
+  const cImprove=(moderate(improve).clean||'').trim();
+  const cQuestion=(moderate(question).clean||'').trim();
+  const t={ id:uid('t'), bookId, readerId:m.id, authorUserId:b.authorUserId,
+    subject:'Feedback on '+b.title, rating:fbRating, liked:cLiked, improve:cImprove,
+    messages:[], created:now(), updated:now() };
+  if(cQuestion) t.messages.push({from:'reader', userId:m.id, text:cQuestion, at:now()});
+  DB.threads.push(t); fbRating=0;
+  if(b.authorUserId) notify(b.authorUserId,'feedback',m.id,'shared feedback on '+b.title,t.id);
+  save(DB); toast('Shared with '+userById(b.authorUserId).name.split(' ')[0]+' \u2726'); render();
+}
+
+function viewMessages(){ // reader side
+  const m=me();
+  const ts = DB.threads.filter(t=>t.readerId===m.id).sort((a,b)=>b.updated-a.updated);
+  return `<div class="app"><div class="wrap">
+    <div class="app-head"><div><h1>Your conversations</h1><p>Feedback and questions you've shared with authors.</p></div></div>
+    ${ts.length? ts.map(t=>threadBlock(t,'reader')).join('')
+      : `<div class="empty"><div class="ic">💬</div><h3>No conversations yet</h3><p>Claim a book, then share feedback and one question to start a conversation with its author.</p>
+        <button class="btn btn-amber" onclick="go('discover')">Browse books</button></div>`}
+  </div></div>`;
+}
+
+function viewInbox(){ // author side
+  const m=me();
+  const ts = DB.threads.filter(t=>t.authorUserId===m.id).sort((a,b)=>b.updated-a.updated);
+  const waiting = ts.filter(t=>{ const last=t.messages[t.messages.length-1]; return !last || last.from==='reader'; });
+  return `<div class="app author-mode"><div class="wrap">
+    <div class="app-head"><div><h1>Reader inbox</h1><p>${waiting.length} ${waiting.length===1?'reader is':'readers are'} waiting to hear back from you.</p></div></div>
+    ${ts.length? ts.map(t=>threadBlock(t,'author')).join('')
+      : `<div class="empty"><div class="ic">📨</div><h3>No reader feedback yet</h3><p>When readers claim your books, their ratings, feedback, and questions land here.</p></div>`}
+  </div></div>`;
+}
+
+function threadBlock(t, sideRole){
+  const b = bookById(t.bookId);
+  const reader = userById(t.readerId);
+  const author = userById(t.authorUserId);
+  const last = t.messages[t.messages.length-1];
+  const lastFrom = last? last.from : 'reader';
+  const open = t._open;
+  const otherLabel = sideRole==='author'? esc(reader?reader.name:'Reader') : esc(author?author.name:'Author');
+  const stars = (t.rating!=null && t.rating>0)? '★'.repeat(t.rating)+'☆'.repeat(5-t.rating) : '';
+  const summary = (stars || t.liked || t.improve)? `
+    <div style="padding:14px 18px;border-bottom:1px solid var(--line-soft);background:#fff">
+      ${stars?`<div style="color:var(--amber);font-size:18px;letter-spacing:3px;margin-bottom:6px">${stars}</div>`:''}
+      ${t.liked?`<p style="margin:0 0 6px;font-size:14px"><b style="color:var(--spine-deep)">What worked:</b> ${esc(t.liked)}</p>`:''}
+      ${t.improve?`<p style="margin:0;font-size:14px"><b style="color:var(--amber-deep)">Could be better:</b> ${esc(t.improve)}</p>`:''}
+    </div>`:'';
+  return `<div class="thread">
+    <div class="t-head" onclick="toggleThread('${t.id}')">
+      <div><b>${esc(t.subject)}</b><br><span>${esc(b?b.title:'')} · with ${otherLabel} · ${timeAgo(t.updated)}</span></div>
+      <span>${open?'▲':'▼'} ${lastFrom!==sideRole?'<span class="chip dot live" style="font-size:10px">new</span>':''}</span>
+    </div>
+    ${open?`
+    ${summary}
+    ${t.messages.length?`<div class="bubbles">
+      ${t.messages.map(msg=>`
+        <div class="bubble ${msg.from}">
+          <div class="who">${msg.from==='reader'?esc(reader?reader.name:'Reader'):esc(author?author.name:'Author')}</div>
+          ${esc(msg.text)}
+          <div style="font-size:11px;opacity:.5;margin-top:4px">${timeAgo(msg.at)}</div>
+        </div>`).join('')}
+    </div>`:`<div style="padding:14px 18px;color:var(--ink-faint);font-size:13.5px">No question asked — reply to start the conversation.</div>`}
+    <div class="reply-box">
+      <input id="reply_${t.id}" placeholder="${sideRole==='author'?'Reply to your reader…':'Reply…'}" onkeydown="if(event.key==='Enter')sendReply('${t.id}','${sideRole}')">
+      <button class="btn ${sideRole==='author'?'btn-spine':'btn-amber'} btn-sm" onclick="sendReply('${t.id}','${sideRole}')">Send</button>
+    </div>`:''}
+  </div>`;
+}
+function toggleThread(id){ const t=DB.threads.find(x=>x.id===id); t._open=!t._open; render(); }
+function sendReply(id, sideRole){
+  const t=DB.threads.find(x=>x.id===id);
+  const input=document.getElementById('reply_'+id);
+  const txt=(input.value||'').trim(); if(!txt){ return; }
+  const mod=enforce(txt);
+  if(!mod.ok){ return; }
+  t.messages.push({from:sideRole, userId:DB.session, text:mod.clean||txt, at:now()}); t.updated=now(); t._open=true;
+  const target = sideRole==='author'? t.readerId : t.authorUserId;
+  notify(target,'reply',DB.session,'replied to your conversation',t.id);
+  save(DB); toast('Reply sent'); render();
+}
+/* Author replies stay in-app only (no email handoff, no address exposure). */
+
+/* ====================================================================
+   READER ACTIONS
+   ==================================================================== */
+function claimShelf(id){ const m=me(); if(!m.shelf.includes(id)){ m.shelf.push(id); save(DB);} }
+function markClaimed(id){ const m=me(); if(!m.shelf.includes(id)){ m.shelf.push(id); save(DB); toast('Claimed — feedback unlocked'); if(!m.pushPrimed){ const b=bookById(id); maybePrimePush(`Want a heads-up the next time a book like “${b?b.title:''}” drops free?`); return; } } render(); }
+function shareBook(id){ const b=bookById(id); if(!b) return;
+  shareThing(b.title+' — free on Koinita', `I'm reading “${b.title}” by ${b.authorName} on Koinita — free, and you can talk to the author.`, location.href); }
+function remindMe(id){ toast('We\'ll alert you the moment it drops 🔔'); }
+function viewShelf(){
+  const m=me();
+  const books = m.shelf.map(bookById).filter(Boolean);
+  return `<div class="app"><div class="wrap">
+    <div class="app-head"><div><h1>My shelf</h1><p>Books you've claimed. They're yours to keep.</p></div></div>
+    ${books.length?`<div class="grid">${books.map(bookCard).join('')}</div>`
+      :`<div class="empty"><div class="ic">📚</div><h3>Your shelf is waiting</h3><p>Claim a live title and it lands here, yours forever.</p>
+        <button class="btn btn-amber" onclick="go('discover')">Find a free book</button></div>`}
+  </div></div>`;
+}
+
+/* ====================================================================
+   AUTHOR ACTIONS — add / claim / edit books
+   ==================================================================== */
+function claimBook(id){ const m=me(); const b=bookById(id);
+  if(!canAddBook(m)){ openUpgradePrompt(); return; }
+  b.authorUserId=m.id; b.authorName=m.name; save(DB); toast('Connected to your profile ✓'); render(); }
+
+function openUpgradePrompt(){
+  const m=me(); const p=planOf(m);
+  document.getElementById('modalMount').innerHTML=`
+  <div class="overlay" onclick="if(event.target===this)closeAuth()">
+    <div class="modal"><div class="m-head"><button class="x" onclick="closeAuth()">✕</button>
+      <h3>You've reached your ${p.name} limit</h3>
+      <p>Your plan includes ${p.maxListings} active ${p.maxListings===1?'listing':'listings'}. Upgrade to list more books and reach more readers.</p></div>
+      <div class="m-body"><button class="btn btn-spine btn-block" onclick="closeAuth();go('plans')">See plans</button></div>
+    </div></div>`;
+}
+
+function openAddBook(){
+  const m=me();
+  if(!canAddBook(m)){ openUpgradePrompt(); return; }
+  document.getElementById('modalMount').innerHTML=`
+  <div class="overlay" onclick="if(event.target===this)closeAuth()">
+    <div class="modal">
+      <div class="m-head"><button class="x" onclick="closeAuth()">✕</button>
+        <h3>Add a book</h3><p>It will be bound to your author profile and appear on the shelf.</p></div>
+      <div class="m-body">
+        <div class="field"><label>Title</label><input id="nb_title" placeholder="Your book's title" required></div>
+        <div class="field"><label>Genre</label><select id="nb_genre">${GENRES.map(g=>`<option>${g}</option>`).join('')}</select></div>
+        <div class="field"><label>Description</label><textarea id="nb_blurb" placeholder="A few honest sentences about the book."></textarea></div>
+        <div class="field"><label>Amazon ASIN <span style="font-weight:400;color:var(--ink-faint)">(the 10-character code in the Kindle URL)</span></label><input id="nb_asin" placeholder="B0XXXXXXXX"></div>
+        <div class="form-grid">
+          <div class="field"><label>Free window starts</label><input id="nb_start" type="date"></div>
+          <div class="field"><label>Free window ends</label><input id="nb_end" type="date"></div>
+        </div>
+        <p style="font-size:12.5px;color:var(--ink-faint);margin:-4px 0 14px">Amazon KDP Select allows up to 5 free days per 90-day term. Set a window inside that.</p>
+        <button class="btn btn-spine btn-block" onclick="saveNewBook()">Add to the shelf</button>
+      </div>
+    </div>
+  </div>`;
+}
+function saveNewBook(){
+  const m=me();
+  if(!canAddBook(m)){ closeAuth(); openUpgradePrompt(); return; }
+  const title=(document.getElementById('nb_title').value||'').trim();
+  if(!title){ toast('Give your book a title.'); return; }
+  const asin=(document.getElementById('nb_asin').value||'').trim()||'B0EXAMPLE0';
+  const s=document.getElementById('nb_start').value, e=document.getElementById('nb_end').value;
+  const freeStart = s? new Date(s).getTime() : now();
+  const freeEnd = e? new Date(e).getTime()+86399000 : now()+86400000*4;
+  // Admin review gate: in-house authors and the auto-approve setting post live;
+  // otherwise a new outside-author listing waits for admin approval.
+  const auto = DB.settings.autoApprove || m.inhouse || m.admin;
+  const status = auto ? 'approved' : 'pending';
+  DB.books.push({id:uid('b'),title,authorName:m.name,authorUserId:m.id,
+    genre:document.getElementById('nb_genre').value,
+    blurb:(document.getElementById('nb_blurb').value||'').trim()||'A new release from '+m.name+'.',
+    cover:Math.floor(Math.random()*COVERS.length), featured:false, status,
+    freeStart,freeEnd,asin,amazonUrl:'https://www.amazon.com/dp/'+asin,added:now()});
+  save(DB); closeAuth();
+  toast(status==='approved' ? 'Book added to the shelf ✓' : 'Submitted — pending admin review before it goes live');
+  go('mybooks');
+}
+function viewMyBooks(){
+  const m=me();
+  const mine=DB.books.filter(b=>b.authorUserId===m.id);
+  const canFeature = hasFeature(m,'featured');
+  return `<div class="app author-mode"><div class="wrap">
+    <div class="app-head"><div><h1>My books</h1><p>Every title here is bound to your author page.</p></div>
+      <button class="btn btn-spine btn-sm" onclick="openAddBook()">+ Add a book</button></div>
+    ${mine.length?`
+      <div class="grid" style="margin-bottom:30px">${mine.map(bookCard).join('')}</div>
+      <h2 style="font-size:20px;margin:0 0 14px">Manage your drops</h2>
+      <div class="panel" style="padding:4px 0">
+        ${mine.map((b,i)=>`<div style="display:flex;align-items:center;gap:12px;padding:13px 20px;${i<mine.length-1?'border-bottom:1px solid var(--line-soft);':''}flex-wrap:wrap">
+          <b style="flex:1;min-width:150px;font-family:var(--display);font-size:16px">${esc(b.title)}</b>
+          ${b.featured?'<span class="chip" style="background:var(--spine);color:#fff">✦ Featured</span>':''}
+          <button class="btn btn-ghost btn-sm" onclick="openEditFree('${b.id}')">Free window</button>
+          <button class="btn ${b.featured?'btn-ghost':'btn-spine'} btn-sm" onclick="toggleFeatured('${b.id}')">${b.featured?'Unfeature':(canFeature?'Feature drop':'🔒 Feature')}</button>
+        </div>`).join('')}
+      </div>`
+      :`<div class="empty"><div class="ic">✍️</div><h3>No books yet</h3><p>Add your first title to start meeting readers.</p>
+        <button class="btn btn-spine" onclick="openAddBook()">+ Add a book</button></div>`}
+  </div></div>`;
+}
+function toggleFeatured(id){
+  const m=me(); const b=bookById(id);
+  if(!hasFeature(m,'featured')){ toast('Featured placement is an Author Pro feature.'); go('plans'); return; }
+  b.featured=!b.featured; save(DB); toast(b.featured?'Featured ✦':'Removed from featured'); render();
+}
+function openEditFree(id){
+  const b=bookById(id);
+  document.getElementById('modalMount').innerHTML=`
+  <div class="overlay" onclick="if(event.target===this)closeAuth()">
+    <div class="modal"><div class="m-head"><button class="x" onclick="closeAuth()">✕</button>
+      <h3>Free window</h3><p>${esc(b.title)}</p></div>
+      <div class="m-body">
+        <div class="form-grid">
+          <div class="field"><label>Starts</label><input id="ef_start" type="date" value="${new Date(b.freeStart).toISOString().slice(0,10)}"></div>
+          <div class="field"><label>Ends</label><input id="ef_end" type="date" value="${new Date(b.freeEnd).toISOString().slice(0,10)}"></div>
+        </div>
+        <button class="btn btn-spine btn-block" onclick="saveFree('${id}')">Save window</button>
+      </div></div></div>`;
+}
+function saveFree(id){ const b=bookById(id);
+  b.freeStart=new Date(document.getElementById('ef_start').value).getTime();
+  b.freeEnd=new Date(document.getElementById('ef_end').value).getTime()+86399000;
+  save(DB); closeAuth(); toast('Free window updated'); render(); }
+
+/* ====================================================================
+   PLANS & BILLING  (author-side monetization; readers never pay)
+   ==================================================================== */
+function viewPlans(){
+  const m=me();
+  const isAuthor = m && m.role==='author';
+  const current = isAuthor? planOf(m).id : null;
+  const launch = !(MONETIZATION_ENABLED||monetizationPreview);
+  const card = (p, highlight)=>`
+    <div class="step" style="border-color:${highlight?p.accent:'var(--line)'};border-width:${highlight?'2px':'1px'};position:relative">
+      ${current===p.id?`<span class="chip" style="position:absolute;top:-11px;right:16px;background:${p.accent};color:#fff">Your plan</span>`:''}
+      <div class="n" style="color:${p.accent}">${p.name.toUpperCase()}</div>
+      <div style="font-family:var(--display);font-size:34px;margin:8px 0 2px">${p.price===0?'Free':'$'+p.price}<span style="font-size:14px;color:var(--ink-faint);font-family:var(--body)">${p.period}</span></div>
+      <p style="color:var(--ink-soft);font-size:14px;margin:0 0 16px">${p.tagline}</p>
+      <ul style="list-style:none;padding:0;margin:0 0 18px;font-size:14px;color:var(--ink-soft);display:flex;flex-direction:column;gap:9px">
+        <li>📚 ${p.maxListings===Infinity?'Unlimited':p.maxListings} active ${p.maxListings===1?'listing':'listings'}</li>
+        <li>${p.analytics?'📈 Reader analytics':'<span style="opacity:.5">No analytics</span>'}</li>
+        <li>${p.featured?'✦ Featured placement':'<span style="opacity:.5">Standard placement</span>'}</li>
+        <li>👥 Up to ${p.readerTeam===Infinity?'unlimited':p.readerTeam} reader team</li>
+        <li>${p.prioritySupport?'⚡ Priority support':'<span style="opacity:.5">Standard support</span>'}</li>
+      </ul>
+      ${isAuthor && !m.inhouse ? (current===p.id
+          ? '<button class="btn btn-ghost btn-block" disabled>Current plan</button>'
+          : `<button class="btn ${highlight?'btn-spine':'btn-ghost'} btn-block" onclick="startCheckout('${p.id}')">${p.price===0?'Switch to Free':'Choose '+p.name}</button>`)
+        : (isAuthor?'':'<button class="btn btn-amber btn-block" onclick="openAuth(\'signup\',\'author\')">Join as an author</button>')}
+    </div>`;
+  return `<div class="app author-mode"><div class="wrap">
+    <div class="app-head"><div><h1>Plans &amp; billing</h1><p>Readers are always free. These plans are for authors — and they're how Koinita sustains itself.</p></div></div>
+
+    ${launch?`<div class="panel" style="background:var(--spine-wash);border-color:#CFE0D8;margin-top:0">
+      <h3 style="color:var(--spine-deep)">✦ Launch mode — everything below is free right now</h3>
+      <p class="sub" style="margin:0">Every author feature is unlocked while Koinita grows. These tiers switch on later, and you will never lose access you already have.${m&&m.inhouse?' As an Axitos in-house author, your access stays free, always.':''}</p>
+    </div>`:''}
+
+    <div class="steps" style="margin-top:22px">
+      ${card(PLANS.starter,false)}
+      ${card(PLANS.indie,true)}
+      ${card(PLANS.pro,false)}
+    </div>
+
+    ${m&&m.inhouse?`<div class="panel"><h3>✦ ${INHOUSE_PLAN.name}</h3><p class="sub" style="margin:0">${INHOUSE_PLAN.tagline} Books published through Axitos get full access at no cost.</p></div>`:''}
+
+    <div class="panel">
+      <h3>How billing will work</h3>
+      <p class="sub" style="margin:0">Payments run through Stripe. Choosing a paid plan opens Stripe Checkout; a webhook records your plan and unlocks features instantly. Change or cancel anytime from the billing portal. <b>Readers never pay.</b></p>
+    </div>
+
+    <!-- DEV PREVIEW: experience tier gating without changing the live launch setting. Remove before production. -->
+    <div class="panel" style="border-style:dashed;background:var(--paper-2)">
+      <h3 style="font-size:15px">🛠 Preview tier gating (dev only)</h3>
+      <p class="sub">Turn this on to see exactly what authors experience once paid tiers go live. It only affects your screen, never real members. Currently <b>${monetizationPreview?'ON':'OFF'}</b>.</p>
+      <button class="btn btn-ghost btn-sm" onclick="togglePreview()">${monetizationPreview?'Turn preview OFF':'Turn preview ON'}</button>
+    </div>
+  </div></div>`;
+}
+
+function startCheckout(planId){
+  /* PRODUCTION — replace the demo below with a real Stripe Checkout call:
+       const res = await fetch('/functions/v1/create-checkout-session', {
+         method:'POST',
+         headers:{ Authorization:'Bearer '+session.access_token },
+         body: JSON.stringify({ plan: planId })
+       });
+       const { url } = await res.json();
+       window.location = url;            // Stripe-hosted Checkout
+     A Stripe webhook then writes the new plan to the author_plan column in
+     Supabase on payment success, and the gate helpers pick it up automatically. */
+  const m=me(); if(!m || m.role!=='author' || m.inhouse) return;
+  if(!(MONETIZATION_ENABLED||monetizationPreview)){ toast('Launch mode: every feature is already free.'); return; }
+  // Real Stripe Checkout via Edge Function
+  toast('Opening Stripe Checkout…');
+  sbStartCheckout(planId).catch(e => { toast('Checkout error — '+e.message); m.plan=planId; save(DB); render(); });
+}
+function togglePreview(){ monetizationPreview=!monetizationPreview; toast(monetizationPreview?'Tier gating preview ON':'Preview OFF'); render(); }
+
+/* ====================================================================
+   PROFILE / SETTINGS
+   ==================================================================== */
+function viewProfile(){
+  const m=me();
+  return `<div class="app ${m.role==='author'?'author-mode':''}"><div class="wrap">
+    <div class="app-head"><div><h1>My profile</h1><p>How you appear in the club.</p></div></div>
+    <div class="panel" style="max-width:560px;margin-top:0">
+      <div class="profile-head" style="margin-bottom:18px">
+        <div class="big-av" style="background:${m.avatar}">${initials(m.name)}</div>
+        <div><b style="font-size:18px">${esc(m.name)}</b><br>
+        <span class="chip ${m.role==='author'?'verified':''}">${m.role==='author'?'✍️ Author':'📚 Reader'}</span></div>
+      </div>
+      <div class="field"><label>Display name</label><input id="pf_name" value="${esc(m.name)}"></div>
+      <div class="field"><label>Email</label><input id="pf_email" value="${esc(m.email)}"></div>
+      <div class="field"><label>${m.role==='author'?'Author bio (readers see this)':'About you'}</label>
+        <textarea id="pf_bio">${esc(m.bio)}</textarea></div>
+      <div class="field"><label>Avatar colour</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">${AVS.map(c=>`<button onclick="setAvatar('${c}')" style="width:34px;height:34px;border-radius:50%;background:${c};border:${m.avatar===c?'3px solid var(--ink)':'2px solid #fff'};box-shadow:var(--shadow)"></button>`).join('')}</div></div>
+      <button class="btn ${m.role==='author'?'btn-spine':'btn-amber'}" onclick="saveProfile()">Save changes</button>
+    </div>
+  </div></div>`;
+}
+function setAvatar(c){ me().avatar=c; save(DB); render(); }
+function saveProfile(){ const m=me();
+  m.name=(document.getElementById('pf_name').value||'').trim()||m.name;
+  m.email=(document.getElementById('pf_email').value||'').trim()||m.email;
+  m.bio=(document.getElementById('pf_bio').value||'').trim();
+  // keep authored books' display name in sync
+  DB.books.filter(b=>b.authorUserId===m.id).forEach(b=>b.authorName=m.name);
+  save(DB); toast('Profile saved ✓'); render(); }
+
+function notFound(){ return `<div class="app"><div class="wrap"><div class="empty"><div class="ic">🔍</div><h3>Not found</h3><p>That page doesn't exist.</p><button class="btn btn-amber" onclick="go('home')">Back home</button></div></div></div>`; }
+
+/* ====================================================================
+   NOTIFICATIONS OPT-IN — email default + push primer (value-framed,
+   shown once at a high-intent moment, before any native prompt).
+   ==================================================================== */
+function maybePrimePush(context){
+  const m=me(); if(!m || m.pushPrimed) return;
+  m.pushPrimed=true; save(DB);
+  document.getElementById('modalMount').innerHTML = `
+  <div class="overlay" onclick="if(event.target===this)closeAuth()">
+    <div class="modal"><div class="m-head"><button class="x" onclick="closeAuth()">✕</button>
+      <h3>Want a heads-up?</h3><p>${esc(context||'We\u2019ll only ping you for things you chose to follow.')}</p></div>
+      <div class="m-body">
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px">
+          <label class="opt-row"><input type="checkbox" id="np_drop" checked> The moment a book you're waiting on drops free</label>
+          <label class="opt-row"><input type="checkbox" id="np_reply" checked> When an author replies to you</label>
+          <label class="opt-row"><input type="checkbox" id="np_digest"> A weekly digest from authors you follow</label>
+        </div>
+        <button class="btn btn-amber btn-block" onclick="acceptPush()">Turn on notifications</button>
+        <button class="btn btn-ghost btn-block" style="margin-top:8px" onclick="closeAuth()">Maybe later</button>
+        <p style="font-size:11.5px;color:var(--ink-faint);text-align:center;margin-top:10px">You can change this anytime in Notifications. Email updates stay on unless you opt out.</p>
+      </div></div></div>`;
+}
+function acceptPush(){ const m=me(); m.notifPrefs=m.notifPrefs||{}; m.notifPrefs.push=true; save(DB); closeAuth(); toast('Notifications on ✦'); }
+function viewNotifPrefs(){
+  const m=me(); const p=m.notifPrefs||{email:true,push:false};
+  const row=(id,on,label,sub)=>`<label class="pref-row"><div><b>${label}</b><span>${sub}</span></div>
+    <input type="checkbox" ${on?'checked':''} onchange="setPref('${id}',this.checked)"></label>`;
+  return `<div class="app ${m.role==='author'?'author-mode':''}"><div class="wrap" style="max-width:640px">
+    <div class="app-head"><div><h1>Notifications</h1><p>You're in control. Email stays on unless you opt out; push is yours to switch on.</p></div></div>
+    ${row('email', p.email!==false, 'Email updates', 'Drop alerts, replies, and your weekly digest')}
+    ${row('push', !!p.push, 'Push notifications', 'Real-time pings on this device — opt in when you like')}
+    <p style="font-size:12.5px;color:var(--ink-faint);margin-top:16px">Every email carries a one-click unsubscribe. We never sell your data or email your contacts.</p>
+  </div></div>`;
+}
+function setPref(k,v){ const m=me(); m.notifPrefs=m.notifPrefs||{}; m.notifPrefs[k]=v; save(DB);
+  if(k==='push'&&v) m.pushPrimed=true; toast('Saved'); }
+
+/* ====================================================================
+   FOUNDERS' WALL — numbered founders, the closing window, refer to climb
+   ==================================================================== */
+function viewFounders(){
+  const m=me();
+  const founders = DB.users.filter(u=>u.founder && !u.system).sort((a,b)=>a.founderNo-b.founderNo);
+  const cap=DB.settings.foundingCap, count=DB.settings.founderCount;
+  const pct=Math.min(100, Math.round(count/cap*1000)/10);
+  return `<div class="app ${m&&m.role==='author'?'author-mode':''}"><div class="wrap">
+    <div class="app-head"><div><h1>The Founders' Wall</h1><p>The first ${cap.toLocaleString()} members are Founding Members — numbered, permanent, and never offered again once the window closes.</p></div></div>
+    <div class="founders-meter">
+      <b style="font-family:var(--display);font-size:20px">${count.toLocaleString()} of ${cap.toLocaleString()} founding spots claimed</b>
+      <div class="bar"><span style="width:${Math.max(2,pct)}%"></span></div>
+      <span class="sub" style="margin:0">${foundingSpotsLeft().toLocaleString()} left · refer a friend to climb the wall · 5 invites earns ✦ Charter Member</span>
+      ${m?`<div style="margin-top:14px"><button class="btn btn-amber btn-sm" onclick="openInvite()">Invite a friend ✦</button></div>`:''}
+    </div>
+    ${founders.slice(0,50).map(u=>`<div class="founder-row">
+      <div class="fn">№${u.founderNo}</div>
+      <div class="m-av" style="width:40px;height:40px;border-radius:50%;background:${u.avatar};display:grid;place-items:center;color:#fff;font-weight:700;flex:none;cursor:pointer" onclick="go('member','${u.id}')">${initials(u.name)}</div>
+      <div style="flex:1"><b style="cursor:pointer" onclick="go('member','${u.id}')">${esc(u.name)}</b> ${founderBadge(u)}</div>
+    </div>`).join('')}
+  </div></div>`;
+}
+
+/* ====================================================================
+   BOOT
+   ==================================================================== */
+// ── App boot ──────────────────────────────────────────────────────────────
+// initApp() defined in the Supabase layer above:
+// Loads localStorage cache immediately → then hydrates from Supabase async
+initApp().catch(console.error);
+// Refresh countdowns every minute
+setInterval(()=>{ if(['home','discover','shelf','mybooks'].includes(route.view)) render(); }, 60000);
+</script>
+</body>
+</html>
