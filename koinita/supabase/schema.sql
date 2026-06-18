@@ -58,6 +58,7 @@ create table if not exists profiles (
   updated_at    timestamptz not null default now()
 );
 
+drop trigger if exists profiles_updated_at on profiles;
 create trigger profiles_updated_at
   before update on profiles
   for each row execute function set_updated_at();
