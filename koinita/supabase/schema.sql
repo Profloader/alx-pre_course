@@ -261,10 +261,27 @@ $$;
 -- ============================================================================
 -- REALTIME  (enable for live feed + notifications)
 -- ============================================================================
-alter publication supabase_realtime add table posts;
-alter publication supabase_realtime add table comments;
-alter publication supabase_realtime add table notifications;
-alter publication supabase_realtime add table follows;
+do $$ begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and tablename = 'posts'
+  ) then alter publication supabase_realtime add table posts; end if;
+
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and tablename = 'comments'
+  ) then alter publication supabase_realtime add table comments; end if;
+
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and tablename = 'notifications'
+  ) then alter publication supabase_realtime add table notifications; end if;
+
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and tablename = 'follows'
+  ) then alter publication supabase_realtime add table follows; end if;
+end $$;
 
 -- ============================================================================
 -- ROW LEVEL SECURITY
