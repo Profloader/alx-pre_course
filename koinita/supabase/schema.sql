@@ -301,65 +301,84 @@ alter table push_subscriptions enable row level security;
 alter table settings           enable row level security;
 
 -- ── settings ─────────────────────────────────────────────────────────────────
+drop policy if exists "Settings readable by all" on settings;
 create policy "Settings readable by all"
   on settings for select using (true);
+drop policy if exists "Settings editable by admins only" on settings;
 create policy "Settings editable by admins only"
   on settings for update
   using (exists (select 1 from profiles where id = auth.uid() and admin = true));
 
 -- ── profiles ─────────────────────────────────────────────────────────────────
+drop policy if exists "Profiles readable by all" on profiles;
 create policy "Profiles readable by all"
   on profiles for select using (true);
+drop policy if exists "Users can insert their own profile" on profiles;
 create policy "Users can insert their own profile"
   on profiles for insert
   with check (auth.uid() = id);
+drop policy if exists "Users can update their own profile" on profiles;
 create policy "Users can update their own profile"
   on profiles for update
   using (auth.uid() = id);
 
 -- ── books ────────────────────────────────────────────────────────────────────
+drop policy if exists "Approved books readable by all" on books;
 create policy "Approved books readable by all"
   on books for select
   using (status = 'approved' or author_user_id = auth.uid()
     or exists (select 1 from profiles where id = auth.uid() and admin = true));
+drop policy if exists "Authors can insert books" on books;
 create policy "Authors can insert books"
   on books for insert
   with check (auth.uid() = author_user_id
     and exists (select 1 from profiles where id = auth.uid() and role = 'author'));
+drop policy if exists "Authors can update their own books" on books;
 create policy "Authors can update their own books"
   on books for update
   using (auth.uid() = author_user_id
     or exists (select 1 from profiles where id = auth.uid() and admin = true));
 
 -- ── posts ────────────────────────────────────────────────────────────────────
+drop policy if exists "Posts readable by all authenticated users" on posts;
 create policy "Posts readable by all authenticated users"
   on posts for select using (auth.uid() is not null);
+drop policy if exists "Authenticated users can create posts" on posts;
 create policy "Authenticated users can create posts"
   on posts for insert with check (auth.uid() = author_id);
+drop policy if exists "Authors can update their own posts" on posts;
 create policy "Authors can update their own posts"
   on posts for update using (auth.uid() = author_id);
+drop policy if exists "Authors can delete their own posts" on posts;
 create policy "Authors can delete their own posts"
   on posts for delete using (auth.uid() = author_id
     or exists (select 1 from profiles where id = auth.uid() and admin = true));
 
 -- ── comments ─────────────────────────────────────────────────────────────────
+drop policy if exists "Comments readable by authenticated users" on comments;
 create policy "Comments readable by authenticated users"
   on comments for select using (auth.uid() is not null);
+drop policy if exists "Authenticated users can comment" on comments;
 create policy "Authenticated users can comment"
   on comments for insert with check (auth.uid() = author_id);
+drop policy if exists "Users can delete own comments" on comments;
 create policy "Users can delete own comments"
   on comments for delete using (auth.uid() = author_id
     or exists (select 1 from profiles where id = auth.uid() and admin = true));
 
 -- ── follows ──────────────────────────────────────────────────────────────────
+drop policy if exists "Follows readable by all authenticated users" on follows;
 create policy "Follows readable by all authenticated users"
   on follows for select using (auth.uid() is not null);
+drop policy if exists "Users can follow" on follows;
 create policy "Users can follow"
   on follows for insert with check (auth.uid() = follower_id);
+drop policy if exists "Users can unfollow" on follows;
 create policy "Users can unfollow"
   on follows for delete using (auth.uid() = follower_id);
 
 -- ── circles ──────────────────────────────────────────────────────────────────
+drop policy if exists "Public circles readable by all authenticated" on circles;
 create policy "Public circles readable by all authenticated"
   on circles for select
   using (auth.uid() is not null and (
@@ -367,40 +386,50 @@ create policy "Public circles readable by all authenticated"
     or creator_id = auth.uid()
     or exists (select 1 from circle_members where circle_id = id and user_id = auth.uid())
   ));
+drop policy if exists "Authenticated users can create circles" on circles;
 create policy "Authenticated users can create circles"
   on circles for insert with check (auth.uid() = creator_id);
+drop policy if exists "Creators can update their circles" on circles;
 create policy "Creators can update their circles"
   on circles for update using (auth.uid() = creator_id);
 
 -- ── circle_members ────────────────────────────────────────────────────────────
+drop policy if exists "Members readable by circle members" on circle_members;
 create policy "Members readable by circle members"
   on circle_members for select using (
     exists (select 1 from circle_members cm where cm.circle_id = circle_id and cm.user_id = auth.uid())
     or exists (select 1 from circles c where c.id = circle_id and c.creator_id = auth.uid())
   );
+drop policy if exists "Users can join circles" on circle_members;
 create policy "Users can join circles"
   on circle_members for insert with check (auth.uid() = user_id);
+drop policy if exists "Users can leave circles" on circle_members;
 create policy "Users can leave circles"
   on circle_members for delete using (auth.uid() = user_id);
 
 -- ── threads ──────────────────────────────────────────────────────────────────
+drop policy if exists "Threads visible to reader and author only" on threads;
 create policy "Threads visible to reader and author only"
   on threads for select
   using (auth.uid() = reader_id or auth.uid() = author_user_id
     or exists (select 1 from profiles where id = auth.uid() and admin = true));
+drop policy if exists "Readers can start threads" on threads;
 create policy "Readers can start threads"
   on threads for insert with check (auth.uid() = reader_id);
+drop policy if exists "Participants can update threads (rating/feedback)" on threads;
 create policy "Participants can update threads (rating/feedback)"
   on threads for update
   using (auth.uid() = reader_id or auth.uid() = author_user_id);
 
 -- ── thread_messages ───────────────────────────────────────────────────────────
+drop policy if exists "Thread messages visible to participants" on thread_messages;
 create policy "Thread messages visible to participants"
   on thread_messages for select
   using (exists (
     select 1 from threads t where t.id = thread_id
     and (t.reader_id = auth.uid() or t.author_user_id = auth.uid())
   ));
+drop policy if exists "Participants can send messages" on thread_messages;
 create policy "Participants can send messages"
   on thread_messages for insert
   with check (auth.uid() = user_id and exists (
@@ -409,20 +438,26 @@ create policy "Participants can send messages"
   ));
 
 -- ── notifications ─────────────────────────────────────────────────────────────
+drop policy if exists "Users see their own notifications" on notifications;
 create policy "Users see their own notifications"
   on notifications for select using (auth.uid() = to_user_id);
+drop policy if exists "System can insert notifications via RPC" on notifications;
 create policy "System can insert notifications via RPC"
   on notifications for insert with check (true);  -- controlled by security definer RPCs
+drop policy if exists "Users can mark own notifications read" on notifications;
 create policy "Users can mark own notifications read"
   on notifications for update using (auth.uid() = to_user_id);
 
 -- ── shelf ─────────────────────────────────────────────────────────────────────
+drop policy if exists "Users see their own shelf" on shelf;
 create policy "Users see their own shelf"
   on shelf for select using (auth.uid() = user_id);
+drop policy if exists "Users can claim books" on shelf;
 create policy "Users can claim books"
   on shelf for insert with check (auth.uid() = user_id);
 
 -- ── push_subscriptions ────────────────────────────────────────────────────────
+drop policy if exists "Users manage their own push subs" on push_subscriptions;
 create policy "Users manage their own push subs"
   on push_subscriptions for all using (auth.uid() = user_id);
 
