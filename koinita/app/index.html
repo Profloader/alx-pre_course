@@ -430,7 +430,7 @@ function mapProfile(r) {
   return {
     id: r.id, name: r.name, email: r.email, role: r.role, bio: r.bio || '',
     avatar: r.avatar || '#D9541F', plan: r.plan || 'starter',
-    inhouse: r.inhouse || false, admin: r.admin || false,
+    inhouse: r.inhouse || false, admin: r.admin || r.role === 'admin' || false,
     mutedStaff: r.muted_staff || false,
     founder: r.founder || false, founderNo: r.founder_no || null,
     inviteCode: r.invite_code, invites: r.invites || 0, charter: r.charter || false,
