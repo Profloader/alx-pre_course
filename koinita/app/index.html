@@ -496,6 +496,21 @@ sb.auth.onAuthStateChange(async (event, session) => {
   if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
     DB.session = session.user.id;
     await sbLoadAll(session.user.id);
+    // For OAuth sign-ins, create profile if it doesn't exist yet
+    if (event === 'SIGNED_IN' && !DB.users.find(u => u.id === session.user.id)) {
+      const meta = session.user.user_metadata || {};
+      const name = meta.full_name || meta.name || session.user.email.split('@')[0];
+      const email = session.user.email;
+      const inviteCode = name.split(' ')[0].toLowerCase().replace(/[^a-z]/g,'') + Math.floor(100+Math.random()*900);
+      await sbCreateProfile(session.user.id, {
+        name, email, role: 'reader',
+        avatar: AVS[Math.floor(Math.random()*AVS.length)],
+        selfInviteCode: inviteCode,
+        inviteCode: authState.inviteCode || null,
+      }).catch(e => console.warn('[Koinita] OAuth profile:', e));
+      authState.inviteCode = null;
+      await sbLoadAll(session.user.id);
+    }
     _sbReady = true;
     render();
   }
