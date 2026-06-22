@@ -2561,8 +2561,9 @@ async function saveNewBook(){
     save(DB); render();
     toast(status==='approved' ? 'Book added to the shelf ✓' : 'Submitted — pending admin review');
   }).catch(err => {
-    toast('Could not save book — check console for details');
-    console.warn('[Koinita] sbAddBook:', err);
+    const msg = err?.message || String(err);
+    toast('Could not save book: ' + msg.slice(0,80));
+    console.error('[Koinita] sbAddBook failed:', err);
   });
 }
 function viewMyBooks(){

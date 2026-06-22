@@ -329,10 +329,14 @@ create policy "Approved books readable by all"
   using (status = 'approved' or author_user_id = auth.uid()
     or exists (select 1 from profiles where id = auth.uid() and admin = true));
 drop policy if exists "Authors can insert books" on books;
-create policy "Authors can insert books"
+drop policy if exists "Authors and admins can insert books" on books;
+create policy "Authors and admins can insert books"
   on books for insert
   with check (auth.uid() = author_user_id
-    and exists (select 1 from profiles where id = auth.uid() and role = 'author'));
+    and (
+      exists (select 1 from profiles where id = auth.uid() and role = 'author')
+      or exists (select 1 from profiles where id = auth.uid() and admin = true)
+    ));
 drop policy if exists "Authors can update their own books" on books;
 create policy "Authors can update their own books"
   on books for update
