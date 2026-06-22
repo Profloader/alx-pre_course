@@ -21,8 +21,8 @@ const templates: Record<string, (d: Record<string, string>) => { subject: string
     html: `<p>Hi ${d.name},</p>
 <p>You're ${d.founder ? `Founding Member <b>№${d.founderNo}</b>` : 'now a member'} of <b>Koinita Book Club</b>.</p>
 <p>Every book on the shelf is yours to claim and keep — free, with a direct line to the author.</p>
-<p><a href="https://app.koinita.club">Open the club →</a></p>
-<p style="color:#988C79;font-size:13px">You can unsubscribe at any time from your <a href="https://app.koinita.club/notifs">notification settings</a>.</p>`,
+<p><a href="https://koinita.club">Open the club →</a></p>
+<p style="color:#988C79;font-size:13px">You can unsubscribe at any time from your <a href="https://koinita.club/notifs">notification settings</a>.</p>`,
   }),
 
   drop_alert: (d) => ({
@@ -31,8 +31,8 @@ const templates: Record<string, (d: Record<string, string>) => { subject: string
 <p>The book you were waiting on is now live on the free shelf:</p>
 <h2>${d.title}</h2>
 <p>by ${d.authorName}</p>
-<p><a href="https://app.koinita.club">Claim it now →</a></p>
-<p style="color:#988C79;font-size:13px"><a href="https://app.koinita.club/notifs">Unsubscribe</a></p>`,
+<p><a href="https://koinita.club">Claim it now →</a></p>
+<p style="color:#988C79;font-size:13px"><a href="https://koinita.club/notifs">Unsubscribe</a></p>`,
   }),
 
   reply_notify: (d) => ({
@@ -40,8 +40,8 @@ const templates: Record<string, (d: Record<string, string>) => { subject: string
     html: `<p>Hi ${d.toName},</p>
 <p><b>${d.fromName}</b> replied in your conversation about <b>${d.bookTitle}</b>:</p>
 <blockquote style="border-left:3px solid #D9541F;padding-left:14px;color:#6A6052">${d.preview}</blockquote>
-<p><a href="https://app.koinita.club">Read &amp; reply →</a></p>
-<p style="color:#988C79;font-size:13px"><a href="https://app.koinita.club/notifs">Unsubscribe</a></p>`,
+<p><a href="https://koinita.club">Read &amp; reply →</a></p>
+<p style="color:#988C79;font-size:13px"><a href="https://koinita.club/notifs">Unsubscribe</a></p>`,
   }),
 
   invite_accepted: (d) => ({
@@ -51,14 +51,14 @@ const templates: Record<string, (d: Record<string, string>) => { subject: string
 ${d.charter === 'true'
   ? `<p>🎉 You've now earned <b>✦ Charter Member</b> status — you've referred 5 members or more.</p>`
   : `<p>You've referred <b>${d.invites} member${Number(d.invites) !== 1 ? 's' : ''}</b> so far. Refer 5 total to earn ✦ Charter status.</p>`}
-<p><a href="https://app.koinita.club/founders">View the Founders' Wall →</a></p>`,
+<p><a href="https://koinita.club/founders">View the Founders' Wall →</a></p>`,
   }),
 
   book_approved: (d) => ({
     subject: `"${d.title}" is now live on the shelf ✓`,
     html: `<p>Hi ${d.name},</p>
 <p>Your book <b>${d.title}</b> has been approved and is now live on the Koinita shelf.</p>
-<p><a href="https://app.koinita.club">View your listing →</a></p>`,
+<p><a href="https://koinita.club">View your listing →</a></p>`,
   }),
 
   book_rejected: (d) => ({
@@ -74,8 +74,8 @@ ${d.reason ? `<p>Reason: ${d.reason}</p>` : ''}
     html: `<p>Hi ${d.name},</p>
 <p>Here's what happened this week on Koinita:</p>
 ${d.body}
-<p><a href="https://app.koinita.club">Open the club →</a></p>
-<p style="color:#988C79;font-size:13px"><a href="https://app.koinita.club/notifs">Unsubscribe from digest</a></p>`,
+<p><a href="https://koinita.club">Open the club →</a></p>
+<p style="color:#988C79;font-size:13px"><a href="https://koinita.club/notifs">Unsubscribe from digest</a></p>`,
   }),
 }
 

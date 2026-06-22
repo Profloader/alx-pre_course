@@ -1101,7 +1101,7 @@ function copyText(t){ navigator.clipboard?.writeText(t); toast('Copied — paste
    Legal model: the member sends the message themselves (no auto-emailing
    contacts); invitee opts in by signing up.
    ==================================================================== */
-function inviteLink(){ const m=me(); return `https://app.koinita.club/?invite=${m?m.inviteCode:'koinita'}`; }
+function inviteLink(){ const m=me(); return `https://koinita.club/?invite=${m?m.inviteCode:'koinita'}`; }
 function defaultInviteMsg(){
   return `I'm reading on Koinita — free books, and you actually talk to the authors who wrote them. It's invitation-only right now and I've got a spot for you. Come join me:`;
 }

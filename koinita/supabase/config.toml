@@ -28,7 +28,7 @@ enabled = true
 [auth]
 enabled = true
 site_url = "https://koinita.club"
-additional_redirect_urls = ["https://app.koinita.club", "https://koinita.pages.dev"]
+additional_redirect_urls = ["https://koinita.club", "https://www.koinita.club"]
 jwt_expiry = 3600
 enable_refresh_token_rotation = true
 refresh_token_reuse_interval = 10

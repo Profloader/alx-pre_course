@@ -13,7 +13,7 @@ const CORS = {
 }
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, { apiVersion: '2023-10-16' })
-const APP_URL = Deno.env.get('APP_URL') || 'https://app.koinita.club'
+const APP_URL = Deno.env.get('APP_URL') || 'https://koinita.club'
 
 // Map plan IDs to Stripe price IDs — set these after creating products in Stripe
 const PRICE_MAP: Record<string, string> = {
