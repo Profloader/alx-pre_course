@@ -1640,12 +1640,32 @@ async function submitAuth(e){
     if(!document.getElementById('af_age').checked){ err.textContent='You must confirm you are 18 or older to join.'; err.classList.remove('hidden'); return false; }
     authState.name = document.getElementById('af_name').value.trim();
     if(!authState.name){ err.textContent='Please enter your name.'; err.classList.remove('hidden'); return false; }
-  }
-  try {
-    await sbSendOTP(email);
-    authState.email = email; authState.step='code'; mountAuth();
-  } catch(ex) {
-    err.textContent='Could not send code — check your email address and try again.'; err.classList.remove('hidden');
+    // Sign up: create account directly (email confirmation is off)
+    try {
+      const { data, error } = await sb.auth.signUp({ email, password: crypto.randomUUID() });
+      if(error) throw error;
+      const sbUser = data.user;
+      const inviteCode = authState.name.split(' ')[0].toLowerCase().replace(/[^a-z]/g,'')+Math.floor(100+Math.random()*900);
+      await sbCreateProfile(sbUser.id, {
+        name: authState.name, email,
+        role: authState.role||'reader',
+        avatar: AVS[Math.floor(Math.random()*AVS.length)],
+        selfInviteCode: inviteCode,
+        inviteCode: authState.inviteCode||null,
+      });
+      authState.inviteCode = null;
+      closeAuth(); afterAuth();
+    } catch(ex) {
+      err.textContent = ex.message || 'Could not create account — try again.'; err.classList.remove('hidden');
+    }
+  } else {
+    // Sign in: send OTP magic link
+    try {
+      await sbSendOTP(email);
+      authState.email = email; authState.step='code'; mountAuth();
+    } catch(ex) {
+      err.textContent='Could not send code — check your email address and try again.'; err.classList.remove('hidden');
+    }
   }
   return false;
 }
