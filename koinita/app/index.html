@@ -1857,9 +1857,8 @@ function viewDiscover(){
 function setFilter(g){ discoverFilter=g; render(); }
 
 function bookCoverStyle(b){
-  // Use Amazon cover image if available, else fallback to gradient
-  if(b.cover && b.cover.startsWith('http')) return `background:url('${b.cover}') center/cover no-repeat #e8e0d6`;
-  return coverStyle(b.cover);
+  if(b.cover && typeof b.cover === 'string' && b.cover.startsWith('http')) return `background:url('${b.cover}') center/cover no-repeat #e8e0d6`;
+  return coverStyle(typeof b.cover === 'number' ? b.cover : 0);
 }
 function bookCard(b){
   const fs = freeState(b);
