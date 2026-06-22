@@ -1613,40 +1613,48 @@ function pickRole(r){ authState.role=r; mountAuth(); }
 function closeAuth(){ document.getElementById('modalMount').innerHTML=''; }
 
 function socialAuth(provider){
-  // Demo only — production uses Supabase OAuth (Google / Apple), passwordless by design.
-  const label = provider==='apple'?'Apple':'Google';
-  if(authState.mode==='signin'){
-    const u = DB.users.find(x=>x.role==='reader' && !x.system);
-    if(u.banned){ DB.session=u.id; save(DB); closeAuth(); render(); return; }
-    DB.session=u.id; save(DB); closeAuth(); toast('Signed in with '+label+' (demo)'); afterAuth(); return;
-  }
-  finishSignup(label+' Member', 'member'+Math.floor(Math.random()*9000)+'@'+(provider==='apple'?'icloud.com':'gmail.com'), authState.role);
+  if(provider==='google') sbGoogleSignIn();
+  else if(provider==='apple') sbAppleSignIn();
 }
-function submitAuth(e){
+async function submitAuth(e){
   e.preventDefault();
   const err = document.getElementById('af_err');
+  err.classList.add('hidden');
   const email = document.getElementById('af_email').value.trim().toLowerCase();
   if(authState.mode==='signup'){
     if(!document.getElementById('af_age').checked){ err.textContent='You must confirm you are 18 or older to join.'; err.classList.remove('hidden'); return false; }
-    if(DB.users.find(x=>x.email===email)){ err.textContent='That email is already in the club. Try signing in.'; err.classList.remove('hidden'); return false; }
     authState.name = document.getElementById('af_name').value.trim();
-  } else {
-    if(!DB.users.find(x=>x.email===email)){ err.textContent='No account for that email. Try the demo logins, or create an account.'; err.classList.remove('hidden'); return false; }
+    if(!authState.name){ err.textContent='Please enter your name.'; err.classList.remove('hidden'); return false; }
   }
-  authState.email = email; authState.step='code'; mountAuth();
+  try {
+    await sbSendOTP(email);
+    authState.email = email; authState.step='code'; mountAuth();
+  } catch(ex) {
+    err.textContent='Could not send code — check your email address and try again.'; err.classList.remove('hidden');
+  }
   return false;
 }
-function verifyCode(){
+async function verifyCode(){
   const err=document.getElementById('af_err');
+  err.classList.add('hidden');
   const code=(document.getElementById('af_code').value||'').trim();
-  if(!/^\d{6}$/.test(code)){ err.textContent='Enter the 6-digit code (any 6 digits in this demo).'; err.classList.remove('hidden'); return; }
-  if(authState.mode==='signin'){
-    const u=DB.users.find(x=>x.email===authState.email);
-    DB.session=u.id; save(DB); closeAuth();
-    if(u.banned){ render(); return; }
-    toast('Welcome back, '+u.name.split(' ')[0]); afterAuth(); return;
+  if(!/^\d{6}$/.test(code)){ err.textContent='Enter the 6-digit code from your email.'; err.classList.remove('hidden'); return; }
+  try {
+    const sbUser = await sbVerifyOTP(authState.email, code);
+    if(authState.mode==='signup'){
+      const inviteCode = (authState.name||'member').split(' ')[0].toLowerCase().replace(/[^a-z]/g,'')+Math.floor(100+Math.random()*900);
+      await sbCreateProfile(sbUser.id, {
+        name: authState.name, email: authState.email,
+        role: authState.role||'reader',
+        avatar: AVS[Math.floor(Math.random()*AVS.length)],
+        selfInviteCode: inviteCode,
+        inviteCode: authState.inviteCode||null,
+      });
+    }
+    closeAuth(); afterAuth();
+  } catch(ex) {
+    err.textContent='Invalid or expired code — try again.'; err.classList.remove('hidden');
   }
-  finishSignup(authState.name, authState.email, authState.role);
 }
 function finishSignup(name,email,role){
   const u = {id:uid('u'),name,email,role,avatar:AVS[Math.floor(Math.random()*AVS.length)],
