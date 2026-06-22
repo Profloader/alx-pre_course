@@ -1307,7 +1307,8 @@ function viewAdmin(){
   const pending = DB.books.filter(b=>b.status==='pending');
   const stat=(n,l)=>`<div class="panel" style="text-align:center;margin:0"><div style="font-family:var(--display);font-size:30px">${n}</div><div class="sub" style="margin:0">${l}</div></div>`;
   return `<div class="app author-mode"><div class="wrap">
-    <div class="app-head"><div><h1>Admin</h1><p>Reach every member, gate new books, and keep an eye on safety.</p></div></div>
+    <div class="app-head"><div><h1>Admin</h1><p>Reach every member, gate new books, and keep an eye on safety.</p></div>
+      <button class="btn btn-spine btn-sm" onclick="openAddBook()">+ Add free book</button></div>
 
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:24px">
       ${stat(DB.settings.founderCount.toLocaleString(),'Founders')}${stat(readers,'Readers')}${stat(authors,'Authors')}${stat(pending.length,'Books pending')}${stat(banned,'Suspended')}${stat(openAppeals,'Appeals')}
@@ -2487,7 +2488,7 @@ function openUpgradePrompt(){
 
 function openAddBook(){
   const m=me();
-  if(!canAddBook(m)){ openUpgradePrompt(); return; }
+  if(!m.admin && !canAddBook(m)){ openUpgradePrompt(); return; }
   document.getElementById('modalMount').innerHTML=`
   <div class="overlay" onclick="if(event.target===this)closeAuth()">
     <div class="modal">
