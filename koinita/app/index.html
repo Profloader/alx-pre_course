@@ -445,7 +445,7 @@ function mapBook(r) {
   return {
     id: r.id, title: r.title, authorUserId: r.author_user_id,
     authorName: r.author_name, genre: r.genre, blurb: r.blurb || '',
-    cover: r.cover || 0, featured: r.featured || false, status: r.status || 'approved',
+    cover: r.cover && r.cover.startsWith('http') ? r.cover : (parseInt(r.cover)||0), featured: r.featured || false, status: r.status || 'approved',
     freeStart: r.free_start ? new Date(r.free_start).getTime() : Date.now(),
     freeEnd:   r.free_end   ? new Date(r.free_end).getTime()   : Date.now() + 86400000*4,
     asin: r.asin || '', amazonUrl: r.amazon_url || '', added: new Date(r.added).getTime(),
@@ -712,7 +712,7 @@ async function sbClaimBook(userId, bookId) {
 async function sbAddBook(book) {
   const { data, error } = await sb.from('books').insert({
     title: book.title, author_user_id: book.authorUserId, author_name: book.authorName,
-    genre: book.genre, blurb: book.blurb, cover: book.cover, status: book.status,
+    genre: book.genre, blurb: book.blurb, cover: String(book.cover), status: book.status,
     free_start: new Date(book.freeStart).toISOString(), free_end: new Date(book.freeEnd).toISOString(),
     asin: book.asin, amazon_url: book.amazonUrl,
   }).select().single();
@@ -1856,20 +1856,26 @@ function viewDiscover(){
 }
 function setFilter(g){ discoverFilter=g; render(); }
 
+function bookCoverStyle(b){
+  // Use Amazon cover image if available, else fallback to gradient
+  if(b.cover && b.cover.startsWith('http')) return `background:url('${b.cover}') center/cover no-repeat #e8e0d6`;
+  return coverStyle(b.cover);
+}
 function bookCard(b){
   const fs = freeState(b);
   const badge = b.featured?`<div class="badge" style="background:var(--spine);color:#fff">✦ FEATURED</div>`
               : fs.state==='live'?`<div class="badge">FREE NOW</div>`:'';
   return `<div class="book" onclick="go('book','${b.id}')">
-    <div class="cover" style="${coverStyle(b.cover)}">
+    <div class="cover" style="${bookCoverStyle(b)}">
       ${badge}
-      <div class="k">Koinita · First edition</div>
+      <div class="k">Koinita · Free on Amazon</div>
       <div><div class="ct">${esc(b.title)}</div><div class="ca">by ${esc(b.authorName||'Unclaimed author')}</div></div>
     </div>
     <div class="meta">
       <span class="chip genre">${esc(b.genre)}</span>
       <div class="row">
         <span class="countdown ${fs.state==='closed'?'closed':''}">${fs.txt}</span>
+        ${b.amazonUrl?`<a href="${b.amazonUrl}" target="_blank" onclick="event.stopPropagation()" style="font-size:12px;color:var(--amber-deep);font-weight:600;text-decoration:none">Amazon ↗</a>`:''}
       </div>
     </div>
   </div>`;
@@ -2509,25 +2515,36 @@ function openAddBook(){
     </div>
   </div>`;
 }
-function saveNewBook(){
+async function saveNewBook(){
   const m=me();
-  if(!canAddBook(m)){ closeAuth(); openUpgradePrompt(); return; }
+  if(!m.admin && !canAddBook(m)){ closeAuth(); openUpgradePrompt(); return; }
   const title=(document.getElementById('nb_title').value||'').trim();
   if(!title){ toast('Give your book a title.'); return; }
-  const asin=(document.getElementById('nb_asin').value||'').trim()||'B0EXAMPLE0';
+  const asin=(document.getElementById('nb_asin').value||'').trim();
+  if(!asin){ toast('Enter the Amazon ASIN.'); return; }
   const s=document.getElementById('nb_start').value, e=document.getElementById('nb_end').value;
   const freeStart = s? new Date(s).getTime() : now();
   const freeEnd = e? new Date(e).getTime()+86399000 : now()+86400000*4;
-  // Admin review gate: in-house authors and the auto-approve setting post live;
-  // otherwise a new outside-author listing waits for admin approval.
+  // Warn if book is scheduled in the future — no live price check available without Amazon PA API
+  if(freeStart > now()){
+    toast('Scheduled for '+new Date(freeStart).toLocaleDateString()+' — make sure the book is free on Amazon on that date.');
+  }
   const auto = DB.settings.autoApprove || m.inhouse || m.admin;
   const status = auto ? 'approved' : 'pending';
-  DB.books.push({id:uid('b'),title,authorName:m.name,authorUserId:m.id,
+  const coverUrl = `https://m.media-amazon.com/images/P/${asin}.01.L.jpg`;
+  const book = {id:uid('b'),title,authorName:m.name,authorUserId:m.id,
     genre:document.getElementById('nb_genre').value,
     blurb:(document.getElementById('nb_blurb').value||'').trim()||'A new release from '+m.name+'.',
-    cover:Math.floor(Math.random()*COVERS.length), featured:false, status,
-    freeStart,freeEnd,asin,amazonUrl:'https://www.amazon.com/dp/'+asin,added:now()});
+    cover: coverUrl, featured:false, status,
+    freeStart,freeEnd,asin,amazonUrl:'https://www.amazon.com/dp/'+asin,added:now()};
+  DB.books.push(book);
   save(DB); closeAuth();
+  // Persist to Supabase
+  sbAddBook(book).then(saved => {
+    const idx = DB.books.findIndex(b=>b.id===book.id);
+    if(idx>=0) DB.books[idx] = saved;
+    save(DB); render();
+  }).catch(err => console.warn('[Koinita] book sync:', err));
   toast(status==='approved' ? 'Book added to the shelf ✓' : 'Submitted — pending admin review before it goes live');
   go('mybooks');
 }
