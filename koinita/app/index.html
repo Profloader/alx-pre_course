@@ -891,10 +891,14 @@ function unreadCount(){ const m=me(); return m? DB.notifications.filter(n=>n.use
 function toggleFollow(id){
   const m=me(); if(!m || id===m.id) return;
   const i = DB.follows.findIndex(f=>f.followerId===m.id && f.followeeId===id);
-  if(i>=0){ DB.follows.splice(i,1); }
-  else { DB.follows.push({followerId:m.id, followeeId:id, at:now()}); notify(id,'follow',m.id,'started following you',m.id);
-    save(DB);
-    if(!m.pushPrimed){ const t=userById(id); maybePrimePush(`We'll let you know the moment ${t?t.name.split(' ')[0]:'they'} drops a new free book or posts a note.`); return; }
+  if(i>=0){
+    DB.follows.splice(i,1);
+    sbUnfollow(m.id, id).catch(e=>console.warn('[Koinita] unfollow:', e));
+  } else {
+    DB.follows.push({followerId:m.id, followeeId:id, at:now()});
+    sbFollow(m.id, id).catch(e=>console.warn('[Koinita] follow:', e));
+    sb.from('notifications').insert({to_user_id:id, type:'follow', from_user_id:m.id, ref_id:m.id}).catch(()=>{});
+    if(!m.pushPrimed){ const t=userById(id); maybePrimePush(`Want a heads-up when ${t?t.name.split(' ')[0]:'this author'} drops a free book?`); save(DB); return; }
   }
   save(DB); render();
 }
@@ -1043,8 +1047,9 @@ function initials(name){ return (name||'?').trim().split(/\s+/).slice(0,2).map(w
 function timeAgo(ts){ const s=(now()-ts)/1000; if(s<60)return'just now'; const m=s/60; if(m<60)return Math.floor(m)+'m ago';
   const h=m/60; if(h<24)return Math.floor(h)+'h ago'; const d=h/24; if(d<30)return Math.floor(d)+'d ago'; return Math.floor(d/30)+'mo ago'; }
 function freeState(b){ const t=now();
+  if(!b||!b.freeStart||!b.freeEnd) return {state:'closed', txt:'Not scheduled'};
   if(t<b.freeStart) return {state:'soon', txt:'Drops '+new Date(b.freeStart).toLocaleDateString(undefined,{month:'short',day:'numeric'})};
-  if(t<=b.freeEnd){ const left=b.freeEnd-t; const days=Math.floor(left/86400000); const hrs=Math.floor((left%86400000)/3600000);
+  if(t<b.freeEnd){ const left=b.freeEnd-t; const days=Math.floor(left/86400000); const hrs=Math.floor((left%86400000)/3600000);
     return {state:'live', txt: days>0 ? `Free · ${days}d ${hrs}h left` : `Free · ${hrs}h left`}; }
   return {state:'closed', txt:'Window closed'};
 }
@@ -2135,15 +2140,25 @@ function createPost(){
   if(!text){ toast('Write a note first.'); return; }
   const mod=enforce(text);
   if(!mod.ok){ return; }
-  DB.posts.push({id:uid('p'), authorId:m.id, bookId, text:mod.clean||text, at:now(), appreciatedBy:[]});
-  save(DB); toast('Posted to your followers ✦'); render();
+  const post = {id:uid('p'), authorId:m.id, bookId, text:mod.clean||text, at:now(), appreciatedBy:[]};
+  DB.posts.push(post);
+  save(DB); render();
+  sbCreatePost(m.id, mod.clean||text, bookId||null, null, null)
+    .then(saved=>{ const idx=DB.posts.findIndex(p=>p.id===post.id); if(idx>=0) DB.posts[idx]=saved; save(DB); })
+    .catch(e=>console.warn('[Koinita] post:', e));
+  toast('Posted to your followers ✦');
 }
 function appreciate(pid){
   const m=me(); const p=DB.posts.find(x=>x.id===pid); if(!p) return;
   p.appreciatedBy = p.appreciatedBy||[];
   const i=p.appreciatedBy.indexOf(m.id);
-  if(i>=0) p.appreciatedBy.splice(i,1);
-  else { p.appreciatedBy.push(m.id); if(p.authorId!==m.id) notify(p.authorId,'appreciate',m.id,'appreciated your note',p.id); }
+  if(i>=0){
+    p.appreciatedBy.splice(i,1);
+  } else {
+    p.appreciatedBy.push(m.id);
+    if(p.authorId!==m.id) sb.from('notifications').insert({to_user_id:p.authorId, type:'appreciate', from_user_id:m.id, ref_id:p.id}).catch(()=>{});
+  }
+  sbToggleLike(p.id, m.id).catch(e=>console.warn('[Koinita] like:', e));
   save(DB); render();
 }
 function postCard(p){
@@ -2458,7 +2473,7 @@ function sendReply(id, sideRole){
    READER ACTIONS
    ==================================================================== */
 function claimShelf(id){ const m=me(); if(!m.shelf.includes(id)){ m.shelf.push(id); save(DB);} }
-function markClaimed(id){ const m=me(); if(!m.shelf.includes(id)){ m.shelf.push(id); save(DB); toast('Claimed — feedback unlocked'); if(!m.pushPrimed){ const b=bookById(id); maybePrimePush(`Want a heads-up the next time a book like “${b?b.title:''}” drops free?`); return; } } render(); }
+function markClaimed(id){ const m=me(); if(!m.shelf.includes(id)){ m.shelf.push(id); save(DB); sbClaimBook(m.id, id).catch(e=>console.warn('[Koinita] claim:', e)); toast('Claimed — feedback unlocked'); if(!m.pushPrimed){ const b=bookById(id); maybePrimePush(`Want a heads-up the next time a book like “${b?b.title:''}” drops free?`); return; } } render(); }
 function shareBook(id){ const b=bookById(id); if(!b) return;
   shareThing(b.title+' — free on Koinita', `I'm reading “${b.title}” by ${b.authorName} on Koinita — free, and you can talk to the author.`, location.href); }
 function remindMe(id){ toast('We\'ll alert you the moment it drops 🔔'); }
@@ -2539,13 +2554,16 @@ async function saveNewBook(){
   DB.books.push(book);
   save(DB); closeAuth();
   // Persist to Supabase
+  go('mybooks');
   sbAddBook(book).then(saved => {
     const idx = DB.books.findIndex(b=>b.id===book.id);
     if(idx>=0) DB.books[idx] = saved;
     save(DB); render();
-  }).catch(err => console.warn('[Koinita] book sync:', err));
-  toast(status==='approved' ? 'Book added to the shelf ✓' : 'Submitted — pending admin review before it goes live');
-  go('mybooks');
+    toast(status==='approved' ? 'Book added to the shelf ✓' : 'Submitted — pending admin review');
+  }).catch(err => {
+    toast('Could not save book — check console for details');
+    console.warn('[Koinita] sbAddBook:', err);
+  });
 }
 function viewMyBooks(){
   const m=me();
@@ -2572,7 +2590,7 @@ function viewMyBooks(){
 function toggleFeatured(id){
   const m=me(); const b=bookById(id);
   if(!hasFeature(m,'featured')){ toast('Featured placement is an Author Pro feature.'); go('plans'); return; }
-  b.featured=!b.featured; save(DB); toast(b.featured?'Featured ✦':'Removed from featured'); render();
+  b.featured=!b.featured; sbUpdateBook(id, {featured: b.featured}).catch(e=>console.warn('[Koinita] feature:', e)); save(DB); toast(b.featured?'Featured ✦':'Removed from featured'); render();
 }
 function openEditFree(id){
   const b=bookById(id);
@@ -2591,6 +2609,7 @@ function openEditFree(id){
 function saveFree(id){ const b=bookById(id);
   b.freeStart=new Date(document.getElementById('ef_start').value).getTime();
   b.freeEnd=new Date(document.getElementById('ef_end').value).getTime()+86399000;
+  sbUpdateBook(id, {free_start: b.freeStart, free_end: b.freeEnd}).catch(e=>console.warn('[Koinita] saveFree:', e));
   save(DB); closeAuth(); toast('Free window updated'); render(); }
 
 /* ====================================================================
@@ -2698,6 +2717,7 @@ function saveProfile(){ const m=me();
   m.bio=(document.getElementById('pf_bio').value||'').trim();
   // keep authored books' display name in sync
   DB.books.filter(b=>b.authorUserId===m.id).forEach(b=>b.authorName=m.name);
+  sbUpdateProfile(m.id, {name: m.name, email: m.email, bio: m.bio}).catch(e=>console.warn('[Koinita] saveProfile:', e));
   save(DB); toast('Profile saved ✓'); render(); }
 
 function notFound(){ return `<div class="app"><div class="wrap"><div class="empty"><div class="ic">🔍</div><h3>Not found</h3><p>That page doesn't exist.</p><button class="btn btn-amber" onclick="go('home')">Back home</button></div></div></div>`; }
