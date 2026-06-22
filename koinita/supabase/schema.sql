@@ -73,7 +73,7 @@ create table if not exists books (
   author_name    text not null,
   genre          text not null,
   blurb          text not null default '',
-  cover          int  not null default 0,
+  cover          text not null default '0',
   featured       bool not null default false,
   status         text not null default 'approved'
                    check (status in ('approved','pending','rejected')),
