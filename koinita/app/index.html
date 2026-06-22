@@ -501,9 +501,11 @@ sb.auth.onAuthStateChange(async (event, session) => {
       const meta = session.user.user_metadata || {};
       const name = meta.full_name || meta.name || session.user.email.split('@')[0];
       const email = session.user.email;
+      const role = localStorage.getItem('kn_pending_role') || 'reader';
+      localStorage.removeItem('kn_pending_role');
       const inviteCode = name.split(' ')[0].toLowerCase().replace(/[^a-z]/g,'') + Math.floor(100+Math.random()*900);
       await sbCreateProfile(session.user.id, {
-        name, email, role: 'reader',
+        name, email, role,
         avatar: AVS[Math.floor(Math.random()*AVS.length)],
         selfInviteCode: inviteCode,
         inviteCode: authState.inviteCode || null,
@@ -1628,6 +1630,8 @@ function pickRole(r){ authState.role=r; mountAuth(); }
 function closeAuth(){ document.getElementById('modalMount').innerHTML=''; }
 
 function socialAuth(provider){
+  // Save selected role before OAuth redirect so we can use it after redirect back
+  localStorage.setItem('kn_pending_role', authState.role || 'reader');
   if(provider==='google') sbGoogleSignIn();
   else if(provider==='apple') sbAppleSignIn();
 }
