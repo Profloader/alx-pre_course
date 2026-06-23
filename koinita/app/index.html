@@ -906,14 +906,15 @@ function toggleFollow(id){
   const i = DB.follows.findIndex(f=>f.followerId===m.id && f.followeeId===id);
   if(i>=0){
     DB.follows.splice(i,1);
-    sbUnfollow(m.id, id).catch(e=>console.warn('[Koinita] unfollow:', e));
+    sbUnfollow(m.id, id).catch(e=>{ console.warn('[Koinita] unfollow:', e); toast('Could not update — please try again.'); });
+    save(DB); render();
   } else {
     DB.follows.push({followerId:m.id, followeeId:id, at:now()});
-    sbFollow(m.id, id).catch(e=>console.warn('[Koinita] follow:', e));
+    sbFollow(m.id, id).catch(e=>{ console.warn('[Koinita] follow:', e); toast('Could not follow — please try again.'); });
     sb.from('notifications').insert({to_user_id:id, type:'follow', from_user_id:m.id, ref_id:m.id}).catch(()=>{});
-    if(!m.pushPrimed){ const t=userById(id); maybePrimePush(`Want a heads-up when ${t?t.name.split(' ')[0]:'this author'} drops a free book?`); save(DB); return; }
+    save(DB); render();   // update the button first, then maybe prompt for push
+    if(!m.pushPrimed){ const t=userById(id); maybePrimePush(`Want a heads-up when ${t?t.name.split(' ')[0]:'this author'} drops a free book?`); }
   }
-  save(DB); render();
 }
 
 /* ---------- staff editor + admin + mute ---------- */
@@ -2154,9 +2155,10 @@ function createPost(){
   DB.posts.push(post);
   save(DB); render();
   sbCreatePost(m.id, mod.clean||text, bookId||null, null, null)
-    .then(saved=>{ const idx=DB.posts.findIndex(p=>p.id===post.id); if(idx>=0) DB.posts[idx]=saved; save(DB); })
-    .catch(e=>console.warn('[Koinita] post:', e));
-  toast('Posted to your followers ✦');
+    .then(saved=>{ const idx=DB.posts.findIndex(p=>p.id===post.id); if(idx>=0) DB.posts[idx]=saved; save(DB); toast('Posted to your followers ✦'); })
+    .catch(e=>{ console.warn('[Koinita] post:', e);
+      const idx=DB.posts.findIndex(p=>p.id===post.id); if(idx>=0) DB.posts.splice(idx,1);
+      save(DB); render(); toast('Could not publish — check your connection and try again.'); });
 }
 function appreciate(pid){
   const m=me(); const p=DB.posts.find(x=>x.id===pid); if(!p) return;
