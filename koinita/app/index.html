@@ -236,6 +236,9 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;
 .cover .ca{font-size:13px;opacity:.92}
 .cover .badge{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.92);color:var(--amber-deep);
   font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px}
+.book .cover .open-cue{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:.18s;background:rgba(31,26,20,.18);pointer-events:none}
+.book:hover .cover .open-cue{opacity:1}
+.book .cover .open-cue span{background:rgba(255,255,255,.96);color:var(--ink);font-size:13px;font-weight:600;padding:7px 15px;border-radius:999px;box-shadow:0 2px 12px rgba(0,0,0,.22)}
 .book .meta{padding:14px 16px 16px;display:flex;flex-direction:column;gap:8px;flex:1}
 .book .meta .row{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .book .meta .ttl{font-family:var(--display);font-size:17px;font-weight:600;line-height:1.15}
@@ -1878,6 +1881,7 @@ function bookCard(b){
     <div class="cover" style="${bookCoverStyle(b)}">
       ${badge}
       <div class="k">Koinita · Free on Amazon</div>
+      <div class="open-cue"><span>View book →</span></div>
     </div>
     <div class="meta">
       <div class="ttl">${esc(b.title)}</div>
