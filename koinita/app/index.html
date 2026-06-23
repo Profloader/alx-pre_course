@@ -1868,7 +1868,7 @@ function viewDiscover(){
 function setFilter(g){ discoverFilter=g; render(); }
 
 function bookCoverStyle(b){
-  if(b.cover && typeof b.cover === 'string' && b.cover.startsWith('http')) return `background:url('${b.cover}') center/cover no-repeat #e8e0d6`;
+  if(b.cover && typeof b.cover === 'string' && b.cover.startsWith('http')) return `background:url('${b.cover}') center/contain no-repeat #e8e0d6`;
   return coverStyle(typeof b.cover === 'number' ? b.cover : 0);
 }
 function bookCard(b){
@@ -1879,9 +1879,10 @@ function bookCard(b){
     <div class="cover" style="${bookCoverStyle(b)}">
       ${badge}
       <div class="k">Koinita · Free on Amazon</div>
-      <div><div class="ct">${esc(b.title)}</div><div class="ca">by ${esc(b.authorName||'Unclaimed author')}</div></div>
     </div>
     <div class="meta">
+      <div class="ttl">${esc(b.title)}</div>
+      <div class="by">by ${esc(b.authorName||'Unclaimed author')}</div>
       <span class="chip genre">${esc(b.genre)}</span>
       <div class="row">
         <span class="countdown ${fs.state==='closed'?'closed':''}">${fs.txt}</span>
