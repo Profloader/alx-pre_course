@@ -1672,7 +1672,15 @@ async function submitAuth(e){
     authState.step = 'code';
     mountAuth();
   } catch(ex) {
-    err.textContent = ex.message || 'Could not send your code — try again.'; err.classList.remove('hidden');
+    console.error('[Koinita] signInWithOtp failed:', ex);
+    const parts = [ex?.message, ex?.error_description, ex?.msg, ex?.error, ex?.code, ex?.status]
+      .map(v => (v == null ? '' : String(v).trim()))
+      .filter(v => v && v !== '{}' && v !== '[object Object]');
+    const detail = [...new Set(parts)].join(' · ');
+    err.textContent = detail
+      ? ('Could not send your code: ' + detail)
+      : 'Could not send your code. In Supabase: enable the Email provider, allow new signups, and configure Resend SMTP.';
+    err.classList.remove('hidden');
     if(btn){ btn.disabled = false; btn.textContent = authState.mode==='signup'?'Email me a code':'Email me a sign-in code'; }
   }
   return false;
