@@ -2497,8 +2497,20 @@ function sendReply(id, sideRole){
 /* ====================================================================
    READER ACTIONS
    ==================================================================== */
-function claimShelf(id){ const m=me(); if(!m.shelf.includes(id)){ m.shelf.push(id); save(DB);} }
-function markClaimed(id){ const m=me(); if(!m.shelf.includes(id)){ m.shelf.push(id); save(DB); sbClaimBook(m.id, id).catch(e=>console.warn('[Koinita] claim:', e)); toast('Claimed — feedback unlocked'); if(!m.pushPrimed){ const b=bookById(id); maybePrimePush(`Want a heads-up the next time a book like “${b?b.title:''}” drops free?`); return; } } render(); }
+function claimShelf(id){
+  const m=me(); if(!m || m.shelf.includes(id)) return;
+  m.shelf.push(id);
+  sbClaimBook(m.id, id).catch(e=>{ console.warn('[Koinita] claim:', e); toast('Saved locally, but adding to your shelf failed — try again.'); });
+  save(DB); render();
+}
+function markClaimed(id){
+  const m=me(); if(!m || m.shelf.includes(id)) return;
+  m.shelf.push(id);
+  sbClaimBook(m.id, id).catch(e=>{ console.warn('[Koinita] claim:', e); toast('Saved locally, but adding to your shelf failed — try again.'); });
+  save(DB); render();
+  toast('Claimed — feedback unlocked');
+  if(!m.pushPrimed){ const b=bookById(id); maybePrimePush(`Want a heads-up the next time a book like “${b?b.title:''}” drops free?`); }
+}
 function shareBook(id){ const b=bookById(id); if(!b) return;
   shareThing(b.title+' — free on Koinita', `I'm reading “${b.title}” by ${b.authorName} on Koinita — free, and you can talk to the author.`, location.href); }
 function remindMe(id){ toast('We\'ll alert you the moment it drops 🔔'); }
