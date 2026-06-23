@@ -243,6 +243,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;
 .book .meta .row{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .book .meta .ttl{font-family:var(--display);font-size:17px;font-weight:600;line-height:1.15}
 .book .meta .by{font-size:13px;color:var(--ink-soft)}
+.listed-by{color:var(--spine-deep);font-weight:600}
 .countdown{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--amber-deep)}
 .countdown.closed{color:var(--ink-faint)}
 
@@ -1874,6 +1875,18 @@ function bookCoverStyle(b){
   if(b.cover && typeof b.cover === 'string' && b.cover.startsWith('http')) return `background:url('${b.cover}') center/contain no-repeat #e8e0d6`;
   return coverStyle(typeof b.cover === 'number' ? b.cover : 0);
 }
+// Attribution: author-listed books show the author; Koinita/admin-listed books
+// say "Listed by Koinita" (plus the author's name when we have it).
+function bookByline(b){
+  const lister = b.authorUserId ? userById(b.authorUserId) : null;
+  const koinitaListed = lister && lister.admin;
+  if(koinitaListed){
+    return (b.authorName && b.authorName!==lister.name)
+      ? `by ${esc(b.authorName)} · <span class="listed-by">Listed by Koinita</span>`
+      : `<span class="listed-by">Listed by Koinita</span>`;
+  }
+  return `by ${esc(b.authorName||'Unclaimed author')}`;
+}
 function bookCard(b){
   const fs = freeState(b);
   const badge = b.featured?`<div class="badge" style="background:var(--spine);color:#fff">✦ FEATURED</div>`
@@ -1886,7 +1899,7 @@ function bookCard(b){
     </div>
     <div class="meta">
       <div class="ttl">${esc(b.title)}</div>
-      <div class="by">by ${esc(b.authorName||'Unclaimed author')}</div>
+      <div class="by">${bookByline(b)}</div>
       <span class="chip genre">${esc(b.genre)}</span>
       <div class="row">
         <span class="countdown ${fs.state==='closed'?'closed':''}">${fs.txt}</span>
@@ -1960,7 +1973,7 @@ function viewBook(id){
         <span class="chip genre">${esc(b.genre)}</span>
         <span class="chip ${fs.state==='live'?'live dot':''}">${fs.txt}</span>
         <h1>${esc(b.title)}</h1>
-        <p style="color:var(--ink-soft);font-size:15px;margin:0">by ${esc(b.authorName||'Unclaimed author')}</p>
+        <p style="color:var(--ink-soft);font-size:15px;margin:0">${bookByline(b)}</p>
         <p class="blurb">${esc(b.blurb)}</p>
         <div class="actions">${claimPanel}
           <button class="btn btn-ghost btn-sm" onclick="shareBook('${b.id}')">↗ Share</button>
