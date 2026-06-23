@@ -244,6 +244,15 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;
 .book .meta .ttl{font-family:var(--display);font-size:17px;font-weight:600;line-height:1.15}
 .book .meta .by{font-size:13px;color:var(--ink-soft)}
 .listed-by{color:var(--spine-deep);font-weight:600}
+/* epub reader */
+.reader-overlay{position:fixed;inset:0;z-index:9999;background:var(--paper-2);display:flex;flex-direction:column}
+.reader-bar{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--card);flex-wrap:wrap}
+.reader-bar .reader-title{font-family:var(--display);font-weight:600}
+.reader-bar .reader-by{color:var(--ink-soft);font-size:13px}
+.reader-stage{position:relative;flex:1;overflow:hidden}
+#readerArea{position:absolute;inset:0}
+.reader-wm{position:absolute;inset:-20%;pointer-events:none;overflow:hidden;opacity:.07;font-size:13px;line-height:2.6;color:#000;transform:rotate(-24deg);word-break:break-word;z-index:5;user-select:none}
+@media print{.reader-overlay{display:none!important}}
 .countdown{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--amber-deep)}
 .countdown.closed{color:var(--ink-faint)}
 
@@ -453,6 +462,7 @@ function mapBook(r) {
     freeStart: r.free_start ? new Date(r.free_start).getTime() : Date.now(),
     freeEnd:   r.free_end   ? new Date(r.free_end).getTime()   : Date.now() + 86400000*4,
     asin: r.asin || '', amazonUrl: r.amazon_url || '', added: new Date(r.added).getTime(),
+    hasEpub: r.has_epub || false,
   };
 }
 function mapPost(r) {
@@ -1961,6 +1971,21 @@ function viewBook(id){
     claimPanel = `<button class="btn btn-amber" onclick="openAuth('signup')">Join free to claim →</button>`;
   }
 
+  // ePub-only titles (no Amazon link): the reader is the primary action
+  if(b.hasEpub && !b.amazonUrl) claimPanel='';
+
+  // ePub: read-on-Koinita button + admin upload controls
+  let epubPanel='';
+  if(b.hasEpub){
+    if(onShelf) epubPanel += `<button class="btn btn-spine" onclick="openReader('${b.id}')">📖 Read on Koinita</button>`;
+    else if(m && m.role==='reader') epubPanel += `<button class="btn btn-amber" onclick="markClaimed('${b.id}')">Add to shelf to read →</button>`;
+    else if(!m) epubPanel += `<button class="btn btn-amber" onclick="openAuth('signup')">Join to read →</button>`;
+  }
+  if(m && m.admin){
+    epubPanel += `<button class="btn btn-ghost btn-sm" onclick="uploadEpub('${b.id}')">${b.hasEpub?'Replace ePub':'⬆ Upload ePub'}</button>`;
+    if(b.hasEpub) epubPanel += `<button class="btn btn-ghost btn-sm" onclick="removeEpub('${b.id}')">Remove ePub</button>`;
+  }
+
   return `<div class="app"><div class="wrap">
     <button class="btn btn-ghost btn-sm" style="margin-bottom:22px" onclick="history.length>1?history.back():go('discover')">← Back</button>
     <div class="detail">
@@ -1975,7 +2000,7 @@ function viewBook(id){
         <h1>${esc(b.title)}</h1>
         <p style="color:var(--ink-soft);font-size:15px;margin:0">${bookByline(b)}</p>
         <p class="blurb">${esc(b.blurb)}</p>
-        <div class="actions">${claimPanel}
+        <div class="actions">${claimPanel}${epubPanel}
           <button class="btn btn-ghost btn-sm" onclick="shareBook('${b.id}')">↗ Share</button>
           ${m?`<button class="btn btn-ghost btn-sm" onclick="openInvite()">✦ Invite a friend</button>`:''}
         </div>
@@ -2524,6 +2549,87 @@ function viewShelf(){
         <button class="btn btn-amber" onclick="go('discover')">Find a free book</button></div>`}
   </div></div>`;
 }
+
+/* ====================================================================
+   EPUB — admin upload + protected in-browser reader (Phase 1)
+   Protection = deterrents: private bucket, shelf-gated short-lived signed
+   URLs, per-reader watermark, disabled select/copy/contextmenu/print.
+   (Perfect web DRM is impossible; screen capture can never be prevented.)
+   ==================================================================== */
+const EPUB_BUCKET='epubs';
+function epubPath(bookId){ return bookId+'.epub'; }
+
+async function uploadEpub(bookId){
+  const m=me(); if(!m||!m.admin){ toast('Admins only.'); return; }
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='.epub,application/epub+zip';
+  inp.onchange=async()=>{
+    const file=inp.files&&inp.files[0]; if(!file) return;
+    if(!/\.epub$/i.test(file.name)){ toast('Please choose an .epub file.'); return; }
+    toast('Uploading ePub…');
+    const { error:upErr } = await sb.storage.from(EPUB_BUCKET).upload(epubPath(bookId), file, { upsert:true, contentType:'application/epub+zip' });
+    if(upErr){ console.warn('[Koinita] epub upload:', upErr); toast('Upload failed: '+(upErr.message||'try again')); return; }
+    const { error:dbErr } = await sb.from('books').update({ has_epub:true }).eq('id', bookId);
+    if(dbErr) console.warn('[Koinita] epub flag:', dbErr);
+    const b=bookById(bookId); if(b) b.hasEpub=true; save(DB); render();
+    toast('ePub uploaded — readable on Koinita ✦');
+  };
+  inp.click();
+}
+
+async function removeEpub(bookId){
+  const m=me(); if(!m||!m.admin) return;
+  if(!confirm('Remove the ePub for this title?')) return;
+  await sb.storage.from(EPUB_BUCKET).remove([epubPath(bookId)]).catch(()=>{});
+  await sb.from('books').update({ has_epub:false }).eq('id', bookId).catch(()=>{});
+  const b=bookById(bookId); if(b) b.hasEpub=false; save(DB); render();
+  toast('ePub removed.');
+}
+
+let _epubLibLoaded=false;
+function loadEpubLib(){
+  if(_epubLibLoaded) return Promise.resolve();
+  const add=(src)=>new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
+  return add('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js')
+    .then(()=>add('https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js'))
+    .then(()=>{ _epubLibLoaded=true; });
+}
+
+async function openReader(bookId){
+  const m=me(); const b=bookById(bookId); if(!m||!b) return;
+  if(!m.shelf.includes(bookId)){ toast('Add it to your shelf first.'); return; }
+  toast('Opening reader…');
+  const { data:signed, error } = await sb.storage.from(EPUB_BUCKET).createSignedUrl(epubPath(bookId), 120);
+  if(error||!signed){ console.warn('[Koinita] sign epub:', error); toast('Could not open this book — try again.'); return; }
+  try{ await loadEpubLib(); }catch(e){ toast('Reader failed to load.'); return; }
+  const wm = esc((m.name||'')+' · '+(m.email||''));
+  document.getElementById('modalMount').innerHTML = `
+    <div class="reader-overlay" id="readerOverlay" oncontextmenu="return false">
+      <div class="reader-bar">
+        <span class="reader-title">${esc(b.title)}</span><span class="reader-by">${esc(b.authorName||'')}</span>
+        <span style="flex:1"></span>
+        <button class="btn btn-ghost btn-sm" onclick="readerPrev()">‹ Prev</button>
+        <button class="btn btn-ghost btn-sm" onclick="readerNext()">Next ›</button>
+        <button class="btn btn-ghost btn-sm" onclick="closeReader()">✕ Close</button>
+      </div>
+      <div class="reader-stage"><div id="readerArea"></div>
+        <div class="reader-wm" aria-hidden="true">${(wm+' · ').repeat(140)}</div>
+      </div>
+    </div>`;
+  const book=ePub(signed.signedUrl);
+  window._kReader = book.renderTo(document.getElementById('readerArea'), { width:'100%', height:'100%', flow:'paginated', spread:'auto' });
+  window._kReader.display();
+  window._kReader.hooks.content.register((contents)=>{
+    const d=contents.document; const st=d.createElement('style');
+    st.textContent='*{-webkit-user-select:none!important;user-select:none!important}img{pointer-events:none}';
+    d.head.appendChild(st);
+    d.addEventListener('contextmenu',e=>e.preventDefault());
+    d.addEventListener('copy',e=>e.preventDefault());
+  });
+  document.onkeydown=(e)=>{ if(!window._kReader) return; if(e.key==='ArrowRight') readerNext(); if(e.key==='ArrowLeft') readerPrev(); if(e.key==='Escape') closeReader(); };
+}
+function readerNext(){ if(window._kReader) window._kReader.next(); }
+function readerPrev(){ if(window._kReader) window._kReader.prev(); }
+function closeReader(){ try{ window._kReader&&window._kReader.destroy(); }catch(e){} window._kReader=null; document.onkeydown=null; const o=document.getElementById('modalMount'); if(o) o.innerHTML=''; }
 
 /* ====================================================================
    AUTHOR ACTIONS — add / claim / edit books
