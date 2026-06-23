@@ -523,9 +523,10 @@ sb.auth.onAuthStateChange(async (event, session) => {
         name, email, role,
         avatar: AVS[Math.floor(Math.random()*AVS.length)],
         selfInviteCode: inviteCode,
-        inviteCode: authState.inviteCode || null,
+        inviteCode: authState.inviteCode || localStorage.getItem('kn_invite') || null,
       }).catch(e => console.warn('[Koinita] OAuth profile:', e));
       authState.inviteCode = null;
+      try{ localStorage.removeItem('kn_invite'); }catch(e){}
       await sbLoadAll(session.user.id);
     }
     _sbReady = true;
@@ -679,6 +680,7 @@ async function sbCreateProfile(userId, fields) {
     avatar: fields.avatar || '#D9541F',
     plan: 'starter',
     invite_code: fields.selfInviteCode || Math.random().toString(36).slice(2, 10),
+    referred_by: fields.inviteCode || null,
     founder: spot.claimed || false,
     founder_no: spot.founder_no || null,
   };
@@ -821,7 +823,7 @@ async function initApp() {
 /* ── Capture invite code from URL for referral credit ────────────────────── */
 try {
   const p = new URLSearchParams(location.search);
-  if (p.get('invite')) authState.inviteCode = p.get('invite');
+  if (p.get('invite')){ authState.inviteCode = p.get('invite'); try{ localStorage.setItem('kn_invite', p.get('invite')); }catch(e){} }
 } catch(_) {}
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -1198,7 +1200,7 @@ function openInvite(circleId){
     <div class="modal">
       <div class="m-head"><button class="x" onclick="closeAuth()">✕</button>
         <h3>${circle?'Invite to “'+esc(circle.name)+'”':'Invite a friend'}</h3>
-        <p>Every friend who joins moves you up the Founders' Wall. Five invites earns Charter Member.</p></div>
+        <p>Koinita is better together — invite a friend to read the same book and share what you think. Every friend who joins moves you up the Founders' Wall, and five invites earns Charter Member.</p></div>
       <div class="m-body">
         <div class="field"><label>Your message (edit freely)</label>
           <textarea id="inviteMsg" rows="3">${esc(defaultInviteMsg())}</textarea></div>
@@ -1871,7 +1873,8 @@ function viewDiscover(){
   books.sort((a,b)=> (b.featured?1:0)-(a.featured?1:0) || b.added-a.added );
   const genresInUse = ['all', ...Array.from(new Set(DB.books.map(b=>b.genre)))];
   return `<div class="app ${m&&m.role==='author'?'author-mode':''}"><div class="wrap">
-    <div class="app-head"><div><h1>Discover</h1><p>Full-length books to claim and keep. Tap any cover to meet the author.</p></div></div>
+    <div class="app-head"><div><h1>Discover</h1><p>Full-length books to claim and keep. Tap any cover to meet the author.</p></div>
+      ${m?`<button class="btn btn-amber btn-sm" onclick="openInvite()">✦ Invite a friend</button>`:''}</div>
     <div class="subnav">
       ${genresInUse.map(g=>`<button class="${discoverFilter===g?'active':''}" onclick="setFilter('${g}')">${g==='all'?'All genres':g}</button>`).join('')}
     </div>
@@ -2154,7 +2157,8 @@ function viewFeed(){
   m.lastFeedSeen = now(); save(DB);
   return `<div class="app ${m.role==='author'?'author-mode':''}"><div class="wrap">
     <div class="app-head"><div><h1>Your feed</h1><p>Notes from the authors and readers you follow. Quiet, chronological, text only.</p></div>
-      <button class="btn btn-ghost btn-sm" onclick="go('search')">🔍 Find people</button></div>
+      <div style="display:flex;gap:8px"><button class="btn btn-amber btn-sm" onclick="openInvite()">✦ Invite a friend</button>
+      <button class="btn btn-ghost btn-sm" onclick="go('search')">🔍 Find people</button></div></div>
     ${epigraphCard(true)}
     ${m.mutedStaff && se?`<div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:0"><span class="sub" style="margin:0">${esc(se.name)} updates are muted.</span><button class="btn btn-ghost btn-sm" onclick="toggleMuteStaff()">Turn back on</button></div>`:''}
     ${composeBox('')}
