@@ -1,6 +1,6 @@
 // Koinita Service Worker
 // Handles: offline caching, push notifications, background sync
-const CACHE = 'koinita-v1';
+const CACHE = 'koinita-v2';
 const PRECACHE = ['/', '/index.html'];
 
 // ── Install: precache shell ──────────────────────────────────────────────────
