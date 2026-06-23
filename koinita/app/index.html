@@ -1198,7 +1198,7 @@ function openInvite(circleId){
         </div>
         <div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <span class="sub" style="margin:0">You've brought <b>${m?m.invites||0:0}</b> ${(m&&m.invites===1)?'friend':'friends'} so far${m&&isCharter(m)?' · ✦ Charter':''}</span>
-          <button class="btn btn-amber btn-sm" onclick="simInviteAccepted()">Simulate a friend joining (demo)</button>
+          ${m&&!isCharter(m)?`<span class="sub" style="margin:0">${Math.max(0,5-(m.invites||0))} more to ✦ Charter</span>`:''}
         </div>
         <p style="font-size:11.5px;color:var(--ink-faint);margin:12px 0 0">You send the invite yourself — Koinita never emails your contacts. Friends opt in by joining.</p>
       </div>
@@ -1213,13 +1213,6 @@ function openInvite(circleId){
     document.getElementById('invFb').href=`https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`; document.getElementById('invFb').target='_blank';
   };
   sync(); document.getElementById('inviteMsg').addEventListener('input', sync);
-}
-function simInviteAccepted(){
-  const m=me(); if(!m) return; const was=isCharter(m);
-  m.invites=(m.invites||0)+1; save(DB);
-  if(!was && isCharter(m)) toast('A friend joined — you are now a ✦ Charter Member!');
-  else toast('A friend joined — you moved up the Founders\' Wall ✦');
-  closeAuth(); render();
 }
 
 /* Amazon review-policy disclaimers. The free book buys honest in-app feedback
@@ -1749,6 +1742,12 @@ function founderStrip(){
       <span class="sub" style="display:block;margin:6px 0 0">You're one of the first ${DB.settings.foundingCap.toLocaleString()}. Bring friends to climb the wall${isCharter(m)?' — you\u2019ve reached Charter.':' — 5 invites earns Charter.'}</span></div>
       <div style="display:flex;gap:8px"><button class="btn btn-amber btn-sm" onclick="openInvite()">Invite ✦</button><button class="btn btn-ghost btn-sm" onclick="go('founders')">The Wall</button></div>
     </div>`;
+  }
+  // Not yet numbered, but founding is still open — invite to claim a spot and climb the Wall.
+  if(left>0){
+    return `<div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-color:var(--gold);background:#fffdf7;margin-top:0">
+      <span class="sub" style="margin:0">✦ Founding membership is open — ${left.toLocaleString()} of ${DB.settings.foundingCap.toLocaleString()} spots left. Invite friends to climb the Founders' Wall.</span>
+      <div style="display:flex;gap:8px"><button class="btn btn-amber btn-sm" onclick="openInvite()">Invite a friend</button><button class="btn btn-ghost btn-sm" onclick="go('founders')">The Wall</button></div></div>`;
   }
   return `<div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:0">
     <span class="sub" style="margin:0">Founding membership has closed, but you can still invite friends to the club.</span>
