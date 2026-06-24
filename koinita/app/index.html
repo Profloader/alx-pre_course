@@ -477,9 +477,20 @@ function mapComment(r) {
   if (!r) return null;
   return { id: r.id, postId: r.post_id, authorId: r.author_id, body: r.body, at: new Date(r.at).getTime() };
 }
+function notifText(type){
+  switch(type){
+    case 'follow': return 'started following you';
+    case 'invite': return 'joined from your invite — you moved up the Founders’ Wall';
+    case 'reply': return 'replied to your conversation';
+    case 'appreciate': return 'appreciated your note';
+    case 'circle': return 'invited you to a reading circle';
+    default: return 'sent you an update';
+  }
+}
 function mapNotif(r) {
   if (!r) return null;
-  return { id: r.id, to: r.to_user_id, type: r.type, from: r.from_user_id, ref: r.ref_id, read: r.read, at: new Date(r.at).getTime() };
+  // canonical shape used across the UI: userId / fromId / refId / text
+  return { id: r.id, userId: r.to_user_id, type: r.type, fromId: r.from_user_id, refId: r.ref_id, text: r.text || notifText(r.type), read: r.read, at: new Date(r.at).getTime() };
 }
 function mapThread(r) {
   if (!r) return null;
@@ -733,6 +744,9 @@ async function sbUnfollow(followerId, followeeId) {
 
 async function sbClaimBook(userId, bookId) {
   await sb.from('shelf').insert({ user_id: userId, book_id: bookId });
+}
+async function sbUnclaim(userId, bookId) {
+  await sb.from('shelf').delete().match({ user_id: userId, book_id: bookId });
 }
 
 async function sbAddBook(book) {
@@ -1080,7 +1094,7 @@ function freeState(b){ const t=now();
     return {state:'live', txt: days>0 ? `Free · ${days}d ${hrs}h left` : `Free · ${hrs}h left`}; }
   return {state:'closed', txt:'Window closed'};
 }
-function coverStyle(ci){ const c=COVERS[ci%COVERS.length]; return `background:linear-gradient(150deg,${c[0]},${c[1]})`; }
+function coverStyle(ci){ const c=COVERS[(typeof ci==='number'?ci:0)%COVERS.length]||COVERS[0]; return `background:linear-gradient(150deg,${c[0]},${c[1]})`; }
 
 /* ====================================================================
    THE EPIGRAPH — a daily line from the public-domain greats.
@@ -1954,18 +1968,18 @@ function viewBook(id){
   // reader action panel
   let claimPanel='';
   if(m && m.role==='reader'){
-    const claimedChip = onShelf?`<span class="chip dot live">Claimed · on your shelf</span>`:'';
-    const haveItBtn = onShelf?'':`<button class="btn btn-ghost btn-sm" onclick="markClaimed('${b.id}')">I already have it</button>`;
+    const shelfBtn = onShelf
+      ? `<button class="btn btn-spine" onclick="removeShelf('${b.id}')">✓ On your shelf</button>`
+      : `<button class="btn btn-spine" onclick="markClaimed('${b.id}')">＋ Add to my shelf</button>`;
     if(fs.state==='live'){
       claimPanel = `<a class="btn btn-amber" href="${b.amazonUrl}" target="_blank" rel="noopener" onclick="claimShelf('${b.id}')">Get it free on Kindle →</a>
-        ${claimedChip||haveItBtn}`;
+        ${shelfBtn}`;
     } else if(fs.state==='soon'){
       claimPanel = `<button class="btn btn-ghost" onclick="remindMe('${b.id}')">🔔 Remind me when it drops</button>
-        ${claimedChip||haveItBtn}`;
+        ${shelfBtn}`;
     } else {
-      claimPanel = `<button class="btn btn-ghost" disabled>Free window closed</button>
-        <a class="btn btn-ghost btn-sm" href="${b.amazonUrl}" target="_blank" rel="noopener">View on Amazon</a>
-        ${claimedChip||haveItBtn}`;
+      claimPanel = `${b.amazonUrl?`<a class="btn btn-ghost" href="${b.amazonUrl}" target="_blank" rel="noopener">View on Amazon</a>`:''}
+        ${shelfBtn}`;
     }
   } else if(m && m.role==='author'){
     claimPanel = `<a class="btn btn-ghost" href="${b.amazonUrl}" target="_blank" rel="noopener">View on Amazon</a>
@@ -1992,10 +2006,10 @@ function viewBook(id){
   return `<div class="app"><div class="wrap">
     <button class="btn btn-ghost btn-sm" style="margin-bottom:22px" onclick="history.length>1?history.back():go('discover')">← Back</button>
     <div class="detail">
-      <div class="cover" style="${coverStyle(b.cover)}">
+      <div class="cover" style="${bookCoverStyle(b)}">
         ${fs.state==='live'?`<div class="badge">FREE NOW</div>`:''}
         <div class="k">Koinita · First edition</div>
-        <div><div class="ct" style="font-size:26px">${esc(b.title)}</div></div>
+        ${(typeof b.cover==='string' && b.cover.startsWith('http')) ? '' : `<div><div class="ct" style="font-size:26px">${esc(b.title)}</div></div>`}
       </div>
       <div>
         <span class="chip genre">${esc(b.genre)}</span>
@@ -2537,8 +2551,14 @@ function markClaimed(id){
   m.shelf.push(id);
   sbClaimBook(m.id, id).catch(e=>{ console.warn('[Koinita] claim:', e); toast('Saved locally, but adding to your shelf failed — try again.'); });
   save(DB); render();
-  toast('Claimed — feedback unlocked');
+  toast('Added to your shelf ✦');
   if(!m.pushPrimed){ const b=bookById(id); maybePrimePush(`Want a heads-up the next time a book like “${b?b.title:''}” drops free?`); }
+}
+function removeShelf(id){
+  const m=me(); if(!m) return;
+  const i=m.shelf.indexOf(id); if(i>=0) m.shelf.splice(i,1);
+  sbUnclaim(m.id, id).catch(e=>{ console.warn('[Koinita] unclaim:', e); toast('Could not update your shelf — try again.'); });
+  save(DB); render();
 }
 function shareBook(id){ const b=bookById(id); if(!b) return;
   shareThing(b.title+' — free on Koinita', `I'm reading “${b.title}” by ${b.authorName} on Koinita — free, and you can talk to the author.`, location.href); }
